@@ -183,6 +183,15 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
   #home .hub-stats{padding:6px 8px;gap:6px}
   #home .hub-stats .statsgrid{gap:8px;flex:1;justify-content:space-between}
 }
+
+/* Tela de resultado: texto superior centralizado; o Voltar fica no lugar do antigo Copiar */
+#play.is-result #playTitle,#play.is-result #playSub{text-align:center}
+#play.is-result #backBtn{display:none}
+/* Cabeçalho com a mesma largura e alinhamento do bloco Diário/Aleatório */
+#home .hub-top{max-width:920px;margin-left:auto;margin-right:auto}
+/* Painel do Deezer: fechado sempre volta ao tamanho normal, mesmo depois de redimensionar */
+.hub-side details.dropdown-tool.deezer-tool:not([open]){width:44px!important;height:auto!important}
+.hub-side details.dropdown-tool.deezer-tool[open]{min-width:240px;min-height:120px}
 </style>
 </head>
 <body>
@@ -262,7 +271,7 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
 </section>
 
 <section id="play" class="hidden">
-  <button class="back" id="backBtn">Voltar ao hub</button>
+  <button class="back" id="backBtn">Voltar</button>
   <h1 id="playTitle">Musicle</h1>
   <p class="sub" id="playSub"></p>
 
@@ -288,10 +297,9 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
       <h3 id="resultTitle"></h3>
       <ul class="recap" id="recap"></ul>
       <div class="row">
-        <button class="primary" id="share">Copiar resultado</button>
+        <button class="primary" id="backBtn2">Voltar</button>
         <button id="again" class="hidden">Nova rodada</button>
       </div>
-      <p class="note" id="shareNote"></p>
     </div>
   </div>
 </section>
@@ -465,6 +473,9 @@ function fetchItem(g,it){
       .then(function(){$('#loadDz').disabled=false;});
   }
 $('#loadDz').onclick=loadDeezer;
+$('.deezer-tool').addEventListener('toggle',function(){
+  if(!this.open){this.style.width=''; this.style.height=''}
+});
 
 /* ---------- home ---------- */
 function renderHome(){
@@ -526,9 +537,11 @@ function newRound(){
   if(cur.qi>=cur.qs.length) showResult(); else showQuestion();
 }
 $('#again').onclick=newRound;
-$('#backBtn').onclick=function(){
+function goHome(){
   stop(); $('#play').classList.add('hidden'); $('#home').classList.remove('hidden'); renderHome();
-};
+}
+$('#backBtn').onclick=goHome;
+$('#backBtn2').onclick=goHome;
 
 /* ---------- áudio ---------- */
 function stop(){
@@ -574,6 +587,7 @@ function dots(){
   });
 }
 function showQuestion(){
+  $('#play').classList.remove('is-result');
   $('#quiz').classList.remove('hidden'); $('#result').classList.add('hidden');
   var q=cur.qs[cur.qi];
   $('#qcount').textContent='Pergunta '+(cur.qi+1)+' de '+cur.qs.length;
@@ -634,16 +648,8 @@ function showResult(){
     ul.appendChild(li);
   });
   $('#again').classList.toggle('hidden',cur.daily);
-  $('#shareNote').textContent='';
+  $('#play').classList.add('is-result');
 }
-$('#share').onclick=function(){
-  var sq=cur.qs.map(function(q,i){return cur.picks[i]===q.a?'\ud83d\udfe9':'\ud83d\udfe5'}).join('');
-  var d=dayKey().split('-');
-  var txt='Musicle '+gName(cur.genre)+' · '+CLIP+'s'+(cur.daily?' '+d[2]+'/'+d[1]:' (aleatório)')+' '+cur.score+'/'+cur.qs.length+'\n'+sq;
-  var note=$('#shareNote');
-  try{navigator.clipboard.writeText(txt).then(function(){note.textContent='Resultado copiado.'},function(){note.textContent=txt})}
-  catch(e){note.textContent=txt}
-};
 
 var DEFAULT_CFG='Jogos: Toby Fox, Nobuo Uematsu, Mick Gordon, Koji Kondo, Lena Raine\nmetal: Metallica, Iron Maiden, Slipknot, Nightwish, System of a Down, Sepultura\nTv: Hans Zimmer, Ramin Djawadi, John Williams, Bear McCreary, Michael Giacchino\nrap: Eminem, Kendrick Lamar, 50 Cent, Racionais MCs, Sabotage, Drake';
 var saved=null; try{saved=localStorage.getItem('musicle:cfg')}catch(e){}
