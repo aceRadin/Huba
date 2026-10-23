@@ -152,6 +152,37 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
 }
 
 
+
+/* Cabeçalho compacto: nome, estatísticas e dificuldade numa linha só */
+#home .hub-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;min-height:0;margin:0 0 16px;padding:8px 0;border-bottom:1px solid var(--line)}
+#home .hub-top h1{font-size:1.3rem;line-height:1;margin:0;justify-self:start;align-self:center}
+#home .hub-stats{grid-column:auto;grid-row:auto;justify-self:center;width:auto;max-width:100%;margin:0;padding:0 12px;height:44px;display:flex;align-items:center;gap:14px;text-align:left}
+#home .top-tools{grid-column:auto;grid-row:auto;display:flex;justify-content:flex-end}
+#home .mini-tool{display:flex;align-items:center;gap:10px;height:44px;padding:0 10px;box-shadow:none}
+#home .stats-heading{display:block}
+#home .stats-heading h2,#home .tool-label{font:700 .68rem/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;text-align:left;white-space:nowrap}
+#home .hub-stats .statsgrid{display:flex;gap:14px;margin:0}
+#home .hub-stats .stat{background:none;padding:0;text-align:center}
+#home .hub-stats .stat strong{font-size:.95rem;line-height:1.1}
+#home .hub-stats .stat span{font-size:.62rem;margin-top:1px;white-space:nowrap}
+#home #statDetail{display:none}
+#home .hub-stats .reset-button{margin:0;padding:3px 7px;font-size:.66rem;border-radius:6px;white-space:nowrap}
+#home .mini-tool .difficulty{display:flex;gap:5px;margin:0}
+#home .difficulty button{padding:5px 9px;font-size:.74rem;border-radius:7px;white-space:nowrap}
+@media(max-width:760px){
+  #home .hub-top{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px}
+  #home .hub-stats{grid-column:1/-1;grid-row:2;justify-self:stretch;justify-content:space-between;height:auto;padding:6px 10px;gap:8px}
+  #home .top-tools{grid-column:2;grid-row:1}
+  #home .mini-tool{height:auto;padding:5px 8px;flex-wrap:wrap;justify-content:center;gap:4px 8px}
+}
+@media(max-width:520px){
+  #home .stats-heading,#home .tool-label{display:none}
+  #home .hub-top h1{font-size:1.2rem}
+  #home .mini-tool{padding:4px 6px}
+  #home .difficulty button{padding:5px 7px;font-size:.7rem}
+  #home .hub-stats{padding:6px 8px;gap:6px}
+  #home .hub-stats .statsgrid{gap:8px;flex:1;justify-content:space-between}
+}
 </style>
 </head>
 <body>
@@ -169,7 +200,7 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
         <div class="stat"><strong id="statBest7">—</strong><span>recorde · 7s</span></div>
       </div>
       <p class="note" id="statDetail"></p>
-      <button id="resetStats" class="reset-button">Zerar estatísticas</button>
+      <button id="resetStats" class="reset-button" title="Zerar estatísticas" aria-label="Zerar estatísticas">Zerar</button>
     </div>
     <div class="top-tools">
       <div class="mini-tool" id="difficultyTool">
@@ -316,6 +347,7 @@ function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
     $('#statBest3').textContent=(st.best&&st.best['3']!==undefined&&st.best['3']>0)?st.best['3']+'/'+NQ:'—';
     $('#statBest7').textContent=(st.best&&st.best['7']!==undefined&&st.best['7']>0)?st.best['7']+'/'+NQ:'—';
     $('#statDetail').textContent='Respostas corretas: '+(st.correct||0)+' de '+(st.questions||0)+' perguntas.';
+    $('#statsPanel').title=$('#statDetail').textContent;
   }
   function recordStats(){
     if(!cur||cur.statsRecorded)return;
@@ -461,18 +493,19 @@ function renderHome(){
 }
 
 /* ---------- montar rodada ---------- */
-function buildQuestions(pool,rng){
+function buildQuestions(pool,rng,exclude){
   var idx=pool.map(function(_,i){return i});
   var n=nq(pool);
-  var answers=shuffle(idx.slice(),rng).slice(0,n);
+  var cand=idx.filter(function(i){return !exclude||exclude.indexOf(norm(pool[i].label))<0});
+  if(cand.length<n)cand=idx;
+  var answers=shuffle(cand.slice(),rng).slice(0,n);
   return answers.map(function(a){
     var others=shuffle(idx.filter(function(i){return i!==a}),rng).slice(0,NOPT-1);
     return {a:a,opts:shuffle([a].concat(others),rng),start:rng()};
   });
 }
 function openGame(daily,g){
-  var base=poolOf(g), pool=base;
-  if(!daily){var recent=readHistory(), filtered=base.filter(function(song){return recent.indexOf(norm(song.label))<0;}); if(filtered.length>=NOPT)pool=filtered;}
+  var pool=poolOf(g);
   $('#home').classList.add('hidden'); $('#play').classList.remove('hidden');
   $('#playTitle').textContent='Musicle · '+gName(g)+' · '+CLIP+'s';
   $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+CLIP+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
@@ -483,7 +516,8 @@ function newRound(){
   stop();
   var pool=cur.pool;
   var rng=cur.daily?mulberry(hash(dayKey()+'|'+cur.genre+'|'+pool.length)):Math.random;
-  cur.qs=buildQuestions(pool,rng);
+  cur.statsRecorded=false;
+  cur.qs=buildQuestions(pool,rng,cur.daily?[]:readHistory());
   cur.picks=[]; cur.qi=0; cur.score=0;
   if(cur.daily){
     var st=readState(cur.genre);
@@ -555,6 +589,13 @@ function showQuestion(){
     box.appendChild(b);
   });
 }
+function finishRound(){
+  recordStats();
+  if(!cur.daily){
+    var labels=cur.qs.map(function(q){return norm(cur.pool[q.a].label)});
+    saveHistory(readHistory().concat(labels));
+  }
+}
 function answer(i){
   var q=cur.qs[cur.qi];
   var ok=i===q.a;
@@ -569,6 +610,7 @@ function answer(i){
   $('#qhint').textContent=ok?'Acertou!':'Errou. A resposta era a marcada em verde.';
   dots();
   var last=cur.picks.length>=cur.qs.length;
+  if(last)finishRound();
   $('#nextBtn').textContent=last?'Ver resultado':'Próxima';
   $('#nextRow').classList.remove('hidden');
 }
