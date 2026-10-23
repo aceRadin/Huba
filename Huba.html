@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hub de Jogos</title>
+<title>HUBA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
@@ -192,31 +192,60 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
 /* Painel do Deezer: fechado sempre volta ao tamanho normal, mesmo depois de redimensionar */
 .hub-side details.dropdown-tool.deezer-tool:not([open]){width:44px!important;height:auto!important}
 .hub-side details.dropdown-tool.deezer-tool[open]{min-width:240px;min-height:120px}
+
+/* Tela inicial HUBA */
+.landing-top{max-width:920px;margin:0 auto 22px;padding:8px 0 12px;border-bottom:1px solid var(--line);text-align:center}
+.landing-top h1{font-size:1.6rem;line-height:1;letter-spacing:.14em;margin:0}
+.landing-grid{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.gcard{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:132px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--fg);text-align:left;font:inherit;font-weight:400}
+button.gcard{cursor:pointer}
+button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.gcard .gtop{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:6px 8px;min-width:0}
+.gcard .gname{font:800 1.35rem/1.1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif;letter-spacing:-.01em}
+.gcard .gsoon{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.gcard .gstreak{display:flex;align-items:baseline;gap:7px}
+.gcard .gstreak strong{font:800 2rem/1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif}
+.gcard .gstreak small{color:var(--muted);font-size:.8rem}
+.gcard.on .gstreak strong{color:var(--accent)}
+.gcard.soon{border-style:dashed;background:transparent}
+.gcard.soon .gname,.gcard.soon .gstreak{opacity:.6}
+.gcard.empty .gname{color:var(--muted);font-weight:700;font-size:1.05rem}
+@media(max-width:640px){.landing-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gcard{min-height:112px;padding:13px 14px}}
+@media(max-width:360px){.landing-grid{grid-template-columns:1fr}}
+/* Nome do site no cabeçalho do hub vira botão de voltar */
+#home .hub-top h1 .brand-back{font:inherit;letter-spacing:.06em;color:inherit;background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
+#home .hub-top h1 .brand-back:hover{color:var(--accent)}
+/* Precisão por gênero dentro de cada cartão */
+.tile .tname{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left}
+.tile .tacc{font-style:normal;font-size:.72rem;font-weight:400;color:var(--muted)}
+.tile .tacc:empty{display:none}
+.gcard .gstreaks{display:grid;gap:6px}
+.gcard .gstreaks .gstreak strong{font-size:1.6rem}
 </style>
 </head>
 <body>
 <main>
+<section id="landing">
+  <header class="landing-top"><h1>HUBA</h1></header>
+  <div class="landing-grid" id="landingGrid"></div>
+</section>
 
-<section id="home">
+
+<section id="home" class="hidden">
   <div class="hub-top">
-    <h1>PlayHub</h1>
+    <h1><button type="button" class="brand-back" id="toLanding" title="Voltar à tela inicial" aria-label="Voltar à tela inicial">‹ HUBA</button></h1>
     <div class="hub-stats" id="statsPanel">
       <div class="stats-heading"><h2>Estatísticas</h2></div>
       <div class="statsgrid">
         <div class="stat"><strong id="statGames">0</strong><span>rodadas</span></div>
-        <div class="stat"><strong id="statAccuracy">0%</strong><span>precisão</span></div>
-        <div class="stat"><strong id="statBest3">—</strong><span>recorde · 3s</span></div>
-        <div class="stat"><strong id="statBest7">—</strong><span>recorde · 7s</span></div>
       </div>
-      <p class="note" id="statDetail"></p>
-      <button id="resetStats" class="reset-button" title="Zerar estatísticas" aria-label="Zerar estatísticas">Zerar</button>
     </div>
     <div class="top-tools">
       <div class="mini-tool" id="difficultyTool">
         <span class="tool-label">Dificuldade</span>
         <div class="difficulty" role="group" aria-label="Dificuldade do Musicle">
-          <button type="button" data-clip="3" id="clip3">Difícil · 3s</button>
-          <button type="button" data-clip="7" id="clip7">Normal · 7s</button>
+          <button type="button" data-clip="1.5" id="clipHard">Desafiador</button>
+          <button type="button" data-clip="7" id="clipCasual">Casual</button>
         </div>
       </div>
     </div>
@@ -344,32 +373,34 @@ function shuffle(arr,rng){for(var i=arr.length-1;i>0;i--){var j=Math.floor(rng()
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function poolOf(g){return g===ALL?songs:(byGenre[g]||[])}
 function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
-  function storeKey(g){return 'musicle2:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP}
+  function storeKey(g){return 'musicle3:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP}
   function readState(g){try{var r=localStorage.getItem(storeKey(g)); return r?JSON.parse(r):null}catch(e){return null}}
   function nq(pool){return Math.min(NQ,pool.length)}
-  function readStats(){try{return JSON.parse(localStorage.getItem(STATS_KEY))||{games:0,correct:0,questions:0,best:{'3':0,'7':0},byClip:{'3':{games:0,correct:0,questions:0},'7':{games:0,correct:0,questions:0}}}}catch(e){return {games:0,correct:0,questions:0,best:{'3':0,'7':0},byClip:{'3':{games:0,correct:0,questions:0},'7':{games:0,correct:0,questions:0}}}}}
+  function modeOf(){return CLIP===1.5?'hard':'casual'}
+  function modeName(){return CLIP===1.5?'Desafiador':'Casual'}
+  function fmtSec(n){return String(n).replace('.',',')}
+  function readStats(){try{return JSON.parse(localStorage.getItem(STATS_KEY))||{games:0}}catch(e){return {games:0}}}
   function saveStats(st){try{localStorage.setItem(STATS_KEY,JSON.stringify(st))}catch(e){}}
   function renderStats(){
-    var st=readStats(), acc=st.questions?Math.round(st.correct/st.questions*100):0;
-    $('#statGames').textContent=st.games||0; $('#statAccuracy').textContent=acc+'%';
-    $('#statBest3').textContent=(st.best&&st.best['3']!==undefined&&st.best['3']>0)?st.best['3']+'/'+NQ:'—';
-    $('#statBest7').textContent=(st.best&&st.best['7']!==undefined&&st.best['7']>0)?st.best['7']+'/'+NQ:'—';
-    $('#statDetail').textContent='Respostas corretas: '+(st.correct||0)+' de '+(st.questions||0)+' perguntas.';
-    $('#statsPanel').title=$('#statDetail').textContent;
+    var st=readStats();
+    $('#statGames').textContent=st.games||0;
+  }
+  function genreAcc(g){
+    var st=readStats(), r=st.genres&&st.genres[modeOf()+'|'+g];
+    return (r&&r.q)?Math.round(r.c/r.q*100)+'%':'—';
   }
   function recordStats(){
     if(!cur||cur.statsRecorded)return;
-    var st=readStats(), k=String(CLIP);
-    st.games=(st.games||0)+1; st.correct=(st.correct||0)+cur.score; st.questions=(st.questions||0)+cur.qs.length;
-    st.best=st.best||{'3':0,'7':0}; st.byClip=st.byClip||{}; st.byClip[k]=st.byClip[k]||{games:0,correct:0,questions:0};
-    st.byClip[k].games++; st.byClip[k].correct+=cur.score; st.byClip[k].questions+=cur.qs.length;
-    st.best[k]=Math.max(st.best[k]||0,cur.score); saveStats(st); cur.statsRecorded=true; renderStats();
+    var st=readStats(), k=modeOf()+'|'+cur.genre;
+    st.games=(st.games||0)+1;
+    st.genres=st.genres||{}; st.genres[k]=st.genres[k]||{q:0,c:0};
+    st.genres[k].q+=cur.qs.length; st.genres[k].c+=cur.score;
+    saveStats(st); cur.statsRecorded=true; renderStats();
   }
   function readHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){return []}}
   function saveHistory(arr){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(arr.slice(-12)))}catch(e){}}
-  function setDifficulty(seconds){CLIP=seconds; $('#clip3').classList.toggle('selected',CLIP===3); $('#clip7').classList.toggle('selected',CLIP===7); try{localStorage.setItem('playhub:musicle:clip',String(CLIP))}catch(e){} renderHome();}
-  $('#clip3').onclick=function(){setDifficulty(3)}; $('#clip7').onclick=function(){setDifficulty(7)};
-  $('#resetStats').onclick=function(){if(confirm('Zerar todas as estatísticas e recordes do Musicle?')){try{localStorage.removeItem(STATS_KEY)}catch(e){} renderStats();}};
+  function setDifficulty(seconds){CLIP=seconds; $('#clipHard').classList.toggle('selected',CLIP===1.5); $('#clipCasual').classList.toggle('selected',CLIP===7); try{localStorage.setItem('playhub:musicle:clip',String(CLIP))}catch(e){} renderHome();}
+  $('#clipHard').onclick=function(){setDifficulty(1.5)}; $('#clipCasual').onclick=function(){setDifficulty(7)};
 
 /* ---------- carregar músicas ---------- */
 $('#pickFolder').onclick=function(){$('#folderInput').click()};
@@ -493,8 +524,9 @@ function renderHome(){
         if(st&&st.p&&st.p.length>=nq(poolOf(g))){small='feito: '+st.s+'/'+nq(poolOf(g)); b.classList.add('done')}
         else small=n+' músicas';
       } else small=n+' músicas';
-      b.innerHTML='<span></span><small></small>';
-      b.firstChild.textContent=songs.length?gName(g):cap(g);
+      b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
+      b.querySelector('.tn').textContent=songs.length?gName(g):cap(g);
+      b.querySelector('.tacc').textContent=(songs.length&&n>=NOPT)?'precisão '+genreAcc(g):'';
       b.lastChild.textContent=small;
       b.disabled=!songs.length||n<NOPT;
       b.onclick=function(){openGame(daily,g)};
@@ -518,15 +550,15 @@ function buildQuestions(pool,rng,exclude){
 function openGame(daily,g){
   var pool=poolOf(g);
   $('#home').classList.add('hidden'); $('#play').classList.remove('hidden');
-  $('#playTitle').textContent='Musicle · '+gName(g)+' · '+CLIP+'s';
-  $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+CLIP+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
+  $('#playTitle').textContent='Musicle · '+gName(g)+' · '+modeName();
+  $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+fmtSec(CLIP)+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
   cur={pool:pool,genre:g,daily:daily,statsRecorded:false};
   newRound();
 }
 function newRound(){
   stop();
   var pool=cur.pool;
-  var rng=cur.daily?mulberry(hash(dayKey()+'|'+cur.genre+'|'+pool.length)):Math.random;
+  var rng=cur.daily?mulberry(hash(dayKey()+'|'+modeOf()+'|'+cur.genre+'|'+pool.length)):Math.random;
   cur.statsRecorded=false;
   cur.qs=buildQuestions(pool,rng,cur.daily?[]:readHistory());
   cur.picks=[]; cur.qi=0; cur.score=0;
@@ -545,7 +577,7 @@ $('#backBtn2').onclick=goHome;
 
 /* ---------- áudio ---------- */
 function stop(){
-  audio.pause(); clearTimeout(stopTimer); cancelAnimationFrame(raf);
+  audio.onplaying=null; audio.pause(); clearTimeout(stopTimer); cancelAnimationFrame(raf);
   $('#fill').style.transform='scaleX(0)';
   $('#playBtn').textContent='Tocar trecho';
 }
@@ -563,16 +595,20 @@ function setSong(song,frac){
 function playClip(){
   stop();
   audio.currentTime=startSec;
+  var started=false;
+  audio.onplaying=function(){
+    if(started)return; started=true;
+    var t0=performance.now();
+    stopTimer=setTimeout(stop,CLIP*1000);
+    (function tick(now){
+      var el=(now-t0)/1000;
+      $('#fill').style.transform='scaleX('+Math.min(1,el/CLIP)+')';
+      if(el<CLIP)raf=requestAnimationFrame(tick);
+    })(t0);
+  };
   var p=audio.play();
-  if(p&&p.catch)p.catch(function(){$('#qhint').textContent='Não consegui tocar este arquivo.'});
+  if(p&&p.catch)p.catch(function(){stop(); $('#qhint').textContent='Não consegui tocar este arquivo.'});
   $('#playBtn').textContent='Parar';
-  var t0=performance.now();
-  stopTimer=setTimeout(stop,CLIP*1000);
-  (function tick(now){
-    var el=(now-t0)/1000;
-    $('#fill').style.transform='scaleX('+Math.min(1,el/CLIP)+')';
-    if(el<CLIP)raf=requestAnimationFrame(tick);
-  })(t0);
 }
 $('#playBtn').onclick=function(){ $('#playBtn').textContent==='Parar'?stop():playClip() };
 
@@ -605,6 +641,7 @@ function showQuestion(){
 }
 function finishRound(){
   recordStats();
+  if(cur.daily)recordDailyStreak(CLIP===1.5?'musicle-hard':'musicle');
   if(!cur.daily){
     var labels=cur.qs.map(function(q){return norm(cur.pool[q.a].label)});
     saveHistory(readHistory().concat(labels));
@@ -651,13 +688,69 @@ function showResult(){
   $('#play').classList.add('is-result');
 }
 
+/* ---------- tela inicial: jogos e daystreak ---------- */
+var GAMES=[
+  {id:'musicle',name:'Musicle',ready:true,streaks:[{id:'musicle',label:'Casual'},{id:'musicle-hard',label:'Desafiador'}]},
+  {id:'termo',name:'Termo'},
+  {id:'loldle',name:'Loldle'}
+];
+function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function streakKey(id){return 'playhub:'+id+':streak:v1'}
+function readStreak(id){try{return JSON.parse(localStorage.getItem(streakKey(id)))||{}}catch(e){return {}}}
+function currentStreak(id){
+  var st=readStreak(id), y=new Date(); y.setDate(y.getDate()-1);
+  return (st.last===dayKey()||st.last===keyOf(y))?(st.count||0):0;
+}
+function recordDailyStreak(id){
+  var st=readStreak(id), today=dayKey(), y=new Date(); y.setDate(y.getDate()-1);
+  if(st.last===today)return;
+  st.count=(st.last===keyOf(y))?(st.count||0)+1:1;
+  st.last=today; st.best=Math.max(st.best||0,st.count);
+  try{localStorage.setItem(streakKey(id),JSON.stringify(st))}catch(e){}
+}
+function renderLanding(){
+  var grid=$('#landingGrid'); grid.innerHTML='';
+  var list=GAMES.slice(); while(list.length<9)list.push({empty:true});
+  list.forEach(function(g){
+    var el=document.createElement(g.ready?'button':'div');
+    el.className='gcard'+(g.ready?' on':' soon')+(g.empty?' empty':'');
+    if(g.ready)el.type='button';
+    var top=document.createElement('div'); top.className='gtop';
+    var nm=document.createElement('span'); nm.className='gname'; nm.textContent=g.empty?'Em breve':g.name;
+    top.appendChild(nm);
+    if(!g.ready&&!g.empty){var tag=document.createElement('span'); tag.className='gsoon'; tag.textContent='Em breve'; top.appendChild(tag)}
+    el.appendChild(top);
+    if(!g.empty){
+      var wrap=document.createElement('div'); wrap.className='gstreaks';
+      (g.streaks||[{id:g.id,label:''}]).forEach(function(x){
+        var n=currentStreak(x.id), st=document.createElement('div'); st.className='gstreak';
+        st.innerHTML='<strong></strong><small></small>';
+        st.firstChild.textContent=n; st.firstChild.id='streak-'+x.id;
+        st.lastChild.textContent=(n===1?'dia seguido':'dias seguidos')+(x.label?' · '+x.label:'');
+        wrap.appendChild(st);
+      });
+      el.appendChild(wrap);
+    }
+    if(g.ready)el.onclick=function(){openGameHub(g.id)};
+    grid.appendChild(el);
+  });
+}
+function openGameHub(id){
+  $('#landing').classList.add('hidden');
+  if(id==='musicle')$('#home').classList.remove('hidden');
+}
+$('#toLanding').onclick=function(){
+  $('#home').classList.add('hidden'); $('#landing').classList.remove('hidden'); renderLanding();
+};
+
 var DEFAULT_CFG='Jogos: Toby Fox, Nobuo Uematsu, Mick Gordon, Koji Kondo, Lena Raine\nmetal: Metallica, Iron Maiden, Slipknot, Nightwish, System of a Down, Sepultura\nTv: Hans Zimmer, Ramin Djawadi, John Williams, Bear McCreary, Michael Giacchino\nrap: Eminem, Kendrick Lamar, 50 Cent, Racionais MCs, Sabotage, Drake';
 var saved=null; try{saved=localStorage.getItem('musicle:cfg')}catch(e){}
 $('#cfg').value=saved||DEFAULT_CFG;
-try{var savedClip=parseInt(localStorage.getItem('playhub:musicle:clip'),10); if(savedClip===3||savedClip===7)CLIP=savedClip;}catch(e){}
+try{var savedClip=parseFloat(localStorage.getItem('playhub:musicle:clip')); if(savedClip===3)savedClip=1.5; if(savedClip===1.5||savedClip===7)CLIP=savedClip;}catch(e){}
 setDifficulty(CLIP);
 renderStats();
 renderHome();
+renderLanding();
 loadDeezer();
 })();
 </script>
