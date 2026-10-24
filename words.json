@@ -1,6 +1,7 @@
 {
   "pt": {
-    "validate": false,
+    "validate": true,
+    "extra": [],
     "words": [
       "sagaz", "âmago", "termo", "negro", "êxito", "mexer", "ética", "nobre", "senso", "afeto",
       "algoz", "fazer", "plena", "tênue", "assim", "sobre", "mútua", "aquém", "poder", "seção",
@@ -105,7 +106,8 @@
     ]
   },
   "en": {
-    "validate": false,
+    "validate": true,
+    "extra": [],
     "words": [
       "aback", "abaft", "abase", "abate", "abbey", "abbot", "abhor", "abide", "abler", "abode",
       "about", "above", "abuse", "abyss", "ached", "aches", "acids", "acorn", "acres", "acrid",

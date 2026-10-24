@@ -241,13 +241,14 @@ button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
 .w-gtop #wGameStats{justify-self:end}
 .w-msg{text-align:center;min-height:1.5em;margin:8px 0;font-weight:600}
 .w-boards{display:grid;gap:18px 14px;justify-content:center;margin:6px auto}
-.w-boards[data-n="1"]{grid-template-columns:minmax(0,320px)}
-.w-boards[data-n="2"]{grid-template-columns:repeat(2,minmax(0,270px))}
-.w-boards[data-n="4"]{grid-template-columns:repeat(4,minmax(0,190px))}
-@media(max-width:700px){.w-boards[data-n="2"],.w-boards[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}.w-boards[data-n="1"]{grid-template-columns:minmax(0,280px)}}
+.w-boards[data-n="1"]{grid-template-columns:minmax(0,400px)}
+.w-boards[data-n="2"]{grid-template-columns:repeat(2,minmax(0,360px))}
+.w-boards[data-n="4"]{grid-template-columns:repeat(4,minmax(0,290px))}
+@media(max-width:1000px){.w-boards[data-n="4"]{grid-template-columns:repeat(2,minmax(0,340px))}}
+@media(max-width:700px){.w-boards[data-n="2"],.w-boards[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 8px;margin-left:-6px;margin-right:-6px}.w-boards[data-n="1"]{grid-template-columns:minmax(0,340px)}.w-board,.w-row{gap:3px}}
 .w-board{display:grid;gap:5px;container-type:inline-size}
 .w-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.w-tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:6px;background:var(--card);font:800 9cqw/1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif;text-transform:uppercase;color:var(--fg)}
+.w-tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:6px;background:var(--card);font:800 10.5cqw/1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif;text-transform:uppercase;color:var(--fg)}
 .w-tile.f{border-color:var(--muted)}
 .w-tile.c{--tc:var(--ok)}
 .w-tile.p{--tc:var(--warn)}
@@ -259,12 +260,15 @@ button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
 @keyframes wshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .w-result{max-width:520px;margin:14px auto 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);text-align:center}
 .w-result h3{font-size:1.3rem}
-.w-kb{display:grid;gap:6px;max-width:560px;margin:16px auto 0}
+.w-kb{display:grid;gap:6px;max-width:620px;margin:16px auto 0}
+.w-kbnote{text-align:center;font-size:.8rem;color:var(--muted);margin:8px 0 0}
 .w-krow{display:flex;gap:5px;justify-content:center}
 .w-krow.indent{padding:0 5%}
-.w-key{flex:1 1 0;min-width:0;height:50px;padding:0;font-size:1rem;font-weight:700;text-transform:uppercase;border-radius:8px;cursor:pointer}
+.w-key{flex:1 1 0;min-width:0;height:54px;padding:0;font-size:1.05rem;font-weight:700;text-transform:uppercase;border-radius:8px;cursor:pointer}
 .w-key.wide{flex:1.6 1 0;font-size:.85rem}
 .w-key.ks{color:#fff;border-color:transparent}
+.w-key.used{background:var(--ok);color:#fff;border-color:var(--ok)}
+.w-key.free{background:var(--card);color:var(--fg);border:2px solid var(--muted)}
 dialog#wStats{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:16px;padding:18px;width:calc(100% - 32px);max-width:520px;max-height:85vh;overflow:auto}
 dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
 .w-dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -447,6 +451,7 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
     </div>
   </div>
   <div class="w-kb" id="wKb"></div>
+  <p class="w-kbnote hidden" id="wKbNote">Verde: letra já usada · Branco: ainda não usada</p>
 </section>
 
 <dialog id="wStats">
@@ -458,7 +463,8 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
 <script type="application/json" id="wordsData">
 {
   "pt": {
-    "validate": false,
+    "validate": true,
+    "extra": [],
     "words": [
       "sagaz", "âmago", "termo", "negro", "êxito", "mexer", "ética", "nobre", "senso", "afeto",
       "algoz", "fazer", "plena", "tênue", "assim", "sobre", "mútua", "aquém", "poder", "seção",
@@ -563,7 +569,8 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
     ]
   },
   "en": {
-    "validate": false,
+    "validate": true,
+    "extra": [],
     "words": [
       "aback", "abaft", "abase", "abate", "abbey", "abbot", "abhor", "abide", "abler", "abode",
       "about", "above", "abuse", "abyss", "ached", "aches", "acids", "acorn", "acres", "acrid",
@@ -1304,6 +1311,8 @@ function wPrepare(d){
       if(!/^[a-z]{5}$/.test(k)||seen[k])return;
       seen[k]=1; words.push(dsp); ns.push(k);
     });
+    var extra=(!Array.isArray(src)&&Array.isArray(src.extra))?src.extra:[];
+    extra.forEach(function(x){if(typeof x!=='string')return; var k=norm(x.trim().toLowerCase()); if(/^[a-z]{5}$/.test(k))seen[k]=1});
     if(words.length>=10){out[l]={words:words,n:ns,set:seen,validate:!Array.isArray(src)&&src.validate===true}; any=true}
   });
   return any?out:null;
@@ -1492,14 +1501,21 @@ function renderWord(){
     boards.appendChild(bd);
   });
   var col={c:'var(--ok)',p:'var(--warn)',a:'var(--abs)'};
+  var usedL={}; w.guesses.forEach(function(g){g.split('').forEach(function(c){usedL[c]=1})});
+  $('#wKbNote').classList.toggle('hidden',w.M.n===1);
   document.querySelectorAll('.w-key').forEach(function(btn){
-    var arr=ks[btn.dataset.k]; btn.style.background=''; btn.classList.remove('ks');
+    var arr=ks[btn.dataset.k]; btn.style.background=''; btn.classList.remove('ks','used','free');
+    if(w.M.n>1){
+      btn.classList.add(usedL[btn.dataset.k]?'used':'free');
+      return;
+    }
     if(!arr)return;
     var n=w.M.n, parts=[];
     for(var b=0;b<n;b++)parts.push((arr[b]?col[arr[b]]:'var(--card)')+' '+(b*100/n)+'% '+((b+1)*100/n)+'%');
     btn.style.background='linear-gradient(90deg,'+parts.join(',')+')'; btn.classList.add('ks');
   });
   $('#wKb').classList.toggle('hidden',w.done);
+  if(w.done)$('#wKbNote').classList.add('hidden');
   var res=$('#wResult');
   res.classList.toggle('hidden',!w.done);
   $('#wAgain').classList.toggle('hidden',w.daily);
