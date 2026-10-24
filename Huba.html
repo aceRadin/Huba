@@ -415,9 +415,9 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
   </div>
   <p class="w-meta">
     <span id="wSrc"></span>
-    <button type="button" id="wLoadJson">Carregar words.json…</button>
-    <button type="button" id="wResetJson" class="hidden">Esquecer lista salva</button>
-    <input type="file" id="wJsonInput" accept=".json,application/json" hidden>
+    <button type="button" id="wLoadJson">Selecionar arquivos…</button>
+    <button type="button" id="wResetJson" class="hidden">Esquecer arquivos salvos</button>
+    <input type="file" id="wJsonInput" accept=".json,application/json" multiple hidden>
   </p>
   <div class="hub-grid">
     <div class="games-grid">
@@ -871,13 +871,16 @@ $('#toLanding').onclick=function(){
 };
 
 /* ---------- Word (Termo) ---------- */
-var WCFG={}, WLANG='pt', WSRC='nenhuma', WJSON_KEY='playhub:word:words:v1';
+var WCFG={}, WFROM={}, WLANG='pt', WLOADING=true, WALLFETCHED=false, WNOTE='';
+var WFILES=['words.json','palavra.json'], WSAVE_KEY='playhub:word:files:v2';
 try{var wl=localStorage.getItem('playhub:word:lang'); if(wl==='pt'||wl==='en')WLANG=wl}catch(e){}
-function wPrepare(d){
-  var out={}, any=false;
+function wLangOfFile(name){return /palavra|(^|[^a-z])pt([^a-z]|$)|port/i.test(name)?'pt':'en'}
+function wPrepare(d,defLang){
+  var out={}, any=false, root=d;
+  if(Array.isArray(d)){root={}; root[defLang]=d}
   ['pt','en'].forEach(function(l){
-    var src=d&&d[l]; if(!src)return;
-    var arr=Array.isArray(src)?src:src.words; if(!Array.isArray(arr))return;
+    var s0=root&&root[l]; if(!s0)return;
+    var isArr=Array.isArray(s0), arr=isArr?s0:s0.words; if(!Array.isArray(arr))return;
     var seen={}, words=[], ns=[];
     arr.forEach(function(x){
       if(typeof x!=='string')return;
@@ -885,25 +888,33 @@ function wPrepare(d){
       if(!/^[a-z]{5}$/.test(k)||seen[k])return;
       seen[k]=1; words.push(dsp); ns.push(k);
     });
-    var extra=(!Array.isArray(src)&&Array.isArray(src.extra))?src.extra:[];
+    var extra=(!isArr&&Array.isArray(s0.extra))?s0.extra:[];
     extra.forEach(function(x){if(typeof x!=='string')return; var k=norm(x.trim().toLowerCase()); if(/^[a-z]{5}$/.test(k))seen[k]=1});
-    if(words.length>=10){out[l]={words:words,n:ns,set:seen,validate:!Array.isArray(src)&&src.validate===true}; any=true}
+    if(words.length>=10){out[l]={words:words,n:ns,set:seen,validate:isArr||s0.validate!==false}; any=true}
   });
   return any?out:null;
 }
+function wParse(name,text){try{return wPrepare(JSON.parse(text),wLangOfFile(name))}catch(e){return null}}
 function wPickLang(){if(!WCFG[WLANG])WLANG=WCFG.pt?'pt':(WCFG.en?'en':WLANG)}
-function wUseText(txt,src){
-  var cfg=null; try{cfg=wPrepare(JSON.parse(txt))}catch(e){}
-  if(!cfg)return false;
-  WCFG=cfg; WSRC=src; wPickLang(); return true;
-}
+function wSaved(){try{return JSON.parse(localStorage.getItem(WSAVE_KEY))||{}}catch(e){return {}}}
 function wInitWords(){
-  fetch('words.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0; return r.text()}).then(function(t){
-    if(!wUseText(t,'arquivo'))throw 0;
-  }).catch(function(){
-    var saved=null; try{saved=localStorage.getItem(WJSON_KEY)}catch(e){}
-    if(!(saved&&wUseText(saved,'salva'))){WCFG={}; WSRC='nenhuma'}
-  }).then(renderWordHub);
+  var saved=wSaved(), names=WFILES.slice();
+  Object.keys(saved).forEach(function(k){if(names.indexOf(k)<0)names.push(k)});
+  WLOADING=true;
+  Promise.all(names.map(function(name){
+    return fetch(name,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0; return r.text()}).then(function(t){
+      if(!wParse(name,t))throw 0;
+      return {name:name,text:t,src:'arquivo'};
+    }).catch(function(){return saved[name]?{name:name,text:saved[name],src:'salva'}:null});
+  })).then(function(res){
+    var cfg={}, from={};
+    res.forEach(function(r){
+      if(!r)return; var c=wParse(r.name,r.text); if(!c)return;
+      Object.keys(c).forEach(function(l){cfg[l]=c[l]; from[l]={file:r.name,src:r.src}});
+    });
+    WALLFETCHED=WFILES.every(function(name){return res.some(function(r){return r&&r.name===name&&r.src==='arquivo'})});
+    WCFG=cfg; WFROM=from; WLOADING=false; wPickLang(); renderWordHub();
+  });
 }
 function wSetLang(l){
   if(!WCFG[l])return; WLANG=l;
@@ -914,29 +925,38 @@ function wRenderLang(){
   document.querySelectorAll('#wLang button').forEach(function(b){
     var l=b.dataset.lang; b.classList.toggle('on',l===WLANG); b.classList.toggle('hidden',!WCFG[l]);
   });
-  var c=WCFG[WLANG], btn=$('#wLoadJson');
-  $('#wSrc').textContent=c
-    ?(c.words.length.toLocaleString('pt-BR')+' palavras · '+(c.validate?'palpites validados':'palpites livres')+' · '+(WSRC==='arquivo'?'lidas do words.json':'words.json salvo neste navegador'))
-    :'Nenhuma lista carregada. Ao abrir o Huba direto do computador, o navegador não deixa ler o words.json sozinho: selecione o arquivo uma vez e ele fica salvo neste navegador.';
-  btn.textContent=c?'Atualizar words.json…':'Selecionar words.json…';
-  btn.classList.toggle('primary',!c);
-  btn.classList.toggle('hidden',WSRC==='arquivo');
-  $('#wResetJson').classList.toggle('hidden',WSRC!=='salva');
+  var c=WCFG[WLANG], fr=WFROM[WLANG], btn=$('#wLoadJson'), txt;
+  if(WLOADING)txt='Carregando as listas de palavras…';
+  else if(c)txt=c.words.length.toLocaleString('pt-BR')+' palavras ('+(WLANG==='pt'?'português':'inglês')+') · '+(c.validate?'palpites validados':'palpites livres')+' · '+(fr.src==='arquivo'?'lidas de '+fr.file:fr.file+' salvo neste navegador');
+  else txt='Nenhuma lista carregada. Coloque words.json (inglês) e palavra.json (português) na pasta do Huba e abra por um servidor local, ou selecione os arquivos aqui: eles ficam salvos neste navegador.';
+  if(WNOTE)txt+=' · '+WNOTE;
+  $('#wSrc').textContent=txt;
+  btn.textContent=Object.keys(WCFG).length?'Atualizar arquivos…':'Selecionar arquivos…';
+  btn.classList.toggle('primary',!Object.keys(WCFG).length);
+  btn.classList.toggle('hidden',WLOADING||WALLFETCHED);
+  $('#wResetJson').classList.toggle('hidden',!Object.keys(WFROM).some(function(l){return WFROM[l].src==='salva'}));
 }
 document.querySelectorAll('#wLang button').forEach(function(b){b.onclick=function(){wSetLang(b.dataset.lang)}});
 $('#wLoadJson').onclick=function(){$('#wJsonInput').click()};
 $('#wJsonInput').onchange=function(){
-  var f=this.files&&this.files[0]; if(!f)return;
-  var rd=new FileReader();
-  rd.onload=function(){
-    var txt=String(rd.result||'');
-    if(!wUseText(txt,'salva')){$('#wSrc').textContent='Arquivo inválido. Use {"pt":{"words":[...]},"en":{"words":[...]}}.'; return}
-    try{localStorage.setItem(WJSON_KEY,txt)}catch(e){}
-    renderWordHub();
-  };
-  rd.readAsText(f); this.value='';
+  var files=Array.prototype.slice.call(this.files||[]); this.value='';
+  if(!files.length)return;
+  var saved=wSaved(), bad=[], pend=files.length; WNOTE='';
+  files.forEach(function(f){
+    var rd=new FileReader();
+    rd.onload=function(){
+      var txt=String(rd.result||'');
+      if(wParse(f.name,txt))saved[f.name]=txt; else bad.push(f.name);
+      if(--pend===0){
+        try{localStorage.setItem(WSAVE_KEY,JSON.stringify(saved))}catch(e){}
+        if(bad.length)WNOTE='arquivo inválido: '+bad.join(', ');
+        wInitWords();
+      }
+    };
+    rd.readAsText(f);
+  });
 };
-$('#wResetJson').onclick=function(){try{localStorage.removeItem(WJSON_KEY)}catch(e){} WCFG={}; WSRC='nenhuma'; wInitWords()};
+$('#wResetJson').onclick=function(){try{localStorage.removeItem(WSAVE_KEY)}catch(e){} WNOTE=''; WCFG={}; WFROM={}; wInitWords()};
 
 var WMODES={
   termo:{name:'Termo',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
@@ -976,7 +996,7 @@ function renderWordHub(){
   [['Daily',true],['Random',false]].forEach(function(x){
     var box=$('#wTiles'+x[0]); box.innerHTML='';
     Object.keys(WMODES).forEach(function(k){
-      var M=WMODES[k], b=document.createElement('button'), st=x[1]?wStatus(k):null, txt=WCFG[WLANG]?'jogar':'sem lista';
+      var M=WMODES[k], b=document.createElement('button'), st=x[1]?wStatus(k):null, txt=WCFG[WLANG]?'jogar':(WLOADING?'carregando':'sem lista');
       b.className='tile'; b.disabled=!WCFG[WLANG];
       if(st==='win'){txt='venceu ✓'; b.classList.add('done')}
       else if(st==='lose')txt='não foi dessa vez';
