@@ -266,9 +266,10 @@ button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
 .w-krow.indent{padding:0 5%}
 .w-key{flex:1 1 0;min-width:0;height:54px;padding:0;font-size:1.05rem;font-weight:700;text-transform:uppercase;border-radius:8px;cursor:pointer}
 .w-key.wide{flex:1.6 1 0;font-size:.85rem}
-.w-key.ks{color:#fff;border-color:transparent}
-.w-key.used{background:var(--ok);color:#fff;border-color:var(--ok)}
-.w-key.free{background:var(--card);color:var(--fg);border:2px solid var(--muted)}
+.w-key.kc{background:var(--ok);color:#fff;border:2px solid var(--ok)}
+.w-key.kp{background:var(--warn);color:#fff;border:2px solid var(--warn)}
+.w-key.kd{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500;opacity:.38}
+.w-key.free{background:var(--card);color:var(--fg);border:2px solid var(--muted);font-weight:800;box-shadow:0 2px 0 var(--muted)}
 dialog#wStats{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:16px;padding:18px;width:calc(100% - 32px);max-width:520px;max-height:85vh;overflow:auto}
 dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
 .w-dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -451,7 +452,7 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
     </div>
   </div>
   <div class="w-kb" id="wKb"></div>
-  <p class="w-kbnote hidden" id="wKbNote">Verde: letra já usada · Branco: ainda não usada</p>
+  <p class="w-kbnote hidden" id="wKbNote">Verde: posição certa · Amarelo: letra em outro lugar · Apagada: não está em nenhuma palavra</p>
 </section>
 
 <dialog id="wStats">
@@ -1059,7 +1060,7 @@ function wFinish(){
 }
 function renderWord(){
   var boards=$('#wBoards'); boards.dataset.n=w.M.n; boards.innerHTML='';
-  var ks={}, rank={a:1,p:2,c:3};
+  var rank={a:1,p:2,c:3};
   w.targets.forEach(function(t,b){
     var solvedAt=w.guesses.indexOf(t.n), shown=solvedAt>=0?solvedAt+1:w.guesses.length;
     var bd=document.createElement('div'); bd.className='w-board'+(solvedAt>=0?' solved':'');
@@ -1068,7 +1069,6 @@ function renderWord(){
       var g=null, sc=null, disp=null;
       if(r<shown){
         g=w.guesses[r]; sc=wScore(g,t.n); if(r===solvedAt)disp=t.d;
-        for(var q=0;q<5;q++){ks[g[q]]=ks[g[q]]||[]; var c0=ks[g[q]][b]; if(!c0||rank[sc[q]]>rank[c0])ks[g[q]][b]=sc[q]}
       } else if(r===w.guesses.length&&!w.done&&solvedAt<0)g=w.cur;
       for(var i=0;i<5;i++){
         var tile=document.createElement('div'), ch=(g&&g[i])?(disp?disp[i]:g[i]):'';
@@ -1081,19 +1081,19 @@ function renderWord(){
     }
     boards.appendChild(bd);
   });
-  var col={c:'var(--ok)',p:'var(--warn)',a:'var(--abs)'};
-  var usedL={}; w.guesses.forEach(function(g){g.split('').forEach(function(c){usedL[c]=1})});
-  $('#wKbNote').classList.toggle('hidden',w.M.n===1);
+  // teclado: uma cor por letra, mesma regra do Termo valendo para todas as palavras do jogo
+  var kst={};
+  w.guesses.forEach(function(g){
+    w.targets.forEach(function(t){
+      var sc=wScore(g,t.n);
+      for(var q=0;q<5;q++){var L=g[q]; if(!kst[L]||rank[sc[q]]>rank[kst[L]])kst[L]=sc[q]}
+    });
+  });
+  $('#wKbNote').classList.toggle('hidden',w.done);
   document.querySelectorAll('.w-key').forEach(function(btn){
-    var arr=ks[btn.dataset.k]; btn.style.background=''; btn.classList.remove('ks','used','free');
-    if(w.M.n>1){
-      btn.classList.add(usedL[btn.dataset.k]?'used':'free');
-      return;
-    }
-    if(!arr)return;
-    var n=w.M.n, parts=[];
-    for(var b=0;b<n;b++)parts.push((arr[b]?col[arr[b]]:'var(--card)')+' '+(b*100/n)+'% '+((b+1)*100/n)+'%');
-    btn.style.background='linear-gradient(90deg,'+parts.join(',')+')'; btn.classList.add('ks');
+    btn.style.background=''; btn.classList.remove('ks','used','free','kc','kp','kd');
+    var st=kst[btn.dataset.k];
+    btn.classList.add(st==='c'?'kc':st==='p'?'kp':st==='a'?'kd':'free');
   });
   $('#wKb').classList.toggle('hidden',w.done);
   if(w.done)$('#wKbNote').classList.add('hidden');
