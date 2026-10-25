@@ -69,3 +69,5 @@ O uso do Deezer e a licença dos dicionários de terceiros devem ser revisados a
 ### Bits — melhorias do player
 
 O Bits possui volume/mudo próprio (salvo no navegador), linha do tempo dividida em seis segmentos proporcionais aos trechos de 1, 2, 4, 7, 11 e 16 segundos, pulo que não interrompe áudio em reprodução e indicação amarela de palpites com artista correto e música incorreta. Todas essas mudanças ficam apenas em `jogos/bits/`.
+
+- **Bits:** músicas já usadas como palpite deixam de aparecer nas sugestões da rodada e não podem consumir outra tentativa, inclusive após retomar o desafio diário.

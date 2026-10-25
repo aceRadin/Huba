@@ -195,7 +195,9 @@ function showSuggestions(){
  var list=$('suggestions');list.replaceChildren();if(!active||active.finished)return;
  var value=norm($('guessInput').value);$('guessInput').setAttribute('aria-expanded','false');
  if(!value){list.classList.remove('open');return}
- var options=guessOptions().filter(function(s){return norm(s.label).includes(value)}).slice(0,12);
+ // Não sugere músicas já escolhidas nesta rodada, inclusive em partidas diárias retomadas.
+ var tried=new Set(active.guesses.filter(function(id){return id!=='__skip__'}));
+ var options=guessOptions().filter(function(s){return !tried.has(s.id)&&norm(s.label).includes(value)}).slice(0,12);
  if(!options.length){list.classList.remove('open');return}
  options.forEach(function(song){var b=document.createElement('button');b.type='button';b.className='bits-choice';b.setAttribute('role','option');b.textContent=song.label;b.onclick=function(){selected=song;$('guessInput').value=song.label;$('selectedText').textContent='Selecionada: '+song.label;$('submitGuess').disabled=false;list.classList.remove('open');$('guessInput').setAttribute('aria-expanded','false')};list.appendChild(b)});
  list.classList.add('open');$('guessInput').setAttribute('aria-expanded','true');
@@ -220,6 +222,13 @@ function renderRound(){
 function submit(skip){
  if(!active||active.finished||(!skip&&!selected))return;
  var id=skip?'__skip__':selected.id;
+ // Proteção extra: um palpite já enviado não pode consumir outra tentativa.
+ if(!skip&&active.guesses.indexOf(id)!==-1){
+   selected=null;$('submitGuess').disabled=true;$('guessInput').value='';
+   $('selectedText').textContent='Selecione uma música da lista.';
+   $('suggestions').classList.remove('open');
+   message('Você já tentou essa música. Escolha outra.');return;
+ }
  active.guesses.push(id);
  // Um pulo ou palpite incorreto amplia o trecho sem reiniciar o áudio.
  // Se o trecho anterior já terminou, a próxima reprodução começa do início.
