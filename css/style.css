@@ -1,0 +1,217 @@
+:root{--bg:#ecebf5;--card:#fff;--fg:#1b1740;--muted:#6a6788;--accent:#5b3df5;--accent-fg:#fff;--ok:#1f9d6b;--bad:#d6455d;--line:#d7d4e8;--seg:#cfcbe8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14122b;--card:#1e1b3d;--fg:#edebfa;--muted:#a09dc4;--accent:#8b75ff;--accent-fg:#14122b;--ok:#3ccf92;--bad:#ff6b82;--line:#363262;--seg:#3a3670}}
+:root[data-theme="dark"]{--bg:#14122b;--card:#1e1b3d;--fg:#edebfa;--muted:#a09dc4;--accent:#8b75ff;--accent-fg:#14122b;--ok:#3ccf92;--bad:#ff6b82;--line:#363262;--seg:#3a3670}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
+h1,h2,h3{font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+main{max-width:1440px;margin:0 auto;padding:22px 18px 60px}
+h1{font-size:clamp(2rem,7vw,2.8rem);font-weight:800;line-height:1.05}
+.sub{color:var(--muted);margin:8px 0 22px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 16px;border-radius:10px;font-weight:600}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.note{color:var(--muted);font-size:.92rem;margin:8px 0 0}
+.err{color:var(--bad);margin:8px 0 0;min-height:1.4em;font-size:.93rem}
+.hidden{display:none!important}
+textarea{width:100%;font:.9rem/1.5 ui-monospace,Consolas,monospace;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:vertical}
+.grow{flex:1 1 auto}
+code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.88em}
+
+/* grid dividido */
+.split{display:grid;grid-template-columns:1fr 1fr;margin-top:20px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.col{padding:18px}
+.col + .col{border-left:1px solid var(--line)}
+.col h2{font-size:1.4rem;font-weight:700}
+.col .note{margin:2px 0 14px}
+.tiles{display:grid;gap:8px}
+.tile{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%;padding:12px 14px;background:var(--bg);border-radius:10px}
+.tile small{color:var(--muted);font-weight:400}
+.tile.done{border-color:var(--ok)}
+.tile.done small{color:var(--ok)}
+@media (max-width:640px){.split{grid-template-columns:1fr}.col + .col{border-left:0;border-top:1px solid var(--line)}}
+
+/* jogo */
+.back{margin-bottom:14px}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:.93rem}
+.dots{display:flex;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--seg)}
+.dot.now{background:var(--accent)}
+.dot.ok{background:var(--ok)}
+.dot.no{background:var(--bad)}
+.clip{display:flex;align-items:center;gap:14px;margin:18px 0}
+.bar{flex:1;height:14px;border-radius:7px;background:var(--seg);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(0)}
+.vol{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.vol button{padding:6px 10px;min-width:44px}
+.vol input[type=range]{flex:1;max-width:220px;accent-color:var(--accent)}
+.vol span{color:var(--muted);font-size:.9rem;min-width:3.2em}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;width:100%;padding:13px 14px;background:var(--bg)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.result{margin-top:6px}
+.result h3{font-size:1.5rem}
+.recap{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px}
+.recap li{border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.recap li.ok{border-color:var(--ok)}
+.recap li.no{border-color:var(--bad)}
+.recap small{display:block;color:var(--muted)}
+.difficulty{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.difficulty button.selected{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.statsgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--bg);border-radius:10px;padding:12px;min-width:0}
+.stat strong{display:block;font-size:1.35rem;line-height:1.2}
+.stat span{display:block;color:var(--muted);font-size:.82rem;margin-top:4px}
+@media(max-width:540px){.statsgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Layout PlayHub: estatísticas no topo, dificuldade à direita e configurações no canto inferior esquerdo */
+#home{min-height:calc(100vh - 82px);position:relative;padding-top:0;padding-bottom:82px}
+.hub-top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:20px;min-height:120px;padding:12px 0}
+.hub-top h1{font-size:clamp(1.8rem,4vw,2.4rem);align-self:center;justify-self:start}
+.top-tools{grid-column:3;grid-row:1;display:flex;justify-content:flex-end}
+.mini-tool{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px;display:flex;align-items:center;gap:7px;box-shadow:0 2px 8px #00000008}
+.tool-label{font-weight:700;font-size:.82rem;white-space:nowrap}
+.mini-tool .difficulty{display:flex;gap:5px;margin:0}
+.difficulty button{padding:5px 8px;font-size:.8rem;border-radius:7px;white-space:nowrap}
+.difficulty button.selected{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.hub-grid{display:block;max-width:920px;margin:0 auto}
+.hub-side{position:fixed;z-index:20;left:18px;bottom:16px;display:flex;gap:7px;align-items:flex-end}
+.dropdown-tool{width:44px;border:1px solid var(--line);border-radius:9px;background:var(--card);box-shadow:0 3px 12px #00000014;overflow:visible}
+.dropdown-tool summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.dropdown-tool summary::-webkit-details-marker{display:none}
+.dropdown-tool summary .chevron{margin:0;font-size:.8rem}
+.dropdown-tool[open]{width:min(340px,calc(100vw - 32px));border-radius:12px;overflow:auto}
+.dropdown-tool[open] summary{justify-content:flex-start;border-bottom:1px solid var(--line);padding:10px 12px}
+.dropdown-tool[open] .dropdown-content{display:block}
+.dropdown-content{display:none;padding:12px;max-height:min(60vh,480px);overflow:auto}
+/* O painel do Deezer pode ser redimensionado arrastando o canto inferior direito. */
+.hub-side details.dropdown-tool.deezer-tool[open]{resize:both;width:min(420px,calc(100vw - 32px));height:auto;min-width:280px;min-height:250px;max-width:calc(100vw - 24px);max-height:calc(100vh - 32px);overflow:auto}
+.hub-side details.dropdown-tool.deezer-tool[open] .dropdown-content{max-height:none;overflow:visible}
+.hub-side details.dropdown-tool.deezer-tool[open] textarea{min-height:100px;resize:vertical}
+.dropdown-content textarea{margin-top:10px}
+.dropdown-content .row{gap:7px}
+.dropdown-content button{font-size:.88rem;padding:8px 10px}
+.hub-center{min-width:0;display:block}
+.hub-stats{position:relative;width:min(460px,100%);margin:0 auto;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:6px 10px;text-align:center}
+.stats-heading{display:flex;align-items:center;justify-content:center;gap:6px}
+.stats-heading h2{font-size:.95rem}
+.stats-heading .note{display:none}
+.stats-heading h2{font-size:.88rem}
+.statsgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:6px}
+.stat{background:var(--bg);border-radius:7px;padding:5px 4px;min-width:0}
+.stat strong{display:block;font-size:1rem;line-height:1.15}
+.stat span{display:block;color:var(--muted);font-size:.68rem;margin-top:2px}
+#statDetail{font-size:.7rem;margin-top:4px}
+.reset-button{padding:3px 7px;font-size:.7rem;margin-top:3px}
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.game-column{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--card);min-width:0}
+.game-column h2{font-size:1.3rem}
+.game-column>.note{margin:2px 0 14px}
+.game-column .tile{min-height:62px}
+@media(max-width:760px){
+ main{padding:14px 12px 100px}
+ #home{padding-bottom:76px}
+ .hub-top{grid-template-columns:minmax(0,1fr) auto;gap:8px;min-height:120px;padding:10px 0}
+ .hub-top h1{font-size:1.8rem}
+ .top-tools{grid-column:2;grid-row:1}
+ .hub-stats{grid-column:1 / -1;grid-row:2;justify-self:center;width:min(390px,100%)}
+ .mini-tool{display:grid;gap:4px;padding:6px}
+ .tool-label{font-size:.72rem;text-align:center}
+ .mini-tool .difficulty{gap:4px}
+ .difficulty button{padding:5px 6px;font-size:.72rem}
+ .hub-stats{max-width:390px;padding:5px 6px}
+ .hub-stats .statsgrid{gap:3px}
+ .hub-stats .stat{padding:4px 2px}
+ .games-grid{gap:10px}
+ .game-column{padding:12px}
+ .hub-side{left:10px;bottom:10px}
+}
+@media(max-width:520px){
+ .games-grid{grid-template-columns:1fr}
+ .hub-top h1{font-size:1.55rem}
+ .statsgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .stat strong{font-size:.9rem}
+ .stat span{font-size:.62rem}
+ .dropdown-tool[open]{width:min(320px,calc(100vw - 20px))}
+}
+
+
+
+/* Cabeçalho compacto: nome, estatísticas e dificuldade numa linha só */
+#home .hub-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;min-height:0;margin:0 0 16px;padding:8px 0;border-bottom:1px solid var(--line)}
+#home .hub-top h1{font-size:1.3rem;line-height:1;margin:0;justify-self:start;align-self:center}
+#home .hub-stats{grid-column:auto;grid-row:auto;justify-self:center;width:auto;max-width:100%;margin:0;padding:0 12px;height:44px;display:flex;align-items:center;gap:14px;text-align:left}
+#home .top-tools{grid-column:auto;grid-row:auto;display:flex;justify-content:flex-end}
+#home .mini-tool{display:flex;align-items:center;gap:10px;height:44px;padding:0 10px;box-shadow:none}
+#home .stats-heading{display:block}
+#home .stats-heading h2,#home .tool-label{font:700 .68rem/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;text-align:left;white-space:nowrap}
+#home .hub-stats .statsgrid{display:flex;gap:14px;margin:0}
+#home .hub-stats .stat{background:none;padding:0;text-align:center}
+#home .hub-stats .stat strong{font-size:.95rem;line-height:1.1}
+#home .hub-stats .stat span{font-size:.62rem;margin-top:1px;white-space:nowrap}
+#home #statDetail{display:none}
+#home .hub-stats .reset-button{margin:0;padding:3px 7px;font-size:.66rem;border-radius:6px;white-space:nowrap}
+#home .mini-tool .difficulty{display:flex;gap:5px;margin:0}
+#home .difficulty button{padding:5px 9px;font-size:.74rem;border-radius:7px;white-space:nowrap}
+@media(max-width:760px){
+  #home .hub-top{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px}
+  #home .hub-stats{grid-column:1/-1;grid-row:2;justify-self:stretch;justify-content:space-between;height:auto;padding:6px 10px;gap:8px}
+  #home .top-tools{grid-column:2;grid-row:1}
+  #home .mini-tool{height:auto;padding:5px 8px;flex-wrap:wrap;justify-content:center;gap:4px 8px}
+}
+@media(max-width:520px){
+  #home .stats-heading,#home .tool-label{display:none}
+  #home .hub-top h1{font-size:1.2rem}
+  #home .mini-tool{padding:4px 6px}
+  #home .difficulty button{padding:5px 7px;font-size:.7rem}
+  #home .hub-stats{padding:6px 8px;gap:6px}
+  #home .hub-stats .statsgrid{gap:8px;flex:1;justify-content:space-between}
+}
+
+/* Tela de resultado: texto superior centralizado; o Voltar fica no lugar do antigo Copiar */
+#play.is-result #playTitle,#play.is-result #playSub{text-align:center}
+#play.is-result #backBtn{display:none}
+/* Cabeçalho com a mesma largura e alinhamento do bloco Diário/Aleatório */
+#home .hub-top{max-width:920px;margin-left:auto;margin-right:auto}
+/* Painel do Deezer: fechado sempre volta ao tamanho normal, mesmo depois de redimensionar */
+.hub-side details.dropdown-tool.deezer-tool:not([open]){width:44px!important;height:auto!important}
+.hub-side details.dropdown-tool.deezer-tool[open]{min-width:240px;min-height:120px}
+
+/* Tela inicial HUBA */
+.landing-top{max-width:920px;margin:0 auto 22px;padding:8px 0 12px;border-bottom:1px solid var(--line);text-align:center}
+.landing-top h1{font-size:1.6rem;line-height:1;letter-spacing:.14em;margin:0}
+.landing-grid{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.gcard{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:132px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--fg);text-align:left;font:inherit;font-weight:400}
+button.gcard{cursor:pointer}
+button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.gcard .gtop{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:6px 8px;min-width:0}
+.gcard .gname{font:800 1.35rem/1.1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif;letter-spacing:-.01em}
+.gcard .gsoon{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.gcard .gstreak{display:flex;align-items:baseline;gap:7px}
+.gcard .gstreak strong{font:800 2rem/1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif}
+.gcard .gstreak small{color:var(--muted);font-size:.8rem}
+.gcard.on .gstreak strong{color:var(--accent)}
+.gcard.soon{border-style:dashed;background:transparent}
+.gcard.soon .gname,.gcard.soon .gstreak{opacity:.6}
+.gcard.empty .gname{color:var(--muted);font-weight:700;font-size:1.05rem}
+@media(max-width:640px){.landing-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gcard{min-height:112px;padding:13px 14px}}
+@media(max-width:360px){.landing-grid{grid-template-columns:1fr}}
+/* Nome do site no cabeçalho do hub vira botão de voltar */
+#home .hub-top h1 .brand-back{font:inherit;letter-spacing:.06em;color:inherit;background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
+#home .hub-top h1 .brand-back:hover{color:var(--accent)}
+/* Precisão por gênero dentro de cada cartão */
+.tile .tname{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left}
+.tile .tacc{font-style:normal;font-size:.72rem;font-weight:400;color:var(--muted)}
+.tile .tacc:empty{display:none}
+.gcard .gstreaks{display:grid;gap:6px}
+.gcard .gstreaks .gstreak strong{font-size:1.6rem}
+
+
+
+a.gcard{text-decoration:none}a.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
