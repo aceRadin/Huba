@@ -1,8 +1,8 @@
 (function(){
  var games=[
-  {name:'Musicle',path:'jogos/musicle/',streaks:[{id:'musicle',label:'Casual'},{id:'musicle-hard',label:'Desafiador'}]},
-  {name:'Termo',path:'jogos/termo/',streaks:[{id:'word',label:''}]},
-  {name:'Bits',ready:false}
+  {name:'Musicle',path:'jogos/musicle/index.html',streaks:[{id:'musicle',label:'Casual'},{id:'musicle-hard',label:'Desafiador'}]},
+  {name:'Termo',path:'jogos/termo/index.html',streaks:[{id:'word',label:''}]},
+  {name:'Bits',path:'jogos/bits/index.html',streaks:[{id:'bits',label:''}]}
  ];
  var grid=document.getElementById('landingGrid');
  while(games.length<9)games.push({empty:true});

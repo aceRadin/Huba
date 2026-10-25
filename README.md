@@ -1,36 +1,67 @@
-# HUBA — Hub de jogos
+# HUBA — jogos para navegador
 
-Projeto organizado para hospedagem estática, incluindo GitHub Pages.
+Versão organizada para GitHub Pages, com **três páginas principais de jogos**:
 
-## Estrutura
+- `index.html` — página inicial. Os cartões Musicle, Termo e Bits estão ativos; os demais continuam vazios.
+- `jogos/musicle/index.html` — Musicle original (categorias, áudio local e playlists Deezer).
+- `jogos/termo/index.html` — Termo com os modos Termo, Dueto e Quarteto, Diário e Aleatório.
+- `jogos/bits/index.html` — Bits, jogo de reconhecer músicas por trechos progressivamente mais longos.
 
-- `index.html` — página inicial, com os cartões Musicle, Termo e Bits (futuro jogo), além de espaços vazios.
-- `css/style.css` — estilos gerais do site.
-- `css/palavras.css` — estilos do Termo, Dueto e Quarteto.
-- `js/comum.js` — utilidades e sequências diárias compartilhadas.
-- `js/inicio.js` — configura os cartões da página inicial.
-- `dados/palavra.json` e `dados/words.json` — dicionários usados no Termo.
-- `jogos/musicle/index.html` e `jogos/musicle/musicle.js` — jogo Musicle.
-- `jogos/termo/index.html` e `jogos/termo/termo.js` — **um único jogo de palavras** com os três modos Termo, Dueto e Quarteto, nas opções Diário e Aleatório.
+## Organização
 
-O cartão **Bits** está desativado até seu jogo ser desenvolvido. Os outros seis espaços da página inicial estão vazios e reservados para novos jogos.
+```text
+index.html
+css/style.css
+css/palavras.css
+js/comum.js
+js/inicio.js
+dados/palavra.json
+dados/words.json
+jogos/
+  musicle/
+    index.html
+    musicle.js
+  termo/
+    index.html
+    termo.js
+  bits/
+    index.html
+    bits.css
+    config.js
+    bits.js
+```
 
-## Publicação no GitHub Pages
+Para adicionar um novo jogo, crie `jogos/novo-jogo/index.html` e inclua sua página no array `games` em `js/inicio.js`. Os outros jogos não precisam ser alterados.
 
-Envie **o conteúdo desta pasta** para a raiz do repositório do GitHub, com `index.html` na raiz. Nas configurações do repositório, em Settings → Pages, use `Deploy from a branch`, `main` e `/(root)`.
+## Bits: como jogar
 
-## Testar localmente
+- Cinco categorias: **Geral** (todas), **Pop**, **Anime**, **Rock** e **Metal**.
+- Duas colunas na página do Bits: **Diário** (uma resposta por categoria e data) e **Aleatório** (repetível).
+- Uma única música por partida; **seis tentativas**. Trechos: 1, 2, 4, 7, 11 e 16 segundos, sempre a partir da introdução.
+- Digite artista ou música para localizar uma opção e confirme seu palpite. Pular ou errar desbloqueia um trecho maior.
+- Progresso do Diário, estatísticas e streak são salvos no `localStorage`; o streak **Bits** aparece no cartão da página inicial.
+- A lista padrão de artistas por categoria pode ser editada em `jogos/bits/config.js`.
+- O menu **Fontes de músicas e configurações** permite escolher outros artistas ou playlists Deezer ou carregar arquivos do próprio computador. Playlists Deezer têm paginação pelo campo `next`.
+- A pesquisa e as respostas do Bits se limitam às músicas carregadas (com prévias válidas); uma música não presente na lista não pode ser escolhida.
 
-A partir desta pasta execute `python -m http.server 8000` e abra `http://localhost:8000`. Os JSONs do jogo de palavras são carregados com `fetch`, que pode falhar se você abrir o HTML diretamente por `file://`.
+### Limites conhecidos
 
-## Adicionar um novo jogo
+- As fontes Deezer são consultadas diretamente do navegador por JSONP; seu funcionamento depende da disponibilidade e das regras da API. **O uso público ou comercial de prévias precisa de autorização apropriada.** Não há faixas de áudio comerciais incluídas no projeto.
+- O desafio diário é determinístico **enquanto os jogadores tiverem o mesmo catálogo carregado**. A API pode retornar catálogos diferentes ou mudar seus resultados, então não há garantia de que todos receberão a mesma música globalmente. Um catálogo fixo/licenciado seria necessário para isso.
+- As estatísticas são locais ao navegador e à origem do site, não sincronizadas entre dispositivos.
+- Os áudios locais não são enviados nem hospedados pelo site, e precisam ser escolhidos novamente após recarregar.
+- A playlist pode conter faixas sem prévia; elas são ignoradas.
 
-1. Crie `jogos/nome-do-jogo/index.html` (e seu JavaScript, se necessário).
-2. Acrescente no array `games` de `js/inicio.js` um objeto como `{name:'Meu Jogo',path:'jogos/nome-do-jogo/'}`.
-3. Para ativar o Bits futuramente, substitua `{name:'Bits',ready:false}` por `{name:'Bits',path:'jogos/bits/'}` após criar essa pasta.
+## Testar e publicar
 
-Não é necessário modificar os arquivos do Musicle ou do Termo para criar um jogo independente.
+Em desenvolvimento, na raiz do projeto:
 
-## Observações
+```bash
+python -m http.server 8000
+```
 
-Os identificadores das estatísticas e do `localStorage` foram mantidos. O uso das prévias do Deezer em publicação pública e as licenças dos dicionários de terceiros devem ser analisados separadamente.
+Abra `http://localhost:8000/`. Em `file://`, o navegador pode impedir chamadas e armazenamento; por isso recomenda-se Live Server ou servidor local.
+
+No GitHub Pages, envie **o conteúdo desta pasta para a raiz do repositório**, com `index.html`, `css`, `js`, `jogos` e `dados` lado a lado. Ative Pages em `main` / `/(root)`.
+
+O uso do Deezer e a licença dos dicionários de terceiros devem ser revisados antes de uma publicação pública ou monetização.
