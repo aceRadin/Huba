@@ -598,15 +598,49 @@ function parseCfg(txt){
 }
 function fetchItem(g,it){
   var m=/^(?:playlist:\s*)?(?:https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?playlist\/)?(\d+)(?:\?.*)?$/i.exec(it);
-  var url=m?'https://api.deezer.com/playlist/'+m[1]+'/tracks?limit=40'
-           :'https://api.deezer.com/search?limit=30&order=RANKING&q='+encodeURIComponent('artist:"'+it+'"');
+  // Playlists: percorre todas as páginas indicadas pelo Deezer, sem limite fixo de faixas.
+  if(m){
+    var seen={}, pages={}, out=[];
+    function readPage(url){
+      // O campo next é fornecido pelo Deezer. Aceita apenas URLs da própria API.
+      var nextUrl;
+      try{nextUrl=new URL(url)}catch(e){return Promise.reject(new Error('URL de paginação inválida'))}
+      if(nextUrl.hostname!=='api.deezer.com'||!/^https?:$/.test(nextUrl.protocol))
+        return Promise.reject(new Error('URL de paginação inesperada'));
+      nextUrl.protocol='https:';
+      var pageUrl=nextUrl.href;
+      if(pages[pageUrl])return Promise.reject(new Error('Página repetida na resposta do Deezer'));
+      pages[pageUrl]=true;
+      // Uma falha temporária não deve interromper imediatamente uma playlist grande.
+      function request(attempt){
+        return jsonp(pageUrl).catch(function(err){
+          if(attempt<2)return request(attempt+1);
+          throw err;
+        });
+      }
+      return request(0).then(function(d){
+        if(!d||!Array.isArray(d.data))throw new Error('resposta inválida do Deezer');
+        d.data.forEach(function(t){
+          if(!t||!t.preview||!t.title||!t.artist||!t.artist.name)return;
+          var base=t.title.replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').trim()||t.title;
+          var label=t.artist.name+' - '+base, k=norm(label);
+          if(seen[k])return; seen[k]=1;
+          out.push({url:t.preview,label:label,genre:g});
+        });
+        return d.next?readPage(d.next):out;
+      });
+    }
+    return readPage('https://api.deezer.com/playlist/'+m[1]+'/tracks?limit=100');
+  }
+  // Artistas: mantém exatamente a pesquisa e o limite original de oito músicas.
+  var url='https://api.deezer.com/search?limit=30&order=RANKING&q='+encodeURIComponent('artist:"'+it+'"');
   return jsonp(url).then(function(d){
     var n=norm(it), seen={}, out=[];
     if(!d||!Array.isArray(d.data))throw new Error('resposta inválida do Deezer');
     d.data.forEach(function(t){
-      if(!t||!t.preview||!t.title||!t.artist||!t.artist.name||out.length>=(m?40:8))return;
+      if(!t||!t.preview||!t.title||!t.artist||!t.artist.name||out.length>=8)return;
       var an=norm(t.artist.name);
-      if(!m&&an!==n&&an.indexOf(n)<0&&n.indexOf(an)<0)return;
+      if(an!==n&&an.indexOf(n)<0&&n.indexOf(an)<0)return;
       var base=t.title.replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').trim()||t.title;
       var label=t.artist.name+' - '+base, k=norm(label);
       if(seen[k])return; seen[k]=1;
