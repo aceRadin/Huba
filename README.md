@@ -65,3 +65,7 @@ Abra `http://localhost:8000/`. Em `file://`, o navegador pode impedir chamadas e
 No GitHub Pages, envie **o conteúdo desta pasta para a raiz do repositório**, com `index.html`, `css`, `js`, `jogos` e `dados` lado a lado. Ative Pages em `main` / `/(root)`.
 
 O uso do Deezer e a licença dos dicionários de terceiros devem ser revisados antes de uma publicação pública ou monetização.
+
+### Bits — melhorias do player
+
+O Bits possui volume/mudo próprio (salvo no navegador), linha do tempo dividida em seis segmentos proporcionais aos trechos de 1, 2, 4, 7, 11 e 16 segundos, pulo que não interrompe áudio em reprodução e indicação amarela de palpites com artista correto e música incorreta. Todas essas mudanças ficam apenas em `jogos/bits/`.

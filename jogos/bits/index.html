@@ -45,8 +45,16 @@
   <div class="bits-game-head"><button type="button" id="backGame">‹ Voltar</button><div><h1 id="gameTitle">Bits</h1><p id="gameSubtitle" class="note"></p></div><span id="attemptLabel" class="bits-counter"></span></div>
   <div class="bits-play-card">
     <p class="bits-instruction" id="instruction">Reconhece este trecho?</p>
-    <div class="bits-steps" id="steps" aria-label="Tentativas"></div>
-    <div class="bits-player"><button type="button" class="primary" id="playAudio">▶ Ouvir trecho</button><div class="bits-progress"><i id="audioProgress"></i></div><strong id="clipLength">1 s</strong></div>
+    <div class="bits-player">
+      <button type="button" class="primary" id="playAudio">▶ Ouvir trecho</button>
+      <div class="bits-timeline" id="timeline" role="progressbar" aria-label="Progresso do trecho" aria-valuemin="0" aria-valuemax="16" aria-valuenow="0"></div>
+      <strong id="clipLength">1 s</strong>
+    </div>
+    <div class="bits-volume" role="group" aria-label="Volume do Bits">
+      <button type="button" id="muteAudio" aria-label="Silenciar" title="Silenciar">🔊</button>
+      <input type="range" id="volumeAudio" min="0" max="100" value="80" aria-label="Volume do áudio">
+      <span id="volumeLabel">80%</span>
+    </div>
     <p class="bits-status" id="message" role="status" aria-live="polite"></p>
     <div id="guessArea">
       <label for="guessInput">Qual é a música?</label>

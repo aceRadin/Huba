@@ -6,8 +6,8 @@ var cats=['geral','pop','anime','rock','metal'];
 var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
-var audio=new Audio(), audioUrl=null, stopTimer=null, frame=null, playStart=0, loadToken=0;
-var statsKey='huba:bits:stats:v1', sourcesKey='huba:bits:sources:v1';
+var audio=new Audio(), audioUrl=null, loadToken=0;
+var statsKey='huba:bits:stats:v1', sourcesKey='huba:bits:sources:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
 var configs=window.BITS_DEFAULT_SOURCES||'';
 var norm=HUBA.norm, hash=HUBA.hash;
 function setStatus(message){$('loadStatus').textContent=message}
@@ -130,17 +130,65 @@ function start(cat,daily){
  prepareAudio(song);renderRound();
  if(active.finished)showFinish();else $('guessInput').focus();
 }
-function stopAudio(){audio.pause();audio.onplaying=null;audio.onloadedmetadata=null;clearTimeout(stopTimer);cancelAnimationFrame(frame);$('audioProgress').style.transform='scaleX(0)';$('playAudio').textContent='▶ Ouvir trecho'}
-function prepareAudio(song){if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}audioUrl=song.file?URL.createObjectURL(song.file):null;audio.preload='metadata';audio.src=audioUrl||song.url;audio.load()}
-function clipDuration(){return lengths[Math.min(active.guesses.length,lengths.length-1)]}
-function play(){if(!active)return;if(!audio.paused){stopAudio();return}
- stopAudio();var clip=clipDuration();audio.currentTime=0;
- // O Bits sempre toca a introdução, diferentemente do Musicle.
- var started=false;audio.onplaying=function(){if(started)return;started=true;var start=performance.now();stopTimer=setTimeout(stopAudio,clip*1000);
- function tick(now){$('audioProgress').style.transform='scaleX('+Math.min(1,(now-start)/(clip*1000))+')';if(now-start<clip*1000)frame=requestAnimationFrame(tick)}frame=requestAnimationFrame(tick)};
- var p=audio.play();if(p&&p.catch)p.catch(function(){stopAudio();message('Não foi possível reproduzir a prévia. Tente outra fonte ou arquivo.')});
- $('playAudio').textContent='■ Parar';
+function durationLimit(){return active?clipDuration():0}
+function updateTimeline(){
+ var now=Math.max(0,Number(audio.currentTime)||0);
+ var pieces=$('timeline').children, previous=0;
+ for(var i=0;i<pieces.length;i++){
+   var end=lengths[i], portion=Math.max(0,Math.min(1,(now-previous)/(end-previous)));
+   pieces[i].firstChild.style.transform='scaleX('+portion+')';previous=end;
+ }
+ $('timeline').setAttribute('aria-valuenow',String(Math.min(16,Math.round(now*10)/10)));
 }
+function pauseAudio(){
+ audio.pause();$('playAudio').textContent='▶ Ouvir novamente';updateTimeline();
+}
+function stopAudio(){
+ audio.pause();try{audio.currentTime=0}catch(e){}
+ updateTimeline();$('playAudio').textContent='▶ Ouvir trecho';
+}
+function prepareAudio(song){
+ if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}
+ audioUrl=song.file?URL.createObjectURL(song.file):null;
+ audio.preload='metadata';audio.src=audioUrl||song.url;audio.load();updateTimeline();
+}
+function clipDuration(){return lengths[Math.min(active.guesses.length,lengths.length-1)]}
+function buildTimeline(){
+ var root=$('timeline');root.replaceChildren();var prev=0;
+ lengths.forEach(function(end,i){
+   var part=document.createElement('span');part.className='bits-segment';
+   part.style.flex=String(end-prev)+' 1 0';
+   part.classList.toggle('unlocked',!!active&&(active.finished||i<=active.guesses.length));
+   var fill=document.createElement('i');fill.className='bits-segment-fill';part.appendChild(fill);root.appendChild(part);prev=end;
+ });updateTimeline();
+}
+// O tempo real do áudio controla a barra e o limite; pular não interrompe.
+audio.addEventListener('timeupdate',function(){
+ updateTimeline();if(active&&!active.finished&&!audio.paused&&audio.currentTime>=durationLimit()-0.015)pauseAudio();
+});
+audio.addEventListener('ended',function(){pauseAudio()});
+function play(){
+ if(!active)return;
+ // Ao clicar de novo, o trecho reinicia desde o começo, mesmo se já estiver tocando.
+ try{audio.currentTime=0}catch(e){}
+ updateTimeline();
+ var p=audio.play();if(p&&p.catch)p.catch(function(){pauseAudio();message('Não foi possível reproduzir a prévia. Tente outra fonte ou arquivo.')});
+ $('playAudio').textContent='↻ Ouvir novamente';
+}
+function applyVolume(){
+ audio.volume=volume;audio.muted=muted||volume===0;
+ $('volumeAudio').value=String(Math.round(volume*100));
+ $('volumeLabel').textContent=(audio.muted?'0':Math.round(volume*100))+'%';
+ $('muteAudio').textContent=audio.muted?'🔇':'🔊';
+ $('muteAudio').setAttribute('aria-label',audio.muted?'Ativar som':'Silenciar');
+ $('muteAudio').title=audio.muted?'Ativar som':'Silenciar';
+ storageSet(volumeKey,String(volume));storageSet(muteKey,muted?'1':'0');
+}
+var volume=parseFloat(storageGet(volumeKey));if(!Number.isFinite(volume)||volume<0||volume>1)volume=.8;
+var muted=storageGet(muteKey)==='1';
+$('volumeAudio').oninput=function(){volume=Number(this.value)/100;if(volume>0)muted=false;applyVolume()};
+$('muteAudio').onclick=function(){muted=!muted;if(!muted&&volume===0)volume=.5;applyVolume()};
+applyVolume();
 function message(msg){$('message').textContent=msg}
 function guessOptions(){return byCat[active.cat]||[]}
 function showSuggestions(){
@@ -157,17 +205,25 @@ function renderRound(){
  var attempts=active.guesses.length;
  $('attemptLabel').textContent=active.finished?'Finalizado':(attempts+1)+' / '+maxAttempts;
  $('clipLength').textContent=clipDuration()+' s';
- var stepBox=$('steps');stepBox.replaceChildren();for(var i=0;i<maxAttempts;i++){var step=document.createElement('div');step.className='bits-step';if(i<attempts)step.classList.add(active.guesses[i]===active.song.id?'won':'missed');else if(i===attempts&&!active.finished)step.classList.add('active');stepBox.appendChild(step)}
+ buildTimeline();
  var box=$('history');box.replaceChildren();active.guesses.forEach(function(id,index){var line=document.createElement('div');line.className='bits-history-line';
  var song=(byCat[active.cat]||[]).find(function(s){return s.id===id});line.textContent=(index+1)+'. '+(id==='__skip__'?'Pulou a tentativa':song?song.label:'Palpite registrado');
- if(id===active.song.id)line.style.borderColor='var(--ok)';box.appendChild(line)});
+ if(id===active.song.id)line.style.borderColor='var(--ok)';
+ else if(song&&norm(song.artist)===norm(active.song.artist)){
+   line.classList.add('same-artist');
+   var hint=document.createElement('small');hint.textContent='✓ Artista correto — música incorreta';line.appendChild(hint);
+ }
+ box.appendChild(line)});
  $('guessInput').value='';selected=null;$('submitGuess').disabled=true;$('selectedText').textContent='Selecione uma música da lista.';$('suggestions').classList.remove('open');
  if(!active.finished)message('Você pode ouvir o trecho quantas vezes quiser antes de responder.');
 }
 function submit(skip){
  if(!active||active.finished||(!skip&&!selected))return;
  var id=skip?'__skip__':selected.id;
- active.guesses.push(id);stopAudio();
+ active.guesses.push(id);
+ // Um pulo ou palpite incorreto amplia o trecho sem reiniciar o áudio.
+ // Se o trecho anterior já terminou, a próxima reprodução começa do início.
+ if(!skip)pauseAudio();
  if(id===active.song.id){active.won=true;active.finished=true}else if(active.guesses.length>=maxAttempts)active.finished=true;
  if(active.finished)recordFinish();dailySave();renderRound();
  if(active.finished)showFinish();else message(skip?'Tentativa pulada. Agora o trecho ficou maior.':'Não foi dessa vez. Ouça um trecho maior!');
@@ -191,5 +247,5 @@ $('resetSources').onclick=function(){$('sources').value=configs;storageSet(sourc
 $('pickFolder').onclick=function(){$('folderInput').click()};$('pickFiles').onclick=function(){$('filesInput').click()};
 $('folderInput').onchange=function(){loadLocal(this.files)};$('filesInput').onchange=function(){loadLocal(this.files)};
 $('sources').value=storageGet(sourcesKey)||configs;
-audio.volume=0.8;ingest([]);renderStats();loadRemote();
+ingest([]);renderStats();loadRemote();
 })();
