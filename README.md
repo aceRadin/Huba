@@ -40,7 +40,14 @@ O uso público de prévias deve respeitar as condições do Deezer e os direitos
 
 
 ## Rodapé de apoio e sugestões
-O rodapé discreto aparece na página inicial e em todos os jogos. Configure seus links de Patreon, Buy Me a Coffee e o e-mail para sugestões em `js/apoio-config.js`. Enquanto os URLs não forem informados, Patreon/Buy Me a Coffee ficam desativados (nenhum endereço fictício é enviado). O botão Sugestões abre um formulário: o visitante pode copiar a sugestão; o envio por e-mail fica disponível quando você configurar `sugestoesEmail`. Não existe banco de dados nem envio automático no GitHub Pages.
+O rodapé discreto aparece na página inicial e em todos os jogos. Configure seus links de Patreon, Buy Me a Coffee e o e-mail para sugestões em `js/apoio-config.js`. Enquanto os URLs não forem informados, Patreon/Buy Me a Coffee ficam desativados (nenhum endereço fictício é enviado). O botão Apoio abre um formulário: o visitante pode copiar a sugestão; o envio por e-mail fica disponível quando você configurar `buymeacoffee`. Não existe banco de dados nem envio automático no GitHub Pages.
 
 ## Indicador de carregamento
 Musical e Bits mostram `Loading…` nos cartões enquanto carregam as fontes, sem exibir contagens por categoria. Após o carregamento, o total de faixas aparece no canto inferior direito. Os resultados de desafios diários finalizados continuam visíveis nos cartões.
+
+
+## Painel de apoio
+
+O rodapé compacto aparece no HUBA e nos três jogos, com botões Buy Me a Coffee e Patreon. Configure os links em `js/apoio-config.js`. Botões ficam desabilitados enquanto não forem configurados. O botão Sugestões foi removido.
+
+O catálogo atualizado de 16 playlists está em `playlists.js`.

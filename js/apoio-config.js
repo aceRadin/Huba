@@ -1,9 +1,8 @@
-/* HUBA — LINKS PÚBLICOS DO RODAPÉ
- * Cole suas URLs reais entre as aspas. Deixe vazio para desativar o botão.
- * Exemplo: patreon: 'https://www.patreon.com/seu-perfil'
+/* HUBA — LINKS PÚBLICOS DE APOIO
+ * Cole os endereços reais dos seus perfis. Deixe vazio para desativar.
+ * Nunca coloque senhas ou tokens neste arquivo público.
  */
 window.HUBA_APOIO = {
   patreon: '',
-  buymeacoffee: '',
-  sugestoesEmail: '' // Exemplo: 'contato@seudominio.com'
+  buymeacoffee: ''
 };

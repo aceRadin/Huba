@@ -216,18 +216,19 @@ button.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
 
 a.gcard{text-decoration:none}a.gcard:hover{border-color:var(--accent);transform:translateY(-1px)}
 
-/* Rodapé de apoio do HUBA: pequeno e compartilhado. */
-body{padding-bottom:96px}
-.huba-support{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:calc(100vw - 24px);padding:7px 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 18px #0002}
-.huba-support-label{color:var(--muted);font-size:.72rem;font-weight:700;white-space:nowrap}
-.huba-support-button{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-weight:600;font-size:.78rem;line-height:1.2;font-family:inherit;text-decoration:none;white-space:nowrap;cursor:pointer}
-.huba-support-button:hover:not(.huba-support-disabled){border-color:var(--accent)}
-.huba-support-disabled{opacity:.45;cursor:not-allowed}
-.huba-feedback-dialog{width:min(480px,calc(100vw - 28px));background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:20px}
-.huba-feedback-dialog::backdrop{background:#0009}
-.huba-feedback-dialog h2{font-size:1.15rem;margin:0 0 8px}.huba-feedback-dialog p{font-size:.9rem;color:var(--muted)}
-.huba-feedback-dialog textarea{width:100%;min-height:120px}.huba-feedback-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.huba-feedback-actions button{padding:8px 11px;font-size:.83rem}
-.huba-feedback-status{min-height:1em;margin:8px 0 0}
+/* Apoio ao HUBA: painel compacto compartilhado em todas as páginas. */
+body{padding-bottom:180px}
+.huba-support{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;width:min(440px,calc(100vw - 24px));display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:11px 13px 9px;background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:0 5px 24px #0003;text-align:center}
+.huba-support-title{display:flex;align-items:center;justify-content:center;gap:7px;font-size:.88rem;font-weight:800;line-height:1.2}
+.huba-support-heart{color:#ff677a;font-size:1.2rem;line-height:1}
+.huba-support-description{margin:0;color:var(--muted);font-size:.73rem;line-height:1.4}
+.huba-support-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:3px}
+.huba-support-button{display:flex;justify-content:center;align-items:center;min-height:36px;padding:7px 10px;border-radius:10px;border:0;font-family:inherit;font-size:.78rem;font-weight:800;line-height:1.2;text-decoration:none;color:#201b1b;transition:filter .15s ease,transform .15s ease}
+.huba-support-button:hover:not(.huba-support-disabled){filter:brightness(.96);transform:translateY(-1px)}
+.huba-support-coffee{background:#ffdc00;color:#251f03}
+.huba-support-patreon{background:#ff6667;color:#2d1015}
+.huba-support-disabled{opacity:.53;cursor:not-allowed;pointer-events:none}
+.huba-support-note{color:var(--muted);font-size:.64rem;line-height:1.35}
 /* Total de músicas separado dos cartões e acima do rodapé. */
-.huba-catalog-count{position:fixed;right:12px;bottom:max(76px,calc(env(safe-area-inset-bottom) + 70px));z-index:20;background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:.75rem;box-shadow:0 2px 10px #0001;max-width:calc(100vw - 24px);text-align:right}
-@media(max-width:560px){.huba-support-label{display:none}.huba-support{gap:4px;padding:6px}.huba-support-button{padding:6px;font-size:.68rem}.huba-catalog-count{bottom:75px;font-size:.7rem}}
+.huba-catalog-count{position:fixed;right:12px;bottom:max(155px,calc(env(safe-area-inset-bottom) + 148px));z-index:20;background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:.75rem;box-shadow:0 2px 10px #0001;max-width:calc(100vw - 24px);text-align:right}
+@media(max-width:560px){.huba-support{padding:9px 10px 8px;gap:4px}.huba-support-description{font-size:.69rem}.huba-support-button{min-height:34px;font-size:.73rem}.huba-catalog-count{bottom:155px;font-size:.7rem}}
