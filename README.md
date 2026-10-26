@@ -55,3 +55,7 @@ O catálogo atualizado de 16 playlists está em `playlists.js`.
 ### Musical — alternativas com capa
 
 As quatro opções agora aparecem lado a lado, com a capa do Deezer e os nomes da música e do artista. Sem imagem disponível, aparece um ícone musical. Arquivos alterados: `jogos/musicle/index.html`, `jogos/musicle/musicle.js`, e novo `jogos/musicle/musical-opcoes.css`.
+
+
+## Ajuste visual do Musical
+O cabeçalho da partida está alinhado à área das quatro alternativas, com Voltar à esquerda. O volume fica à esquerda do botão Tocar trecho e da barra de progresso. As alterações de layout estão em `jogos/musicle/musical-opcoes.css`.

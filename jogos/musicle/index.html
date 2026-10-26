@@ -49,22 +49,29 @@
   </div>
 </section>
 <section id="play" class="hidden">
-  <button class="back" id="backBtn">Voltar</button>
-  <h1 id="playTitle">Musical</h1>
-  <p class="sub" id="playSub"></p>
+  <header class="musical-play-header">
+    <button class="back" id="backBtn">Voltar</button>
+    <div class="musical-play-heading">
+      <h1 id="playTitle">Musical</h1>
+      <p class="sub" id="playSub"></p>
+    </div>
+    <span class="musical-header-spacer" aria-hidden="true"></span>
+  </header>
 
   <div class="panel">
     <div id="quiz">
       <div class="qhead"><span id="qcount"></span><div class="dots" id="dots" aria-hidden="true"></div></div>
-      <div class="clip">
-        <button class="primary" id="playBtn">Tocar trecho</button>
-        <button id="replaceSong" class="hidden" type="button" title="Trocar somente a música que falhou">Sortear outra música</button>
-        <div class="bar" aria-hidden="true"><i id="fill"></i></div>
-      </div>
-      <div class="vol">
-        <button id="muteBtn" aria-label="Silenciar" title="Silenciar">🔊</button>
-        <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
-        <span id="volLabel">80%</span>
+      <div class="musical-audio-row">
+        <div class="vol">
+          <button id="muteBtn" aria-label="Silenciar" title="Silenciar">🔊</button>
+          <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
+          <span id="volLabel">80%</span>
+        </div>
+        <div class="clip">
+          <button class="primary" id="playBtn">Tocar trecho</button>
+          <button id="replaceSong" class="hidden" type="button" title="Trocar somente a música que falhou">Sortear outra música</button>
+          <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+        </div>
       </div>
       <p class="note" style="margin:0 0 12px" id="qhint">Qual música tocou?</p>
       <div class="opts" id="opts"></div>
