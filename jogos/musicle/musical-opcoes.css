@@ -107,3 +107,6 @@
 #play.is-result .musical-play-header .musical-header-spacer {display:none;}
 #play.is-result #playTitle {overflow-wrap:normal;word-break:normal;}
 #play.is-result #playSub {max-width:760px;margin:8px auto 0;line-height:1.45;}
+
+/* No Desafiador, a quinta alternativa divide a linha com as demais capas. */
+#play.musical-hard .opts{grid-template-columns:repeat(5,minmax(0,1fr))}

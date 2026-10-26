@@ -1,6 +1,6 @@
 (function(){
 
-var CLIP=7, NQ=5, NOPT=4, ALL='__todos__';
+var CLIP=7, NQ=5, ALL='__todos__';
 var SKIP_FRAC=0.25, SKIP_MAX=60;   // o trecho nunca começa nos primeiros 25% da música (no máximo 60 s), por causa de introduções longas
   var STATS_KEY='playhub:musicle:stats:v1', HISTORY_KEY='playhub:musicle:recent:v1';
 var $=function(s){return document.querySelector(s)};
@@ -38,6 +38,7 @@ function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
   function storeKey(g){return 'musicle3:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP}
   function readState(g){try{var r=localStorage.getItem(storeKey(g)); return r?JSON.parse(r):null}catch(e){return null}}
   function nq(pool){return Math.min(NQ,pool.length)}
+  function optionCount(){return CLIP===1.5?5:4}
   function modeOf(){return CLIP===1.5?'hard':'casual'}
   function modeName(){return CLIP===1.5?'Desafiador':'Casual'}
   function fmtSec(n){return String(n).replace('.',',')}
@@ -184,7 +185,7 @@ function renderHome(){
       var n=songs.length?poolOf(g).length:0, small='';
       if(musicLoading) small='Loading…';
       else if(!songs.length) small='Indisponível';
-      else if(n<NOPT) small='precisa de '+NOPT+'+ músicas';
+      else if(n<optionCount()) small='precisa de '+optionCount()+'+ músicas';
       else if(daily){
         var st=readState(g);
         if(st&&st.p&&st.p.length>=nq(poolOf(g))){small='feito: '+st.s+'/'+nq(poolOf(g)); b.classList.add('done')}
@@ -192,9 +193,9 @@ function renderHome(){
       } else small='';
       b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
       b.querySelector('.tn').textContent=songs.length?gName(g):cap(g);
-      b.querySelector('.tacc').textContent=(songs.length&&n>=NOPT)?'precisão '+genreAcc(g):'';
+      b.querySelector('.tacc').textContent=(songs.length&&n>=optionCount())?'precisão '+genreAcc(g):'';
       b.lastChild.textContent=small;
-      b.disabled=musicLoading||!songs.length||n<NOPT;
+      b.disabled=musicLoading||!songs.length||n<optionCount();
       b.onclick=function(){openGame(daily,g)};
       box.appendChild(b);
     });
@@ -209,13 +210,14 @@ function buildQuestions(pool,rng,exclude){
   if(cand.length<n)cand=idx;
   var answers=shuffle(cand.slice(),rng).slice(0,n);
   return answers.map(function(a){
-    var others=shuffle(idx.filter(function(i){return i!==a}),rng).slice(0,NOPT-1);
+    var others=shuffle(idx.filter(function(i){return i!==a}),rng).slice(0,optionCount()-1);
     return {a:a,opts:shuffle([a].concat(others),rng),start:rng()};
   });
 }
 function openGame(daily,g){
   var pool=poolOf(g);
   $('#home').classList.add('hidden'); $('#play').classList.remove('hidden');
+  $('#play').classList.toggle('musical-hard',CLIP===1.5);
   $('#playTitle').textContent='Musical · '+gName(g)+' · '+modeName();
   $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+fmtSec(CLIP)+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
   cur={pool:pool,genre:g,daily:daily,statsRecorded:false};
@@ -285,7 +287,7 @@ function replaceFailedSong(){
   stop();
   q.a=choices[Math.floor(Math.random()*choices.length)];
   var options=cur.pool.map(function(_,i){return i}).filter(function(i){return i!==q.a});
-  q.opts=shuffle(options,Math.random).slice(0,NOPT-1);
+  q.opts=shuffle(options,Math.random).slice(0,optionCount()-1);
   q.opts=shuffle([q.a].concat(q.opts),Math.random);
   q.start=Math.random();
   showQuestion();

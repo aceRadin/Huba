@@ -4,5 +4,5 @@
  */
 window.HUBA_APOIO = {
   patreon: '',
-  buymeacoffee: ''
+  buymeacoffee: 'https://buymeacoffee.com/aceradin'
 };
