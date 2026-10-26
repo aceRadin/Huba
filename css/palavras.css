@@ -1,4 +1,4 @@
-/* ===== Word (Termo) ===== */
+/* ===== Wording ===== */
 :root{--warn:#b07d0a;--abs:#8f8bb0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--warn:#a67c10;--abs:#4b477f}}
 :root[data-theme="dark"]{--warn:#a67c10;--abs:#4b477f}

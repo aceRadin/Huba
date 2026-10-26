@@ -1,4 +1,4 @@
-/* Bits: jogo independente. Nenhum código do Musicle ou Termo é alterado aqui. */
+/* Bits: jogo independente. Nenhum código do Musical ou Wording é alterado aqui. */
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};

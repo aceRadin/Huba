@@ -1,7 +1,7 @@
 (function(){
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm,recordDailyStreak=HUBA.recordDailyStreak;
-/* ---------- Word (Termo) ---------- */
+/* ---------- Wording ---------- */
 var WCFG={}, WFROM={}, WLANG='pt', WLOADING=true, WALLFETCHED=false, WNOTE='';
 var WFILES=['words.json','palavra.json'], WSAVE_KEY='playhub:word:files:v2';
 try{var wl=localStorage.getItem('playhub:word:lang'); if(wl==='pt'||wl==='en')WLANG=wl}catch(e){}
@@ -90,9 +90,9 @@ $('#wJsonInput').onchange=function(){
 $('#wResetJson').onclick=function(){try{localStorage.removeItem(WSAVE_KEY)}catch(e){} WNOTE=''; WCFG={}; WFROM={}; wInitWords()};
 
 var WMODES={
-  termo:{name:'Worg',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
-  dueto:{name:'Dueto',n:2,tries:7,desc:'2 palavras · 7 tentativas'},
-  quarteto:{name:'Quarteto',n:4,tries:9,desc:'4 palavras · 9 tentativas'}
+  termo:{name:'Wording',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
+  dueto:{name:'Woording',n:2,tries:7,desc:'2 palavras · 7 tentativas'},
+  quarteto:{name:'Woooording',n:4,tries:9,desc:'4 palavras · 9 tentativas'}
 };
 var WKEY='playhub:word:stats:v1', w=null, wMsgT=null;
 function wRead(){try{var o=JSON.parse(localStorage.getItem(WKEY)); if(o&&o.modes)return o}catch(e){} return {games:0,modes:{}}}
@@ -180,12 +180,6 @@ function wToast(t){
   $('#wMsg').textContent=t; clearTimeout(wMsgT);
   wMsgT=setTimeout(function(){$('#wMsg').textContent=''},2200);
 }
-function wNextEmpty(from){
-  var i;
-  for(i=from+1;i<5;i++)if(!w.slots[i]||w.slots[i]===' ')return i;
-  for(i=0;i<from;i++)if(!w.slots[i]||w.slots[i]===' ')return i;
-  return from;
-}
 function wKey(k){
   if(!w||w.done)return;
   w.flip=-1;
@@ -205,7 +199,7 @@ function wKey(k){
   else if(k==='space'){if(!w.slots[w.pos])w.slots[w.pos]=' '; if(w.pos<4)w.pos++}
   else if(k==='left'){if(w.pos>0)w.pos--}
   else if(k==='right'){if(w.pos<4)w.pos++}
-  else{w.slots[w.pos]=k; w.pos=wNextEmpty(w.pos)}
+  else{w.slots[w.pos]=k; w.pos=(w.pos+1)%5}
   renderWord();
 }
 function wShake(){var b=$('#wBoards'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake')}
@@ -262,7 +256,7 @@ function renderWord(){
     }
     boards.appendChild(bd);
   });
-  // teclado: uma cor por letra, mesma regra do Termo valendo para todas as palavras do jogo
+  // teclado: uma cor por letra, mesma regra do Wording valendo para todas as palavras do jogo
   var kst={};
   w.guesses.forEach(function(g){
     w.targets.forEach(function(t){

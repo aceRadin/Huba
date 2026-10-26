@@ -2,9 +2,9 @@
 
 Versão organizada para GitHub Pages, com **três páginas principais de jogos**:
 
-- `index.html` — página inicial. Os cartões Musical, Worg e Bits estão ativos; os demais continuam vazios.
+- `index.html` — página inicial. Os cartões Musical, Wording e Bits estão ativos; os demais continuam vazios.
 - `jogos/musicle/index.html` — Musical (antigo Musicle) (categorias, áudio local e playlists Deezer).
-- `jogos/termo/index.html` — Worg com os modos Termo, Dueto e Quarteto, Diário e Aleatório.
+- `jogos/wording/index.html` — Wording com os modos Wording, Woording e Woooording, Diário e Aleatório.
 - `jogos/bits/index.html` — Bits, jogo de reconhecer músicas por trechos progressivamente mais longos.
 
 ## Organização
@@ -21,9 +21,9 @@ jogos/
   musicle/
     index.html
     musicle.js
-  termo/
+  wording/
     index.html
-    termo.js
+    wording.js
   bits/
     index.html
     bits.css
@@ -74,9 +74,9 @@ O Bits possui volume/mudo próprio (salvo no navegador), linha do tempo dividida
 
 ## Teclado e navegação (atualização)
 
-- **Esc** retorna da partida para a seleção de modos/categorias de cada jogo. Não redireciona automaticamente para o HUBA. No Worg, Esc fecha as estatísticas primeiro.
-- **Worg:** Backspace apaga letras que estejam à direita mesmo se o cursor tiver voltado à primeira casa; a tecla Espaço continua inserindo o marcador `·`.
+- **Esc** retorna da partida para a seleção de modos/categorias de cada jogo. Não redireciona automaticamente para o HUBA. No Wording, Esc fecha as estatísticas primeiro.
+- **Wording:** Backspace apaga letras que estejam à direita mesmo se o cursor tiver voltado à primeira casa; a tecla Espaço continua inserindo o marcador `·`.
 - **Musical:** quando uma prévia falha, aparece **Sortear outra música**. A substituição ocorre apenas naquela pergunta, sem registrar erro ou consumir tentativa. Em desafios diários a substituição após falha pode diferir de outros navegadores, porque a disponibilidade de áudio não é universal.
-- Os diretórios `jogos/musicle/` e `jogos/termo/` são mantidos para preservar links e evitar alterações desnecessárias; os nomes exibidos passam a ser **Musical** e **Worg**. Chaves de armazenamento permanecem inalteradas.
+- A pasta do jogo de palavras agora é `jogos/wording/`, com `wording.js`. Os links da página inicial foram atualizados. Chaves de armazenamento permanecem inalteradas para preservar estatísticas e partidas antigas.
 
 - **Bits:** se a prévia não tocar, **Sortear outra música** reinicia as tentativas daquela rodada sem penalidade. Quando necessário, a resposta diária salva muda neste navegador.
