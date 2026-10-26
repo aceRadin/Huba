@@ -8,6 +8,7 @@ var dayKey=HUBA.dayKey, hash=HUBA.hash, mulberry=HUBA.mulberry, shuffle=HUBA.shu
 var songs=[], byGenre={}, genres=[], local=[], remote=[], musicLoading=true;
 var cur=null;
 var audio=new Audio(), objUrl=null, stopTimer=null, raf=null, startSec=0;
+var metadataReady=false, playRequest=0;
 var failedAnswers={};
 
 /* ---------- volume ---------- */
@@ -252,6 +253,7 @@ document.addEventListener('keydown',function(e){
 
 /* ---------- áudio ---------- */
 function stop(){
+  playRequest++; // invalida reproduções que estavam aguardando carregar ou posicionar o áudio
   audio.onplaying=null; audio.pause(); clearTimeout(stopTimer); cancelAnimationFrame(raf);
   $('#fill').style.transform='scaleX(0)';
   $('#playBtn').textContent='Tocar trecho';
@@ -259,12 +261,14 @@ function stop(){
 function setSong(song,frac){
   if(objUrl)URL.revokeObjectURL(objUrl);
   objUrl=song.file?URL.createObjectURL(song.file):null;
+  metadataReady=false;
   startSec=0;
   audio.onloadedmetadata=function(){
     var d=audio.duration;
     if(!isFinite(d)||d<=CLIP)d=song.url?30:0;
     var lo=Math.min(d*SKIP_FRAC,SKIP_MAX), hi=d-CLIP;
     startSec=hi<=0?0:(hi>lo?lo+frac*(hi-lo):hi);
+    metadataReady=true;
   };
   audio.preload='auto'; audio.src=objUrl||song.url;
 }
@@ -295,21 +299,49 @@ function replaceFailedSong(){
 $('#replaceSong').onclick=replaceFailedSong;
 function playClip(){
   stop();
-  audio.currentTime=startSec;
-  var started=false;
-  audio.onplaying=function(){
-    if(started)return; started=true;
-    var t0=performance.now();
-    stopTimer=setTimeout(stop,CLIP*1000);
-    (function tick(now){
-      var el=(now-t0)/1000;
-      $('#fill').style.transform='scaleX('+Math.min(1,el/CLIP)+')';
-      if(el<CLIP)raf=requestAnimationFrame(tick);
-    })(t0);
-  };
-  var p=audio.play();
-  if(p&&p.catch)p.catch(function(){failedAudio()});
+  var request=playRequest;
   $('#playBtn').textContent='Parar';
+
+  function begin(){
+    if(request!==playRequest)return;
+    // O trecho é sorteado uma vez por pergunta, após o carregamento dos metadados.
+    // Todas as reproduções desta pergunta voltam exatamente ao mesmo segundo.
+    try{audio.currentTime=startSec}catch(e){failedAudio();return}
+
+    function playFromStart(){
+      if(request!==playRequest)return;
+      var started=false;
+      audio.onplaying=function(){
+        if(started||request!==playRequest)return;
+        started=true;
+        var t0=performance.now();
+        stopTimer=setTimeout(function(){if(request===playRequest)stop()},CLIP*1000);
+        (function tick(now){
+          if(request!==playRequest)return;
+          var el=(now-t0)/1000;
+          $('#fill').style.transform='scaleX('+Math.min(1,el/CLIP)+')';
+          if(el<CLIP)raf=requestAnimationFrame(tick);
+        })(t0);
+      };
+      var promise=audio.play();
+      if(promise&&promise.catch)promise.catch(function(){if(request===playRequest)failedAudio()});
+    }
+
+    // Aguarda o seek terminar antes de iniciar a reprodução.
+    if(audio.seeking){
+      audio.addEventListener('seeked',function onSeeked(){
+        audio.removeEventListener('seeked',onSeeked);
+        playFromStart();
+      });
+    }else playFromStart();
+  }
+
+  // Sem essa espera, o primeiro Play começava em 0 s e os demais em startSec.
+  if(metadataReady)begin();
+  else audio.addEventListener('loadedmetadata',function onMetadata(){
+    audio.removeEventListener('loadedmetadata',onMetadata);
+    begin();
+  });
 }
 $('#playBtn').onclick=function(){ $('#playBtn').textContent==='Parar'?stop():playClip() };
 

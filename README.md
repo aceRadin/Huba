@@ -63,3 +63,7 @@ O cabeçalho da partida está alinhado à área das quatro alternativas, com Vol
 
 ### Musical — tela de resultados
 A tela final exibe as cinco respostas em cartões com capa, música, artista e indicação de acerto/erro. Em celulares, os cinco cartões permanecem lado a lado com rolagem horizontal.
+
+
+## Streakal
+Novo jogo em jogos/streakal/. Diário e aleatório, começa com duas alternativas e até 30 s da prévia Deezer. Cada acerto exige escolher uma melhoria permanente (+1 alternativa ou duração seguinte multiplicada por 0,9). Acaba no primeiro erro. Recorde independente por gênero salvo no navegador (localStorage). O desafio diário permite uma tentativa por gênero por dia neste navegador.
