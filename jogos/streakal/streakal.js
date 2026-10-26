@@ -121,7 +121,7 @@ function loadDeezer(){
   var jobs=[];cfg.forEach(function(c){c.items.forEach(function(it){jobs.push(fetchItem(c.g,it).catch(function(){return []}))})});
   Promise.all(jobs).then(function(groups){remote=[].concat.apply([],groups);musicLoading=false;rebuild();$('#dzStatus').textContent=remote.length?'':'Nenhuma prévia disponível no momento.'}).catch(function(){musicLoading=false;renderHome();$('#dzStatus').textContent='Falha ao carregar músicas.'});
 }
-function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
+function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,penaltyNotice:'',used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
 /* Painel de apoio recolhível exclusivo do Streakal, a partir da 4ª rodada. */
 var streakalSupportToggle=null;
 function streakalSupportSetCollapsed(collapsed){
@@ -201,7 +201,8 @@ function nextQuestion(replacement){
   cur.options=shuffle([answer].concat(others),cur.rng);
   $('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
   $('#runSettings').textContent=cur.options.length+' opções · '+formatSec(cur.clip)+' s';
-  $('#qhint').textContent='Qual música tocou?';
+  $('#qhint').textContent=cur.penaltyNotice||'Qual música tocou?';
+  cur.penaltyNotice='';
   setSong(cur.pool[answer]);
   var box=$('#opts');box.innerHTML='';box.style.setProperty('--option-columns',Math.min(5,cur.options.length));box.style.setProperty('--mobile-columns',Math.min(2,cur.options.length));
   cur.options.forEach(function(i){var b=makeCard(cur.pool[i]);b.onclick=function(){answerQuestion(i)};box.appendChild(b)});
@@ -237,8 +238,16 @@ function upgrade(type){if(!cur||!cur.pending||cur.ended)return;
     cur.consecutiveShorter++;
     var reduction=shorterReduction(cur.consecutiveShorter);
     cur.clip*=1-reduction;
-    // Uma alternativa extra pode ser adicionada como penalidade, sem resetar o debuff.
-    if(cur.optionCount<cur.pool.length&&Math.random()<extraOptionChance(cur.consecutiveShorter))cur.optionCount++;
+    // Sorteia a chance exibida no botão: 15%, 20%, 25%... a partir da 3ª redução.
+    // O sorteio é independente em cada turno. Uma punição não zera o debuff.
+    var chance=extraOptionChance(cur.consecutiveShorter);
+    var roll=Math.random(); // Número uniforme de 0 (inclusivo) até 1 (exclusivo).
+    if(chance>0&&roll<chance&&cur.optionCount<cur.pool.length){
+      cur.optionCount++;
+      cur.penaltyNotice='Punição ativada! '+formatPercent(chance)+' de chance: +1 alternativa adicionada. Qual música tocou?';
+    }else{
+      cur.penaltyNotice='';
+    }
   }
   nextQuestion(false);
 }
