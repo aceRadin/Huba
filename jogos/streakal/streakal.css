@@ -69,3 +69,16 @@
 #play .streakal-upgrade:not(.hidden){display:block;max-width:780px;margin:12px auto 0;background:var(--bg)}
 #play .streakal-upgrade-actions button{background:var(--card);border:1px solid var(--accent);font-weight:700}
 #play .streakal-upgrade-actions button:hover:not(:disabled){background:var(--accent);color:var(--accent-fg)}
+
+/* Apenas no Streakal: após iniciar a 4ª rodada, doações viram uma seta. */
+body.streakal-support-collapsed .huba-support{display:none}
+.streakal-support-toggle{
+  position:fixed;left:50%;bottom:max(4px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);z-index:31;min-width:58px;height:28px;
+  padding:2px 14px;border:1px solid var(--line);border-radius:12px 12px 0 0;
+  background:var(--card);color:var(--fg);box-shadow:0 0 10px #0002;
+  font-size:1rem;line-height:1;cursor:pointer;
+}
+.streakal-support-toggle[hidden]{display:none!important}
+body:not(.streakal-support-collapsed) .streakal-support-toggle{bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px))}
+@media(max-width:560px){body:not(.streakal-support-collapsed) .streakal-support-toggle{bottom:max(122px,calc(env(safe-area-inset-bottom) + 122px))}}

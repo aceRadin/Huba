@@ -122,10 +122,32 @@ function loadDeezer(){
   Promise.all(jobs).then(function(groups){remote=[].concat.apply([],groups);musicLoading=false;rebuild();$('#dzStatus').textContent=remote.length?'':'Nenhuma prévia disponível no momento.'}).catch(function(){musicLoading=false;renderHome();$('#dzStatus').textContent='Falha ao carregar músicas.'});
 }
 function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
+/* Painel de apoio recolhível exclusivo do Streakal, a partir da 4ª rodada. */
+var streakalSupportToggle=null;
+function streakalSupportSetCollapsed(collapsed){
+  var panel=document.querySelector('.huba-support');
+  if(!panel)return;
+  if(!streakalSupportToggle){
+    streakalSupportToggle=document.createElement('button');
+    streakalSupportToggle.type='button';
+    streakalSupportToggle.className='streakal-support-toggle';
+    streakalSupportToggle.setAttribute('aria-controls','streakal-support-panel');
+    panel.id='streakal-support-panel';
+    streakalSupportToggle.onclick=function(){streakalSupportSetCollapsed(!document.body.classList.contains('streakal-support-collapsed'))};
+    document.body.appendChild(streakalSupportToggle);
+  }
+  document.body.classList.toggle('streakal-support-collapsed',collapsed);
+  var eligible=!!cur&&cur.round>=4&&!$('#play').classList.contains('hidden');
+  streakalSupportToggle.hidden=!eligible;
+  streakalSupportToggle.textContent=collapsed?'⌃':'⌄';
+  streakalSupportToggle.setAttribute('aria-expanded',String(!collapsed));
+  streakalSupportToggle.setAttribute('aria-label',collapsed?'Mostrar apoio ao HUBA':'Recolher apoio ao HUBA');
+  streakalSupportToggle.title=collapsed?'Mostrar doações':'Recolher doações';
+}
 function openGame(daily,g){
   $('#home').classList.add('hidden');$('#play').classList.remove('hidden');$('#play').classList.remove('is-result');
   $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Rodada aleatória')+' · Acerte até errar. Cada acerto exige uma escolha de dificuldade permanente.';
-  cur=newRun(daily,g);invalidSongs={};
+  cur=newRun(daily,g);invalidSongs={};streakalSupportSetCollapsed(false);
   // Desafios diários concluídos não podem reiniciar o placar nesse dia.
   var prev=daily?readJSON(dailyKey(g),null):null;
   if(prev&&prev.done){cur.score=prev.score;cur.ended=true;showResult(true);return}
@@ -174,6 +196,7 @@ function nextQuestion(replacement){
   stop();cur.pending=false;cur.locked=false;$('#quiz').classList.remove('hidden');$('#result').classList.add('hidden');$('#opts').classList.remove('hidden');$('#upgradePanel').classList.add('hidden');$('#replaceSong').classList.add('hidden');
   var answer=pickAnswer();if(answer===null){endRun(true);return}cur.answer=answer;
   if(!replacement)cur.round++;
+  if(cur.round===4&&!replacement)streakalSupportSetCollapsed(true);
   var others=shuffle(cur.pool.map(function(_,i){return i}).filter(function(i){return i!==answer&&!invalidSongs[i]}),cur.rng).slice(0,Math.max(1,cur.optionCount-1));
   cur.options=shuffle([answer].concat(others),cur.rng);
   $('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
@@ -230,7 +253,7 @@ function showResult(revisit,exhausted){stop();$('#quiz').classList.add('hidden')
   var box=$('#lastSong');box.innerHTML='';if(!revisit&&cur.answer!==null){var card=makeCard(cur.pool[cur.answer]);card.disabled=true;box.appendChild(card)}
   $('#again').classList.toggle('hidden',cur.daily);
 }
-function goHome(){stop();$('#play').classList.add('hidden');$('#play').classList.remove('is-result');$('#home').classList.remove('hidden');renderHome()}
+function goHome(){stop();$('#play').classList.add('hidden');$('#play').classList.remove('is-result');$('#home').classList.remove('hidden');streakalSupportSetCollapsed(false);renderHome()}
 $('#backBtn').onclick=goHome;$('#backBtn2').onclick=goHome;
 $('#again').onclick=function(){openGame(false,cur.genre)};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#play').classList.contains('hidden')){e.preventDefault();goHome()}});
