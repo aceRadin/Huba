@@ -1,0 +1,11 @@
+/* Alternativas do Musical: quatro capas lado a lado, sem alterar outros jogos. */
+#play .opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+#play .musical-option{display:flex;min-width:0;flex-direction:column;gap:9px;padding:10px;align-items:stretch;text-align:center;border-radius:12px;overflow:hidden}
+#play .musical-cover{display:grid;place-items:center;position:relative;aspect-ratio:1;width:100%;overflow:hidden;border-radius:9px;background:var(--seg)}
+#play .musical-cover-fallback{font-size:clamp(1.8rem,5vw,3.5rem);color:var(--muted)}
+#play .musical-cover img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#play .musical-option-info{display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
+#play .musical-option-title{font-size:.92rem;line-height:1.3;font-weight:700}
+#play .musical-option-artist{font-size:.79rem;line-height:1.35;font-weight:400;color:var(--muted)}
+#play .musical-option.right .musical-option-artist,#play .musical-option.wrong .musical-option-artist{color:var(--fg)}
+@media(max-width:620px){#play .opts{gap:6px}#play .musical-option{padding:5px;gap:5px;border-radius:8px}#play .musical-option-title{font-size:.72rem}#play .musical-option-artist{font-size:.66rem}}

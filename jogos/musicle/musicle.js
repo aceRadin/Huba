@@ -129,7 +129,7 @@ function fetchItem(g,it){
           var base=t.title.replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').trim()||t.title;
           var label=t.artist.name+' - '+base, k=norm(label);
           if(seen[k])return; seen[k]=1;
-          out.push({url:t.preview,label:label,genre:g});
+          out.push({url:t.preview,label:label,genre:g,artist:t.artist.name,title:base,cover:(t.album&&(t.album.cover_medium||t.album.cover_big||t.album.cover))||''});
         });
         return d.next?readPage(d.next):out;
       });
@@ -148,7 +148,7 @@ function fetchItem(g,it){
       var base=t.title.replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').trim()||t.title;
       var label=t.artist.name+' - '+base, k=norm(label);
       if(seen[k])return; seen[k]=1;
-      out.push({url:t.preview,label:label,genre:g});
+      out.push({url:t.preview,label:label,genre:g,artist:t.artist.name,title:base,cover:(t.album&&(t.album.cover_medium||t.album.cover_big||t.album.cover))||''});
     });
     return out;
   });
@@ -333,8 +333,28 @@ function showQuestion(){
   setSong(cur.pool[q.a],q.start);
   var box=$('#opts'); box.innerHTML='';
   q.opts.forEach(function(i){
-    var b=document.createElement('button'); b.className='opt';
-    b.textContent=cur.pool[i].label;
+    var song=cur.pool[i];
+    var b=document.createElement('button'); b.className='opt musical-option';
+    b.type='button';
+    var cover=document.createElement('span'); cover.className='musical-cover';
+    var fallback=document.createElement('span'); fallback.className='musical-cover-fallback';
+    fallback.textContent='♫'; fallback.setAttribute('aria-hidden','true');
+    cover.appendChild(fallback);
+    if(song.cover){
+      var img=document.createElement('img');
+      img.src=song.cover; img.alt=''; img.loading='lazy'; img.decoding='async';
+      img.onerror=function(){img.remove()};
+      cover.appendChild(img);
+    }
+    var text=document.createElement('span'); text.className='musical-option-info';
+    var title=document.createElement('strong'); title.className='musical-option-title';
+    var artist=document.createElement('span'); artist.className='musical-option-artist';
+    var parts=song.label.split(' - ');
+    title.textContent=song.title||(parts.length>1?parts.slice(1).join(' - '):song.label);
+    artist.textContent=song.artist||(parts.length>1?parts[0]:'Artista não informado');
+    text.appendChild(title); text.appendChild(artist);
+    b.appendChild(cover); b.appendChild(text);
+    b.setAttribute('aria-label',song.label);
     b.onclick=function(){answer(i)};
     box.appendChild(b);
   });

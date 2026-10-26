@@ -51,3 +51,7 @@ Musical e Bits mostram `Loading…` nos cartões enquanto carregam as fontes, se
 O rodapé compacto aparece no HUBA e nos três jogos, com botões Buy Me a Coffee e Patreon. Configure os links em `js/apoio-config.js`. Botões ficam desabilitados enquanto não forem configurados. O botão Sugestões foi removido.
 
 O catálogo atualizado de 16 playlists está em `playlists.js`.
+
+### Musical — alternativas com capa
+
+As quatro opções agora aparecem lado a lado, com a capa do Deezer e os nomes da música e do artista. Sem imagem disponível, aparece um ícone musical. Arquivos alterados: `jogos/musicle/index.html`, `jogos/musicle/musicle.js`, e novo `jogos/musicle/musical-opcoes.css`.
