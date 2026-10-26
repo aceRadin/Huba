@@ -6,7 +6,7 @@ var cats=['geral','pop','anime','rock','metal'];
 var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
-var audio=new Audio(), audioUrl=null, loadToken=0;
+var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true;
 var unavailableSongs={};
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
 var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'';
@@ -31,14 +31,15 @@ function ingest(items){
  out.sort(function(a,b){return a.label.localeCompare(b.label,'pt-BR')});
  catalog=out;byCat={};cats.forEach(function(c){byCat[c]=c==='geral'?catalog:catalog.filter(function(s){return s.genre===c})});
  drawTiles();renderStats();
+ $('catalogCount').textContent=musicLoading?'Loading…':('Total: '+catalog.length+' músicas');
 }
 function drawTiles(){
  ['daily','random'].forEach(function(mode){var parent=$(mode+'Tiles');parent.textContent='';
  cats.forEach(function(cat){var list=byCat[cat]||[], prev=dailyRead(cat), btn=document.createElement('button');
  btn.type='button';btn.className='bits-tile';if(mode==='daily'&&prev&&prev.finished)btn.classList.add('completed');
  var name=document.createElement('span'),small=document.createElement('small');name.textContent=labels[cat];
- small.textContent=list.length ? (mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado') : list.length+' músicas') : 'Aguardando músicas';
- btn.append(name,small);btn.disabled=!list.length;btn.onclick=function(){start(cat,mode==='daily')};parent.appendChild(btn);
+ small.textContent=musicLoading?'Loading…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
+ btn.append(name,small);btn.disabled=musicLoading||!list.length;btn.onclick=function(){start(cat,mode==='daily')};parent.appendChild(btn);
  });
  });
 }
@@ -84,19 +85,19 @@ function getSongs(entry){
 }
 function loadRemote(){
  var entries=parseSource(configs);
- if(!entries.length){setStatus(window.HUBA_MUSICAS?'Nenhuma fonte válida na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório.');return}
+ if(!entries.length){musicLoading=false;ingest([]);setStatus(window.HUBA_MUSICAS?'Nenhuma fonte válida na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório.');return}
  var token=++loadToken, total=entries.length, completed=0, fails=0, found=[];
- setStatus('Carregando músicas: 0 / '+total+' fontes…');
+ musicLoading=true;drawTiles();setStatus('Loading…');
  // No máximo três fontes simultâneas para não sobrecarregar a API.
  var next=0;
- function worker(){if(next>=entries.length)return Promise.resolve();var e=entries[next++];return getSongs(e).then(function(s){found=found.concat(s)},function(){fails++}).then(function(){completed++;if(token===loadToken)setStatus('Carregando músicas: '+completed+' / '+total+' fontes…');return worker()})}
+ function worker(){if(next>=entries.length)return Promise.resolve();var e=entries[next++];return getSongs(e).then(function(s){found=found.concat(s)},function(){fails++}).then(function(){completed++;if(token===loadToken)setStatus('Loading…');return worker()})}
  Promise.all([worker(),worker(),worker()]).then(function(){
    if(token!==loadToken)return;
-   ingest(found);
-   var note=catalog.length+' músicas elegíveis. '+(fails?fails+' fonte(s) falharam. ':'')+'Clique em uma categoria para jogar.';
+   musicLoading=false;ingest(found);
+   var note=(fails?fails+' fonte(s) falharam. ':'');
    if(!catalog.length)note='Nenhuma prévia disponível. Verifique playlists.js ou tente novamente mais tarde.';
    setStatus(note);
- }).catch(function(){if(token===loadToken)setStatus('Falha inesperada. Tente novamente.')} ).then(function(){/* carregamento automático concluído */});
+ }).catch(function(){if(token===loadToken){musicLoading=false;drawTiles();$('catalogCount').textContent='Total: '+catalog.length+' músicas';setStatus('Falha inesperada. Tente novamente.')}} ).then(function(){/* carregamento automático concluído */});
 }
 function chooseSong(cat,daily){
  var list=byCat[cat]||[];if(!list.length)return null;

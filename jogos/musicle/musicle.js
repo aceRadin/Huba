@@ -5,7 +5,7 @@ var SKIP_FRAC=0.25, SKIP_MAX=60;   // o trecho nunca começa nos primeiros 25% d
   var STATS_KEY='playhub:musicle:stats:v1', HISTORY_KEY='playhub:musicle:recent:v1';
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey, hash=HUBA.hash, mulberry=HUBA.mulberry, shuffle=HUBA.shuffle, norm=HUBA.norm, recordDailyStreak=HUBA.recordDailyStreak;
-var songs=[], byGenre={}, genres=[], local=[], remote=[];
+var songs=[], byGenre={}, genres=[], local=[], remote=[], musicLoading=true;
 var cur=null;
 var audio=new Audio(), objUrl=null, stopTimer=null, raf=null, startSec=0;
 var failedAnswers={};
@@ -73,7 +73,7 @@ function rebuild(){
   songs=arr; byGenre={};
   songs.forEach(function(s){(byGenre[s.genre]=byGenre[s.genre]||[]).push(s)});
   genres=Object.keys(byGenre).sort(function(a,b){return a.localeCompare(b,'pt-BR')});
-  $('#summary').textContent=songs.length?'Total: '+songs.length+' músicas em '+genres.length+(genres.length===1?' gênero':' gêneros'):'';
+  $('#summary').textContent=musicLoading?'Loading…':('Total: '+songs.length+' músicas');
   renderHome();
 }
 
@@ -156,20 +156,20 @@ function fetchItem(g,it){
   function loadDeezer(){
     var lines=window.HUBA_MUSICAS && window.HUBA_MUSICAS.fontes;
     var cfg=parseCfg(Array.isArray(lines)?lines.join('\n'):'');
-    if(!cfg.length){$('#dzStatus').textContent=window.HUBA_MUSICAS?'Nenhuma fonte encontrada na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório e abra ../../playlists.js no navegador.';return}
-    $('#dzStatus').textContent='Carregando músicas automaticamente do Deezer…';
+    if(!cfg.length){musicLoading=false;$('#summary').textContent='Total: 0 músicas';renderHome();$('#dzStatus').textContent=window.HUBA_MUSICAS?'Nenhuma fonte encontrada na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório e abra ../../playlists.js no navegador.';return}
+    musicLoading=true;renderHome();$('#dzStatus').textContent='Loading…';
     var fails=0, empty=0, jobs=[];
     cfg.forEach(function(c){c.items.forEach(function(it){
       jobs.push(fetchItem(c.g,it).then(function(r){if(!r.length)empty++;return r},function(){fails++;return []}));
     })});
     Promise.all(jobs).then(function(res){
       var all=[];res.forEach(function(r){all=all.concat(r)});
-      remote=all;rebuild();
+      remote=all;musicLoading=false;rebuild();
       var extra=[];if(fails)extra.push(fails+' fonte(s) falharam');if(empty)extra.push(empty+' fonte(s) sem prévias');
-      $('#dzStatus').textContent=all.length+' músicas carregadas'+(extra.length?' · '+extra.join(' · '):'')+'.';
+      $('#dzStatus').textContent=extra.length?extra.join(' · ')+'.':'';
       if(!all.length)$('#dzStatus').textContent+=' Verifique playlists.js e a disponibilidade do Deezer.';
     }).catch(function(){
-      $('#dzStatus').textContent='Não foi possível carregar as músicas. Atualize a página para tentar novamente.';
+      musicLoading=false;renderHome();$('#summary').textContent='Total: '+songs.length+' músicas';$('#dzStatus').textContent='Não foi possível carregar as músicas. Atualize a página para tentar novamente.';
     });
   }
 
@@ -182,18 +182,19 @@ function renderHome(){
     keys.forEach(function(g){
       var b=document.createElement('button'); b.className='tile';
       var n=songs.length?poolOf(g).length:0, small='';
-      if(!songs.length) small='aguardando músicas';
+      if(musicLoading) small='Loading…';
+      else if(!songs.length) small='Indisponível';
       else if(n<NOPT) small='precisa de '+NOPT+'+ músicas';
       else if(daily){
         var st=readState(g);
         if(st&&st.p&&st.p.length>=nq(poolOf(g))){small='feito: '+st.s+'/'+nq(poolOf(g)); b.classList.add('done')}
-        else small=n+' músicas';
-      } else small=n+' músicas';
+        else small='';
+      } else small='';
       b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
       b.querySelector('.tn').textContent=songs.length?gName(g):cap(g);
       b.querySelector('.tacc').textContent=(songs.length&&n>=NOPT)?'precisão '+genreAcc(g):'';
       b.lastChild.textContent=small;
-      b.disabled=!songs.length||n<NOPT;
+      b.disabled=musicLoading||!songs.length||n<NOPT;
       b.onclick=function(){openGame(daily,g)};
       box.appendChild(b);
     });

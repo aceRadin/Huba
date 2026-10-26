@@ -37,3 +37,10 @@ O uso público de prévias deve respeitar as condições do Deezer e os direitos
 - Enter escolhe a primeira sugestão se o dropdown estiver aberto.
 - Se estiver fechado e houver uma música selecionada, Enter confirma mesmo sem foco no campo de busca.
 - Enter em outros botões mantém seu comportamento natural.
+
+
+## Rodapé de apoio e sugestões
+O rodapé discreto aparece na página inicial e em todos os jogos. Configure seus links de Patreon, Buy Me a Coffee e o e-mail para sugestões em `js/apoio-config.js`. Enquanto os URLs não forem informados, Patreon/Buy Me a Coffee ficam desativados (nenhum endereço fictício é enviado). O botão Sugestões abre um formulário: o visitante pode copiar a sugestão; o envio por e-mail fica disponível quando você configurar `sugestoesEmail`. Não existe banco de dados nem envio automático no GitHub Pages.
+
+## Indicador de carregamento
+Musical e Bits mostram `Loading…` nos cartões enquanto carregam as fontes, sem exibir contagens por categoria. Após o carregamento, o total de faixas aparece no canto inferior direito. Os resultados de desafios diários finalizados continuam visíveis nos cartões.
