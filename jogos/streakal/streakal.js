@@ -121,10 +121,10 @@ function loadDeezer(){
   var jobs=[];cfg.forEach(function(c){c.items.forEach(function(it){jobs.push(fetchItem(c.g,it).catch(function(){return []}))})});
   Promise.all(jobs).then(function(groups){remote=[].concat.apply([],groups);musicLoading=false;rebuild();$('#dzStatus').textContent=remote.length?'':'Nenhuma prévia disponível no momento.'}).catch(function(){musicLoading=false;renderHome();$('#dzStatus').textContent='Falha ao carregar músicas.'});
 }
-function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
+function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
 function openGame(daily,g){
   $('#home').classList.add('hidden');$('#play').classList.remove('hidden');$('#play').classList.remove('is-result');
-  $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Rodada aleatória')+' · Acerte até errar. Cada acerto permite uma melhoria permanente.';
+  $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Rodada aleatória')+' · Acerte até errar. Cada acerto exige uma escolha de dificuldade permanente.';
   cur=newRun(daily,g);invalidSongs={};
   // Desafios diários concluídos não podem reiniciar o placar nesse dia.
   var prev=daily?readJSON(dailyKey(g),null):null;
@@ -166,11 +166,12 @@ $('#playBtn').onclick=function(){if($('#playBtn').textContent==='Parar')stop();e
 function makeCard(song){var b=document.createElement('button');b.type='button';b.className='opt musical-option';
   var cover=document.createElement('span');cover.className='musical-cover';var fallback=document.createElement('span');fallback.className='musical-cover-fallback';fallback.textContent='♫';cover.appendChild(fallback);
   if(song.cover){var img=document.createElement('img');img.src=song.cover;img.alt='';img.loading='lazy';img.onerror=function(){img.remove()};cover.appendChild(img)}
-  var text=document.createElement('span');text.className='musical-option-info',title=document.createElement('strong');title.className='musical-option-title',artist=document.createElement('span');artist.className='musical-option-artist';
+  var text=document.createElement('span'), title=document.createElement('strong'), artist=document.createElement('span');
+  text.className='musical-option-info';title.className='musical-option-title';artist.className='musical-option-artist';
   title.textContent=song.title||song.label;artist.textContent=song.artist||'';text.appendChild(title);text.appendChild(artist);b.appendChild(cover);b.appendChild(text);b.setAttribute('aria-label',song.label);return b;
 }
 function nextQuestion(replacement){
-  stop();cur.pending=false;cur.locked=false;$('#quiz').classList.remove('hidden');$('#result').classList.add('hidden');$('#upgradePanel').classList.add('hidden');$('#replaceSong').classList.add('hidden');
+  stop();cur.pending=false;cur.locked=false;$('#quiz').classList.remove('hidden');$('#result').classList.add('hidden');$('#opts').classList.remove('hidden');$('#upgradePanel').classList.add('hidden');$('#replaceSong').classList.add('hidden');
   var answer=pickAnswer();if(answer===null){endRun(true);return}cur.answer=answer;
   if(!replacement)cur.round++;
   var others=shuffle(cur.pool.map(function(_,i){return i}).filter(function(i){return i!==answer&&!invalidSongs[i]}),cur.rng).slice(0,Math.max(1,cur.optionCount-1));
@@ -187,12 +188,35 @@ function answerQuestion(i){if(!cur||cur.locked||cur.pending||cur.ended)return;cu
   cur.options.forEach(function(idx,k){buttons[k].disabled=true;if(idx===cur.answer)buttons[k].classList.add('right');else if(idx===i)buttons[k].classList.add('wrong')});
   if(!correct){$('#qhint').textContent='Errou! Fim da sequência.';endRun(false);return}
   cur.score++;saveBest(cur.genre,cur.score);$('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
-  $('#qhint').textContent='Boa! Escolha uma melhoria para continuar.';cur.pending=true;$('#upgradePanel').classList.remove('hidden');
+  $('#qhint').textContent='Acertou! Escolha a dificuldade para a próxima rodada.';cur.pending=true;$('#opts').classList.add('hidden');$('#upgradePanel').classList.remove('hidden');
   $('#extraOption').disabled=cur.optionCount>=cur.pool.length;$('#extraOption').textContent=cur.optionCount>=cur.pool.length?'Máximo de alternativas atingido':'+1 alternativa na próxima rodada ('+(cur.optionCount+1)+')';
-  $('#shorterClip').textContent='Trecho 10% menor ('+formatSec(cur.clip*.9)+' s)';
+  // Penalidade só começa na terceira redução consecutiva.
+  // A partir dela, a taxa anterior é multiplicada por 1,5 em cada nova escolha.
+  var nextConsecutive=cur.consecutiveShorter+1;
+  var reduction=shorterReduction(nextConsecutive);
+  var extraChance=extraOptionChance(nextConsecutive);
+  $('#shorterClip').textContent='Trecho '+formatPercent(reduction)+' menor ('+formatSec(cur.clip*(1-reduction))+' s)'+(extraChance?' · '+formatPercent(extraChance)+' de chance de +1 alternativa':'');
+  $('#upgradePanel').scrollIntoView({behavior:'smooth',block:'center'});
 }
+// 1ª e 2ª reduções consecutivas: 10% sem risco extra.
+// Da 3ª em diante: 15%, 22,5%, 33,75%... da duração restante.
+function shorterReduction(consecutive){return consecutive<3?.10:Math.min(.95,.10*Math.pow(1.5,consecutive-2))}
+// O risco começa na 3ª com 15%, aumentando 5 pontos percentuais a cada vez.
+function extraOptionChance(consecutive){return consecutive<3?0:Math.min(1,consecutive*.05)}
+function formatPercent(n){return (n*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%'}
 function upgrade(type){if(!cur||!cur.pending||cur.ended)return;
-  if(type==='extra'){if(cur.optionCount>=cur.pool.length)return;cur.optionCount++}else cur.clip*=.9;
+  if(type==='extra'){
+    if(cur.optionCount>=cur.pool.length)return;
+    cur.optionCount++;
+    // Só a escolha voluntária da alternativa remove o debuff.
+    cur.consecutiveShorter=0;
+  }else{
+    cur.consecutiveShorter++;
+    var reduction=shorterReduction(cur.consecutiveShorter);
+    cur.clip*=1-reduction;
+    // Uma alternativa extra pode ser adicionada como penalidade, sem resetar o debuff.
+    if(cur.optionCount<cur.pool.length&&Math.random()<extraOptionChance(cur.consecutiveShorter))cur.optionCount++;
+  }
   nextQuestion(false);
 }
 $('#extraOption').onclick=function(){upgrade('extra')};$('#shorterClip').onclick=function(){upgrade('shorter')};

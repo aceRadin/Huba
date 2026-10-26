@@ -67,3 +67,7 @@ A tela final exibe as cinco respostas em cartões com capa, música, artista e i
 
 ## Streakal
 Novo jogo em jogos/streakal/. Diário e aleatório, começa com duas alternativas e até 30 s da prévia Deezer. Cada acerto exige escolher uma melhoria permanente (+1 alternativa ou duração seguinte multiplicada por 0,9). Acaba no primeiro erro. Recorde independente por gênero salvo no navegador (localStorage). O desafio diário permite uma tentativa por gênero por dia neste navegador.
+
+### Streakal — penalidade por redução consecutiva
+
+Na terceira escolha consecutiva de reduzir o trecho, a redução passa de 10% para 15%. Nas seguintes, a porcentagem de redução é multiplicada por 1,5 (22,5%, 33,75% etc.), sempre aplicada à duração restante. Da terceira em diante, existe chance de adicionar automaticamente uma alternativa: 15%, 20%, 25% e assim sucessivamente, limitada a 100%. A alternativa extra aleatória não zera a sequência; somente escolher **+1 alternativa** voluntariamente a zera.
