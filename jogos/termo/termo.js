@@ -90,7 +90,7 @@ $('#wJsonInput').onchange=function(){
 $('#wResetJson').onclick=function(){try{localStorage.removeItem(WSAVE_KEY)}catch(e){} WNOTE=''; WCFG={}; WFROM={}; wInitWords()};
 
 var WMODES={
-  termo:{name:'Termo',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
+  termo:{name:'Worg',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
   dueto:{name:'Dueto',n:2,tries:7,desc:'2 palavras · 7 tentativas'},
   quarteto:{name:'Quarteto',n:4,tries:9,desc:'4 palavras · 9 tentativas'}
 };
@@ -191,8 +191,16 @@ function wKey(k){
   w.flip=-1;
   if(k==='enter')return wSubmit();
   if(k==='back'){
-    if(w.slots[w.pos])w.slots[w.pos]='';
-    else if(w.pos>0){w.pos--; w.slots[w.pos]=''}
+    // Apaga a casa selecionada; se estiver vazia, procura uma letra antes.
+    // Se o cursor voltou ao início com letras à direita, apaga a última delas.
+    var target=w.pos;
+    if(!w.slots[target]||w.slots[target]===' '){
+      target=-1;
+      for(var j=w.pos-1;j>=0;j--)if(w.slots[j]&&w.slots[j]!==' '){target=j;break}
+      if(target<0)for(var j=4;j>w.pos;j--)if(w.slots[j]&&w.slots[j]!==' '){target=j;break}
+      if(target<0){for(var j=4;j>=0;j--)if(w.slots[j]===' '){target=j;break}}
+    }
+    if(target>=0){w.slots[target]='';w.pos=target}
   }
   else if(k==='space'){if(!w.slots[w.pos])w.slots[w.pos]=' '; if(w.pos<4)w.pos++}
   else if(k==='left'){if(w.pos>0)w.pos--}
@@ -289,6 +297,12 @@ $('#wToLanding').onclick=function(){
   window.location.href='../../index.html';
 };
 document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    if($('#wStats').open){e.preventDefault();$('#wStats').close();return}
+    if(!$('#wgame').classList.contains('hidden')){e.preventDefault();wBackToHub();return}
+    // Na seleção de modos não sai automaticamente para a página principal do HUBA.
+    return;
+  }
   if(!w||$('#wgame').classList.contains('hidden')||$('#wStats').open)return;
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   var k=e.key;

@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
-<title>HUBA — Musicle</title>
+<title>HUBA — Musical</title>
 <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body >
@@ -19,7 +19,7 @@
     <div class="top-tools">
       <div class="mini-tool" id="difficultyTool">
         <span class="tool-label">Dificuldade</span>
-        <div class="difficulty" role="group" aria-label="Dificuldade do Musicle">
+        <div class="difficulty" role="group" aria-label="Dificuldade do Musical">
           <button type="button" data-clip="1.5" id="clipHard">Desafiador</button>
           <button type="button" data-clip="7" id="clipCasual">Casual</button>
         </div>
@@ -76,7 +76,7 @@
 </section>
 <section id="play" class="hidden">
   <button class="back" id="backBtn">Voltar</button>
-  <h1 id="playTitle">Musicle</h1>
+  <h1 id="playTitle">Musical</h1>
   <p class="sub" id="playSub"></p>
 
   <div class="panel">
@@ -84,6 +84,7 @@
       <div class="qhead"><span id="qcount"></span><div class="dots" id="dots" aria-hidden="true"></div></div>
       <div class="clip">
         <button class="primary" id="playBtn">Tocar trecho</button>
+        <button id="replaceSong" class="hidden" type="button" title="Trocar somente a música que falhou">Sortear outra música</button>
         <div class="bar" aria-hidden="true"><i id="fill"></i></div>
       </div>
       <div class="vol">

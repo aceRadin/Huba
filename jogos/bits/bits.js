@@ -7,6 +7,7 @@ var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0;
+var unavailableSongs={};
 var statsKey='huba:bits:stats:v1', sourcesKey='huba:bits:sources:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
 var configs=window.BITS_DEFAULT_SOURCES||'';
 var norm=HUBA.norm, hash=HUBA.hash;
@@ -119,7 +120,7 @@ function chooseSong(cat,daily){
 }
 function start(cat,daily){
  var list=byCat[cat]||[];if(!list.length){setStatus('Carregue músicas antes de jogar.');return}
- stopAudio();var song=chooseSong(cat,daily);if(!song)return;
+ stopAudio();unavailableSongs={};var song=chooseSong(cat,daily);if(!song)return;
  active={cat:cat,daily:daily,song:song,guesses:[],finished:false,won:false,recorded:false};
  if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished}}
  roundId++;
@@ -127,7 +128,7 @@ function start(cat,daily){
  $('gameTitle').textContent='Bits · '+labels[cat];$('gameSubtitle').textContent=daily?'Desafio diário':'Rodada aleatória';
  $('playAgain').classList.toggle('hidden',daily);$('guessInput').value='';selected=null;
  $('finish').classList.toggle('hidden',!active.finished);$('guessArea').classList.toggle('hidden',active.finished);
- prepareAudio(song);renderRound();
+ $('replaceAudio').classList.add('hidden');prepareAudio(song);renderRound();
  if(active.finished)showFinish();else $('guessInput').focus();
 }
 function durationLimit(){return active?clipDuration():0}
@@ -153,6 +154,26 @@ function prepareAudio(song){
  audio.preload='metadata';audio.src=audioUrl||song.url;audio.load();updateTimeline();
 }
 function clipDuration(){return lengths[Math.min(active.guesses.length,lengths.length-1)]}
+function audioFailed(){
+ if(!active||active.finished||$('bitsGame').classList.contains('hidden'))return;
+ pauseAudio();$('replaceAudio').classList.remove('hidden');
+ message('Esta prévia não tocou. Sorteie outra música sem perder a rodada.');
+}
+function replaceAudio(){
+ if(!active||active.finished||$('replaceAudio').classList.contains('hidden'))return;
+ unavailableSongs[active.song.id]=true;
+ var options=(byCat[active.cat]||[]).filter(function(s){return !unavailableSongs[s.id]});
+ if(!options.length){message('Não há outra música disponível nesta categoria. Carregue mais músicas.');$('replaceAudio').classList.add('hidden');return}
+ var song=options[Math.floor(Math.random()*options.length)];
+ stopAudio();active.song=song;
+ // Uma música nova exige palpites novos; não contam tentativas ou derrota.
+ active.guesses=[];active.finished=false;active.won=false;
+ $('finish').classList.add('hidden');$('guessArea').classList.remove('hidden');
+ $('replaceAudio').classList.add('hidden');prepareAudio(song);dailySave();renderRound();
+ message('Nova música sorteada. Suas tentativas foram reiniciadas sem penalidade.');
+}
+$('replaceAudio').onclick=replaceAudio;
+audio.addEventListener('error',audioFailed);
 function buildTimeline(){
  var root=$('timeline');root.replaceChildren();var prev=0;
  lengths.forEach(function(end,i){
@@ -172,7 +193,7 @@ function play(){
  // Ao clicar de novo, o trecho reinicia desde o começo, mesmo se já estiver tocando.
  try{audio.currentTime=0}catch(e){}
  updateTimeline();
- var p=audio.play();if(p&&p.catch)p.catch(function(){pauseAudio();message('Não foi possível reproduzir a prévia. Tente outra fonte ou arquivo.')});
+ var p=audio.play();if(p&&p.catch)p.catch(audioFailed);
  $('playAudio').textContent='↻ Ouvir novamente';
 }
 function applyVolume(){
@@ -240,13 +261,21 @@ function submit(skip){
 function recordFinish(){if(!active||active.recorded)return;var st=getStats();st.games=(st.games||0)+1;if(active.won)st.wins=(st.wins||0)+1;saveStats(st);active.recorded=true;
  // Streak somente para conclusão de desafio diário, uma vez por data, independentemente da categoria.
  if(active.daily)HUBA.recordDailyStreak('bits');renderStats();}
-function showFinish(){stopAudio();$('guessArea').classList.add('hidden');$('finish').classList.remove('hidden');
+function showFinish(){$('replaceAudio').classList.add('hidden');stopAudio();$('guessArea').classList.add('hidden');$('finish').classList.remove('hidden');
  $('finishTitle').textContent=active.won?'Você acertou! 🎉':'Fim das tentativas';
  $('finishSong').textContent='Música: '+active.song.label;
  $('finishDetail').textContent=active.won?'Acertou em '+active.guesses.length+' de '+maxAttempts+' tentativas.':'Você pode tentar outra música no modo Aleatório.';
  $('playAgain').classList.toggle('hidden',active.daily);
 }
-function back(){stopAudio();if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}roundId++;active=null;$('bitsGame').classList.add('hidden');$('bitsHome').classList.remove('hidden');drawTiles();renderStats()}
+function back(){$('replaceAudio').classList.add('hidden');stopAudio();if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}roundId++;active=null;$('bitsGame').classList.add('hidden');$('bitsHome').classList.remove('hidden');drawTiles();renderStats()}
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Escape')return;
+ if($('bitsGame').classList.contains('hidden')){
+   if($('settings').open){e.preventDefault();$('settings').open=false}
+   return;
+ }
+ e.preventDefault();back();
+});
 $('backGame').onclick=back;$('finishBack').onclick=back;$('playAgain').onclick=function(){if(active&&!active.daily){var cat=active.cat;start(cat,false)}};
 $('playAudio').onclick=play;$('skipGuess').onclick=function(){submit(true)};$('submitGuess').onclick=function(){submit(false)};
 $('guessInput').addEventListener('input',function(){selected=null;$('submitGuess').disabled=true;$('selectedText').textContent='Selecione uma música da lista.';showSuggestions()});

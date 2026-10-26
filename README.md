@@ -2,9 +2,9 @@
 
 Versão organizada para GitHub Pages, com **três páginas principais de jogos**:
 
-- `index.html` — página inicial. Os cartões Musicle, Termo e Bits estão ativos; os demais continuam vazios.
-- `jogos/musicle/index.html` — Musicle original (categorias, áudio local e playlists Deezer).
-- `jogos/termo/index.html` — Termo com os modos Termo, Dueto e Quarteto, Diário e Aleatório.
+- `index.html` — página inicial. Os cartões Musical, Worg e Bits estão ativos; os demais continuam vazios.
+- `jogos/musicle/index.html` — Musical (antigo Musicle) (categorias, áudio local e playlists Deezer).
+- `jogos/termo/index.html` — Worg com os modos Termo, Dueto e Quarteto, Diário e Aleatório.
 - `jogos/bits/index.html` — Bits, jogo de reconhecer músicas por trechos progressivamente mais longos.
 
 ## Organização
@@ -71,3 +71,12 @@ O uso do Deezer e a licença dos dicionários de terceiros devem ser revisados a
 O Bits possui volume/mudo próprio (salvo no navegador), linha do tempo dividida em seis segmentos proporcionais aos trechos de 1, 2, 4, 7, 11 e 16 segundos, pulo que não interrompe áudio em reprodução e indicação amarela de palpites com artista correto e música incorreta. Todas essas mudanças ficam apenas em `jogos/bits/`.
 
 - **Bits:** músicas já usadas como palpite deixam de aparecer nas sugestões da rodada e não podem consumir outra tentativa, inclusive após retomar o desafio diário.
+
+## Teclado e navegação (atualização)
+
+- **Esc** retorna da partida para a seleção de modos/categorias de cada jogo. Não redireciona automaticamente para o HUBA. No Worg, Esc fecha as estatísticas primeiro.
+- **Worg:** Backspace apaga letras que estejam à direita mesmo se o cursor tiver voltado à primeira casa; a tecla Espaço continua inserindo o marcador `·`.
+- **Musical:** quando uma prévia falha, aparece **Sortear outra música**. A substituição ocorre apenas naquela pergunta, sem registrar erro ou consumir tentativa. Em desafios diários a substituição após falha pode diferir de outros navegadores, porque a disponibilidade de áudio não é universal.
+- Os diretórios `jogos/musicle/` e `jogos/termo/` são mantidos para preservar links e evitar alterações desnecessárias; os nomes exibidos passam a ser **Musical** e **Worg**. Chaves de armazenamento permanecem inalteradas.
+
+- **Bits:** se a prévia não tocar, **Sortear outra música** reinicia as tentativas daquela rodada sem penalidade. Quando necessário, a resposta diária salva muda neste navegador.

@@ -8,6 +8,7 @@ var dayKey=HUBA.dayKey, hash=HUBA.hash, mulberry=HUBA.mulberry, shuffle=HUBA.shu
 var songs=[], byGenre={}, genres=[], local=[], remote=[];
 var cur=null;
 var audio=new Audio(), objUrl=null, stopTimer=null, raf=null, startSec=0;
+var failedAnswers={};
 
 /* ---------- volume ---------- */
 var vol=0.8, muted=false;
@@ -244,13 +245,15 @@ function buildQuestions(pool,rng,exclude){
 function openGame(daily,g){
   var pool=poolOf(g);
   $('#home').classList.add('hidden'); $('#play').classList.remove('hidden');
-  $('#playTitle').textContent='Musicle · '+gName(g)+' · '+modeName();
+  $('#playTitle').textContent='Musical · '+gName(g)+' · '+modeName();
   $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+fmtSec(CLIP)+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
   cur={pool:pool,genre:g,daily:daily,statsRecorded:false};
+  failedAnswers={};
   newRound();
 }
 function newRound(){
   stop();
+  failedAnswers={};
   var pool=cur.pool;
   var rng=cur.daily?mulberry(hash(dayKey()+'|'+modeOf()+'|'+cur.genre+'|'+pool.length)):Math.random;
   cur.statsRecorded=false;
@@ -268,6 +271,11 @@ function goHome(){
 }
 $('#backBtn').onclick=goHome;
 $('#backBtn2').onclick=goHome;
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Escape')return;
+ if(!$('#play').classList.contains('hidden')){e.preventDefault();goHome()}
+ // Em #home, Escape não manda para a página inicial do HUBA.
+});
 
 /* ---------- áudio ---------- */
 function stop(){
@@ -287,6 +295,31 @@ function setSong(song,frac){
   };
   audio.preload='auto'; audio.src=objUrl||song.url;
 }
+function failedAudio(){
+  if(!cur||$('#play').classList.contains('hidden')||$('#quiz').classList.contains('hidden'))return;
+  stop();
+  $('#qhint').textContent='Esta música não pôde ser reproduzida. Você pode sortear outra sem perder a tentativa.';
+  $('#replaceSong').classList.remove('hidden');
+}
+audio.addEventListener('error',failedAudio);
+function replaceFailedSong(){
+  if(!cur||$('#replaceSong').classList.contains('hidden'))return;
+  var q=cur.qs[cur.qi], excluded={};
+  cur.qs.forEach(function(item,i){if(i!==cur.qi)excluded[item.a]=true});
+  Object.keys(failedAnswers).forEach(function(i){excluded[Number(i)]=true});
+  excluded[q.a]=true;
+  failedAnswers[q.a]=true;
+  var choices=cur.pool.map(function(_,i){return i}).filter(function(i){return !excluded[i]});
+  if(!choices.length){$('#qhint').textContent='Nenhuma outra música disponível nesta categoria. Você pode voltar e carregar outras fontes.';$('#replaceSong').classList.add('hidden');return}
+  stop();
+  q.a=choices[Math.floor(Math.random()*choices.length)];
+  var options=cur.pool.map(function(_,i){return i}).filter(function(i){return i!==q.a});
+  q.opts=shuffle(options,Math.random).slice(0,NOPT-1);
+  q.opts=shuffle([q.a].concat(q.opts),Math.random);
+  q.start=Math.random();
+  showQuestion();
+}
+$('#replaceSong').onclick=replaceFailedSong;
 function playClip(){
   stop();
   audio.currentTime=startSec;
@@ -302,7 +335,7 @@ function playClip(){
     })(t0);
   };
   var p=audio.play();
-  if(p&&p.catch)p.catch(function(){stop(); $('#qhint').textContent='Não consegui tocar este arquivo.'});
+  if(p&&p.catch)p.catch(function(){failedAudio()});
   $('#playBtn').textContent='Parar';
 }
 $('#playBtn').onclick=function(){ $('#playBtn').textContent==='Parar'?stop():playClip() };
@@ -323,6 +356,7 @@ function showQuestion(){
   var q=cur.qs[cur.qi];
   $('#qcount').textContent='Pergunta '+(cur.qi+1)+' de '+cur.qs.length;
   $('#qhint').textContent='Qual música tocou?';
+  $('#replaceSong').classList.add('hidden');
   $('#nextRow').classList.add('hidden');
   dots();
   setSong(cur.pool[q.a],q.start);
@@ -369,6 +403,7 @@ $('#nextBtn').onclick=function(){
 function showResult(){
   stop();
   $('#quiz').classList.add('hidden'); $('#result').classList.remove('hidden');
+  $('#replaceSong').classList.add('hidden');
   var total=cur.qs.length;
   $('#resultTitle').textContent='Você acertou '+cur.score+' de '+total;
   var ul=$('#recap'); ul.innerHTML='';

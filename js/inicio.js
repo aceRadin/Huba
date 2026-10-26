@@ -1,7 +1,7 @@
 (function(){
  var games=[
-  {name:'Musicle',path:'jogos/musicle/index.html',streaks:[{id:'musicle',label:'Casual'},{id:'musicle-hard',label:'Desafiador'}]},
-  {name:'Termo',path:'jogos/termo/index.html',streaks:[{id:'word',label:''}]},
+  {name:'Musical',path:'jogos/musicle/index.html',streaks:[{id:'musicle',label:'Casual'},{id:'musicle-hard',label:'Desafiador'}]},
+  {name:'Worg',path:'jogos/termo/index.html',streaks:[{id:'word',label:''}]},
   {name:'Bits',path:'jogos/bits/index.html',streaks:[{id:'bits',label:''}]}
  ];
  var grid=document.getElementById('landingGrid');
