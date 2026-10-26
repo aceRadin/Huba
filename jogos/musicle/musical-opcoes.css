@@ -42,3 +42,58 @@
   #play .musical-audio-row .vol input[type=range] {width:65px}
   #play .musical-audio-row .clip #replaceSong {font-size:.75rem;padding:7px}
 }
+
+
+/* Tela de resultado do Musical — cinco capas na mesma linha. */
+#play.is-result .musical-play-heading {text-align:center}
+#play.is-result #playTitle, #play.is-result #playSub {text-align:center}
+#play #result {text-align:center}
+#play #result #resultTitle {text-align:center;margin:4px 0 16px}
+#play #result .recap {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+  padding:0;
+  margin:12px 0 20px;
+  list-style:none;
+  align-items:stretch;
+}
+#play #result .musical-recap-card {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:9px;
+  min-width:0;
+  padding:10px;
+  text-align:center;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+}
+#play #result .musical-recap-card.ok {border-color:var(--ok)}
+#play #result .musical-recap-card.no {border-color:var(--bad)}
+#play #result .musical-recap-number {font-weight:700;font-size:.75rem;color:var(--muted)}
+#play #result .musical-recap-guess {
+  display:block;
+  margin-top:5px;
+  padding-top:7px;
+  border-top:1px solid var(--line);
+  font-size:.72rem;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#play #result > .row {justify-content:center}
+@media(max-width:760px){
+  #play #result .recap {
+    grid-template-columns:repeat(5,minmax(144px,1fr));
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    padding-bottom:12px;
+    gap:9px;
+    scroll-snap-type:x proximity;
+  }
+  #play #result .musical-recap-card {scroll-snap-align:start;padding:8px;gap:6px}
+  #play #result .musical-option-title {font-size:.8rem}
+  #play #result .musical-option-artist {font-size:.72rem}
+}

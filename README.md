@@ -59,3 +59,7 @@ As quatro opções agora aparecem lado a lado, com a capa do Deezer e os nomes d
 
 ## Ajuste visual do Musical
 O cabeçalho da partida está alinhado à área das quatro alternativas, com Voltar à esquerda. O volume fica à esquerda do botão Tocar trecho e da barra de progresso. As alterações de layout estão em `jogos/musicle/musical-opcoes.css`.
+
+
+### Musical — tela de resultados
+A tela final exibe as cinco respostas em cartões com capa, música, artista e indicação de acerto/erro. Em celulares, os cinco cartões permanecem lado a lado com rolagem horizontal.

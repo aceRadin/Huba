@@ -399,10 +399,45 @@ function showResult(){
   $('#resultTitle').textContent='Você acertou '+cur.score+' de '+total;
   var ul=$('#recap'); ul.innerHTML='';
   cur.qs.forEach(function(q,i){
-    var li=document.createElement('li'), ok=cur.picks[i]===q.a;
-    li.className=ok?'ok':'no';
-    li.textContent=cur.pool[q.a].label;
-    if(!ok){var s=document.createElement('small'); s.textContent='Você escolheu: '+cur.pool[cur.picks[i]].label; li.appendChild(s)}
+    var song=cur.pool[q.a], ok=cur.picks[i]===q.a;
+    var li=document.createElement('li');
+    li.className='musical-recap-card '+(ok?'ok':'no');
+
+    var cover=document.createElement('span');
+    cover.className='musical-cover';
+    var fallback=document.createElement('span');
+    fallback.className='musical-cover-fallback';
+    fallback.textContent='♫'; fallback.setAttribute('aria-hidden','true');
+    cover.appendChild(fallback);
+    if(song.cover){
+      var img=document.createElement('img');
+      img.src=song.cover; img.alt='Capa do álbum';
+      img.loading='lazy'; img.decoding='async';
+      img.onerror=function(){img.remove()};
+      cover.appendChild(img);
+    }
+
+    var info=document.createElement('span');
+    info.className='musical-option-info';
+    var number=document.createElement('span');
+    number.className='musical-recap-number';
+    number.textContent='Música '+(i+1)+' · '+(ok?'Acertou':'Errou');
+    var title=document.createElement('strong');
+    title.className='musical-option-title';
+    var artist=document.createElement('span');
+    artist.className='musical-option-artist';
+    var parts=song.label.split(' - ');
+    title.textContent=song.title||(parts.length>1?parts.slice(1).join(' - '):song.label);
+    artist.textContent=song.artist||(parts.length>1?parts[0]:'Artista não informado');
+    info.appendChild(number); info.appendChild(title); info.appendChild(artist);
+
+    if(!ok && cur.pool[cur.picks[i]]){
+      var guess=document.createElement('small');
+      guess.className='musical-recap-guess';
+      guess.textContent='Seu palpite: '+cur.pool[cur.picks[i]].label;
+      info.appendChild(guess);
+    }
+    li.appendChild(cover); li.appendChild(info);
     ul.appendChild(li);
   });
   $('#again').classList.toggle('hidden',cur.daily);
