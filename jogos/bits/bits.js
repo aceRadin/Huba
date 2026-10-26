@@ -9,7 +9,7 @@ var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0;
 var unavailableSongs={};
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
-var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.bits)?window.HUBA_MUSICAS.bits.join('\n'):'';
+var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'';
 var norm=HUBA.norm, hash=HUBA.hash;
 function setStatus(message){$('loadStatus').textContent=message}
 function storageGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -84,7 +84,7 @@ function getSongs(entry){
 }
 function loadRemote(){
  var entries=parseSource(configs);
- if(!entries.length){setStatus('Configure playlists em playlists.js, na raiz do HUBA.');return}
+ if(!entries.length){setStatus(window.HUBA_MUSICAS?'Nenhuma fonte válida na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório.');return}
  var token=++loadToken, total=entries.length, completed=0, fails=0, found=[];
  setStatus('Carregando músicas: 0 / '+total+' fontes…');
  // No máximo três fontes simultâneas para não sobrecarregar a API.
@@ -265,6 +265,21 @@ document.addEventListener('keydown',function(e){
 $('backGame').onclick=back;$('finishBack').onclick=back;$('playAgain').onclick=function(){if(active&&!active.daily){var cat=active.cat;start(cat,false)}};
 $('playAudio').onclick=play;$('skipGuess').onclick=function(){submit(true)};$('submitGuess').onclick=function(){submit(false)};
 $('guessInput').addEventListener('input',function(){selected=null;$('submitGuess').disabled=true;$('selectedText').textContent='Selecione uma música da lista.';showSuggestions()});
-$('guessInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(selected)submit(false);else{var first=$('suggestions').querySelector('button');if(first)first.click()}}});
+// Enter: prioriza completar a pesquisa quando a lista estiver aberta.
+// Com a lista fechada e uma faixa já selecionada, confirma o palpite
+// mesmo que o campo de pesquisa não esteja com o foco.
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Enter'||e.repeat||e.isComposing||!active||active.finished||$('bitsGame').classList.contains('hidden'))return;
+ var tag=e.target&&e.target.tagName;
+ // Não interfere no Enter nativo sobre outros botões e controles.
+ if(tag==='BUTTON'||tag==='SELECT'||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable))return;
+ var list=$('suggestions');
+ if(list.classList.contains('open')){
+   var first=list.querySelector('button');
+   if(first){e.preventDefault();first.click()}
+   return;
+ }
+ if(selected){e.preventDefault();submit(false)}
+});
 ingest([]);renderStats();loadRemote();
 })();

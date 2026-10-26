@@ -154,9 +154,9 @@ function fetchItem(g,it){
   });
 }
   function loadDeezer(){
-    var lines=window.HUBA_MUSICAS && window.HUBA_MUSICAS.musical;
+    var lines=window.HUBA_MUSICAS && window.HUBA_MUSICAS.fontes;
     var cfg=parseCfg(Array.isArray(lines)?lines.join('\n'):'');
-    if(!cfg.length){$('#dzStatus').textContent='Nenhuma fonte configurada em playlists.js para Musical.';return}
+    if(!cfg.length){$('#dzStatus').textContent=window.HUBA_MUSICAS?'Nenhuma fonte encontrada na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório e abra ../../playlists.js no navegador.';return}
     $('#dzStatus').textContent='Carregando músicas automaticamente do Deezer…';
     var fails=0, empty=0, jobs=[];
     cfg.forEach(function(c){c.items.forEach(function(it){

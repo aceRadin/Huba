@@ -1,31 +1,39 @@
-# HUBA — Musical, Wording e Bits
+# HUBA — Catálogo musical único
 
-## Como publicar
+Agora **Musical e Bits usam a mesma lista** de playlists em `playlists.js`, na raiz. O arquivo contém somente `window.HUBA_MUSICAS.fontes`. Para adicionar outro jogo musical, consulte essa mesma propriedade. Os jogos continuam com lógica e estatísticas próprias.
 
-Envie o **conteúdo desta pasta** para a raiz do repositório do GitHub Pages. É necessário ter `index.html`, `playlists.js`, `css/`, `js/`, `dados/` e `jogos/` na raiz.
+## Configurar
 
-## Como definir as playlists (Musical e Bits)
-
-Edite o **único arquivo `playlists.js` na raiz**. Existem duas listas independentes: `musical` e `bits`.
-
-Exemplo de linha dentro da lista `bits`:
+Abra `playlists.js` e edite os IDs ou links dentro da lista `fontes`. Os IDs enviados foram preservados. Cada linha tem o formato:
 
 ```js
-'rock: https://www.deezer.com/playlist/123456',
+'rock: playlist:1306931615, playlist:4047160366'
 ```
 
-Também aceita `rock: playlist:123456` ou nomes de artistas separados por vírgula. Mantenha as aspas e as vírgulas entre as linhas. No Bits, use as categorias `pop`, `anime`, `rock` ou `metal`: a categoria `geral` combina as quatro. No Musical, os nomes de gêneros são livres.
+As categorias configuradas são `rock`, `metal`, `pop` e `anime`; o Bits também combina as quatro em `geral`.
 
-**IMPORTANTE:** o arquivo que você edita é público. Não adicione chaves de API privadas, tokens ou senhas. Depois de editar, faça **Commit** e **Push origin** no GitHub Desktop. As playlists passam a ser as mesmas para todos os visitantes.
+## Publicar no GitHub Pages
 
-Os jogos iniciam as consultas ao Deezer automaticamente ao abrir suas páginas. O carregamento de playlists permanece paginado, consultando `next` até o fim; prévias ausentes e duplicatas são ignoradas. Conforme tamanho da playlist e a disponibilidade da API, isso pode demorar ou falhar. **Não é possível garantir que todas as faixas sejam reproduzíveis.**
+1. Descompacte e copie **o conteúdo interno** desta pasta para a **raiz** do repositório (não aninhe outra pasta HUBA).
+2. Confira se existem `index.html` e `playlists.js` **lado a lado** na raiz.
+3. No GitHub Desktop, clique **Commit** e **Push origin**.
+4. Em GitHub → Actions, confira se o Pages publicou o último commit.
+5. Abra `https://SEU-USUARIO.github.io/SEU-REPOSITORIO/playlists.js`. Você deve ver a lista com `fontes:`. Se mostrar 404, conteúdo anterior, ou uma página HTML, o caminho/branch/publicação estão errados.
+6. Atualize as páginas do Musical e do Bits com Ctrl+Shift+R. Os scripts de configuração receberam `?v=2` para ajudar a evitar cache antigo.
 
-Removi os controles de adicionar músicas e arquivos locais das interfaces de Musical e Bits. A configuração anterior em `localStorage` deixa de ser utilizada, mas não foi apagada. Estatísticas e salvamentos dos jogos são preservados.
+**Atenção:** se o GitHub Pages usar uma branch ou pasta diferente de `main` / `/(root)`, publique os arquivos **nesse local configurado**.
 
-## Testar
+## Sobre funcionamento
 
-Use Live Server no VS Code ou GitHub Pages. Confira se os cartões de categorias aparecem depois do carregamento e se as prévias estão disponíveis. Não dependa de abrir diretamente por `file://` para testar o site completo.
+As fontes são as mesmas para Musical e Bits. Ambos consultam o Deezer independentemente quando a página é aberta; por isso o número exato de prévias disponíveis pode variar conforme falhas da API ou limites de acesso. O Musical e o Bits podem ter jogos e filtros de exibição diferentes, mas partem das mesmas playlists. Não há servidor nem chave privada no site.
 
-## Direitos musicais
+Se o arquivo `playlists.js` for encontrado e as músicas ainda não aparecerem, inspecione F12 → Console e Rede (Network); pode ser um problema separado de disponibilidade da API Deezer.
 
-Usar o Deezer e prévias no site público depende das respectivas permissões e condições de uso; hospedagem no GitHub Pages não fornece direitos de reprodução nem elimina essas restrições.
+O uso público de prévias deve respeitar as condições do Deezer e os direitos musicais aplicáveis.
+
+## Atualização Bits — Enter e botões
+
+- Confirmar palpite agora fica antes de Pular (+ trecho).
+- Enter escolhe a primeira sugestão se o dropdown estiver aberto.
+- Se estiver fechado e houver uma música selecionada, Enter confirma mesmo sem foco no campo de busca.
+- Enter em outros botões mantém seu comportamento natural.
