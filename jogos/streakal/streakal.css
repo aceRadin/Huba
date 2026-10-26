@@ -82,3 +82,8 @@ body.streakal-support-collapsed .huba-support{display:none}
 .streakal-support-toggle[hidden]{display:none!important}
 body:not(.streakal-support-collapsed) .streakal-support-toggle{bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px))}
 @media(max-width:560px){body:not(.streakal-support-collapsed) .streakal-support-toggle{bottom:max(122px,calc(env(safe-area-inset-bottom) + 122px))}}
+
+/* Avisos permanentes dos limites e destaque dourado ao completar ambos. */
+#play .streakal-limit-status{margin:0 0 12px;padding:9px 12px;text-align:center;border:1px solid #c49d43;border-radius:10px;color:#f4d58a;background:rgba(175,128,24,.12);font-weight:700}
+#play.streakal-maxed>.panel{border:2px solid #d9aa42;box-shadow:0 0 0 2px rgba(217,170,66,.14),0 0 28px rgba(217,170,66,.17)}
+#play.streakal-maxed .streakal-limit-status{border-color:#efd080;background:rgba(208,157,38,.18)}

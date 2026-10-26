@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
 <title>HUBA — Streakal</title>
 <link rel="stylesheet" href="../../css/style.css">
-<link rel="stylesheet" href="streakal.css?v=3">
+<link rel="stylesheet" href="streakal.css?v=4">
 </head>
 <body >
 <main>
@@ -51,6 +51,7 @@
 
   <div class="panel">
     <div id="quiz">
+      <div id="limitStatus" class="streakal-limit-status hidden" role="status" aria-live="polite"></div>
       <div class="qhead"><strong id="qcount">Sequência: 0</strong><strong id="runSettings"></strong></div>
       <div class="musical-audio-row">
         <div class="vol">
@@ -71,7 +72,7 @@
         <p class="note">A dificuldade escolhida se acumula e permanece até você errar.</p>
         <div class="streakal-upgrade-actions">
           <button type="button" id="extraOption">+1 alternativa na próxima rodada</button>
-          <button type="button" id="shorterClip">Trecho 10% menor na próxima rodada</button>
+          <button type="button" id="shorterClip">Trecho 5% menor na próxima rodada</button>
         </div>
       </div>
     </div>
@@ -89,7 +90,7 @@
 </main>
 <script src="../../js/comum.js" defer></script>
 <script src="../../playlists.js?v=2" defer></script>
-<script src="streakal.js?v=3" defer></script>
+<script src="streakal.js?v=4" defer></script>
 <script src="../../js/apoio-config.js" defer></script>
 <script src="../../js/apoio.js" defer></script>
 </body>

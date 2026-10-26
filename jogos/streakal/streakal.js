@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var ALL='__todos__', MAX_CLIP=30, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
+var ALL='__todos__', MAX_CLIP=30, MIN_CLIP=1.5, MAX_OPTIONS=15, BASE_REDUCTION=.05, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm;
 var songs=[],byGenre={},genres=[],local=[],remote=[],musicLoading=true;
@@ -147,7 +147,7 @@ function streakalSupportSetCollapsed(collapsed){
 function openGame(daily,g){
   $('#home').classList.add('hidden');$('#play').classList.remove('hidden');$('#play').classList.remove('is-result');
   $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Rodada aleatória')+' · Acerte até errar. Cada acerto exige uma escolha de dificuldade permanente.';
-  cur=newRun(daily,g);invalidSongs={};streakalSupportSetCollapsed(false);
+  cur=newRun(daily,g);invalidSongs={};streakalSupportSetCollapsed(false);updateLimitDisplay();
   // Desafios diários concluídos não podem reiniciar o placar nesse dia.
   var prev=daily?readJSON(dailyKey(g),null):null;
   if(prev&&prev.done){cur.score=prev.score;cur.ended=true;showResult(true);return}
@@ -200,6 +200,7 @@ function nextQuestion(replacement){
   var others=shuffle(cur.pool.map(function(_,i){return i}).filter(function(i){return i!==answer&&!invalidSongs[i]}),cur.rng).slice(0,Math.max(1,cur.optionCount-1));
   cur.options=shuffle([answer].concat(others),cur.rng);
   $('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
+  updateLimitDisplay();
   $('#runSettings').textContent=cur.options.length+' opções · '+formatSec(cur.clip)+' s';
   $('#qhint').textContent=cur.penaltyNotice||'Qual música tocou?';
   cur.penaltyNotice='';
@@ -207,48 +208,79 @@ function nextQuestion(replacement){
   var box=$('#opts');box.innerHTML='';box.style.setProperty('--option-columns',Math.min(5,cur.options.length));box.style.setProperty('--mobile-columns',Math.min(2,cur.options.length));
   cur.options.forEach(function(i){var b=makeCard(cur.pool[i]);b.onclick=function(){answerQuestion(i)};box.appendChild(b)});
 }
+// A duração nunca fica menor do que 1,5 segundo, e não há mais que 15 opções.
+function maxOptions(){return Math.min(MAX_OPTIONS,cur.pool.length)}
+function minTimeReached(){return cur.clip<=MIN_CLIP+1e-8}
+function maxOptionsReached(){return cur.optionCount>=maxOptions()}
+function updateLimitDisplay(){
+  var timeMin=!!cur&&minTimeReached(), optionsMax=!!cur&&maxOptionsReached();
+  var tags=[];
+  if(timeMin)tags.push('Tempo mínimo: 1,5 s');
+  if(optionsMax)tags.push(cur.optionCount>=MAX_OPTIONS?'Máximo de 15 alternativas':'Máximo de músicas disponíveis: '+maxOptions());
+  $('#limitStatus').textContent=tags.join(' · ');
+  $('#limitStatus').classList.toggle('hidden',!tags.length);
+  $('#play').classList.toggle('streakal-maxed',timeMin&&optionsMax);
+}
+// A partir da terceira redução consecutiva, a taxa cresce 50% a cada escolha.
+// Ex.: 5%, 5%, 7,5%, 11,25%, 16,875% ...
+function shorterReduction(consecutive){return consecutive<3?BASE_REDUCTION:Math.min(.95,BASE_REDUCTION*Math.pow(1.5,consecutive-2))}
+// O risco começa na terceira redução consecutiva: 9%, 12%, 15%...
+// Cada escolha consecutiva acumula 3 pontos percentuais de risco.
+function extraOptionChance(consecutive){return consecutive<3?0:Math.min(1,consecutive*.03)}
+function formatPercent(n){return (n*100).toLocaleString('pt-BR',{maximumFractionDigits:3})+'%'}
+function applyShorter(reduction,applyPenalty){
+  cur.clip=Math.max(MIN_CLIP,cur.clip*(1-reduction));
+  if(applyPenalty){
+    var chance=extraOptionChance(cur.consecutiveShorter);
+    if(chance>0&&Math.random()<chance&&!maxOptionsReached()){
+      cur.optionCount++;
+      cur.penaltyNotice='Punição ativada! Chance de '+formatPercent(chance)+': +1 alternativa adicionada. Qual música tocou?';
+    }else cur.penaltyNotice='';
+  }else cur.penaltyNotice='';
+}
+function autoDifficultyIfLimited(){
+  if(minTimeReached()&&maxOptionsReached()){
+    // Ambos os limites foram atingidos: avança sem alterar a dificuldade.
+    cur.penaltyNotice='Limites máximos atingidos! Qual música tocou?';
+  }else if(minTimeReached()){
+    // Tempo já no mínimo: a única penalidade possível é acrescentar uma opção.
+    cur.optionCount++;
+    cur.penaltyNotice='Tempo mínimo atingido: +1 alternativa automática. Qual música tocou?';
+  }else if(maxOptionsReached()){
+    // Opções no máximo: aplica apenas a redução BASE de 5%, sem sorteios.
+    cur.clip=Math.max(MIN_CLIP,cur.clip*(1-BASE_REDUCTION));
+    cur.penaltyNotice='Máximo de alternativas: trecho reduzido automaticamente em 5%. Qual música tocou?';
+  }else return false;
+  cur.pending=false;
+  nextQuestion(false);
+  return true;
+}
 function answerQuestion(i){if(!cur||cur.locked||cur.pending||cur.ended)return;cur.locked=true;stop();
   var correct=i===cur.answer,buttons=$('#opts').querySelectorAll('button');
   cur.options.forEach(function(idx,k){buttons[k].disabled=true;if(idx===cur.answer)buttons[k].classList.add('right');else if(idx===i)buttons[k].classList.add('wrong')});
   if(!correct){$('#qhint').textContent='Errou! Fim da sequência.';endRun(false);return}
   cur.score++;saveBest(cur.genre,cur.score);$('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
+  // Quando apenas uma dificuldade é possível, não mostra os botões.
+  if(autoDifficultyIfLimited())return;
   $('#qhint').textContent='Acertou! Escolha a dificuldade para a próxima rodada.';cur.pending=true;$('#opts').classList.add('hidden');$('#upgradePanel').classList.remove('hidden');
-  $('#extraOption').disabled=cur.optionCount>=cur.pool.length;$('#extraOption').textContent=cur.optionCount>=cur.pool.length?'Máximo de alternativas atingido':'+1 alternativa na próxima rodada ('+(cur.optionCount+1)+')';
-  // Penalidade só começa na terceira redução consecutiva.
-  // A partir dela, a taxa anterior é multiplicada por 1,5 em cada nova escolha.
+  $('#extraOption').disabled=false;
+  $('#extraOption').textContent='+1 alternativa na próxima rodada ('+(cur.optionCount+1)+')';
   var nextConsecutive=cur.consecutiveShorter+1;
   var reduction=shorterReduction(nextConsecutive);
   var extraChance=extraOptionChance(nextConsecutive);
-  $('#shorterClip').textContent='Trecho '+formatPercent(reduction)+' menor ('+formatSec(cur.clip*(1-reduction))+' s)'+(extraChance?' · '+formatPercent(extraChance)+' de chance de +1 alternativa':'');
+  $('#shorterClip').textContent='Trecho '+formatPercent(reduction)+' menor ('+formatSec(Math.max(MIN_CLIP,cur.clip*(1-reduction)))+' s)'+(extraChance?' · '+formatPercent(extraChance)+' de chance de +1 alternativa':'');
   $('#upgradePanel').scrollIntoView({behavior:'smooth',block:'center'});
 }
-// 1ª e 2ª reduções consecutivas: 10% sem risco extra.
-// Da 3ª em diante: 15%, 22,5%, 33,75%... da duração restante.
-function shorterReduction(consecutive){return consecutive<3?.10:Math.min(.95,.10*Math.pow(1.5,consecutive-2))}
-// O risco começa na 3ª com 15%, aumentando 5 pontos percentuais a cada vez.
-function extraOptionChance(consecutive){return consecutive<3?0:Math.min(1,consecutive*.05)}
-function formatPercent(n){return (n*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%'}
 function upgrade(type){if(!cur||!cur.pending||cur.ended)return;
   if(type==='extra'){
-    if(cur.optionCount>=cur.pool.length)return;
+    if(maxOptionsReached())return;
     cur.optionCount++;
-    // Só a escolha voluntária da alternativa remove o debuff.
-    cur.consecutiveShorter=0;
-  }else{
+    cur.consecutiveShorter=0; // Só uma escolha voluntária de +1 alternativa reseta o debuff.
+    cur.penaltyNotice='';
+  }else if(type==='shorter'){
     cur.consecutiveShorter++;
-    var reduction=shorterReduction(cur.consecutiveShorter);
-    cur.clip*=1-reduction;
-    // Sorteia a chance exibida no botão: 15%, 20%, 25%... a partir da 3ª redução.
-    // O sorteio é independente em cada turno. Uma punição não zera o debuff.
-    var chance=extraOptionChance(cur.consecutiveShorter);
-    var roll=Math.random(); // Número uniforme de 0 (inclusivo) até 1 (exclusivo).
-    if(chance>0&&roll<chance&&cur.optionCount<cur.pool.length){
-      cur.optionCount++;
-      cur.penaltyNotice='Punição ativada! '+formatPercent(chance)+' de chance: +1 alternativa adicionada. Qual música tocou?';
-    }else{
-      cur.penaltyNotice='';
-    }
-  }
+    applyShorter(shorterReduction(cur.consecutiveShorter),true);
+  }else return;
   nextQuestion(false);
 }
 $('#extraOption').onclick=function(){upgrade('extra')};$('#shorterClip').onclick=function(){upgrade('shorter')};
