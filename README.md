@@ -1,82 +1,31 @@
-# HUBA — jogos para navegador
+# HUBA — Musical, Wording e Bits
 
-Versão organizada para GitHub Pages, com **três páginas principais de jogos**:
+## Como publicar
 
-- `index.html` — página inicial. Os cartões Musical, Wording e Bits estão ativos; os demais continuam vazios.
-- `jogos/musicle/index.html` — Musical (antigo Musicle) (categorias, áudio local e playlists Deezer).
-- `jogos/wording/index.html` — Wording com os modos Wording, Woording e Woooording, Diário e Aleatório.
-- `jogos/bits/index.html` — Bits, jogo de reconhecer músicas por trechos progressivamente mais longos.
+Envie o **conteúdo desta pasta** para a raiz do repositório do GitHub Pages. É necessário ter `index.html`, `playlists.js`, `css/`, `js/`, `dados/` e `jogos/` na raiz.
 
-## Organização
+## Como definir as playlists (Musical e Bits)
 
-```text
-index.html
-css/style.css
-css/palavras.css
-js/comum.js
-js/inicio.js
-dados/palavra.json
-dados/words.json
-jogos/
-  musicle/
-    index.html
-    musicle.js
-  wording/
-    index.html
-    wording.js
-  bits/
-    index.html
-    bits.css
-    config.js
-    bits.js
+Edite o **único arquivo `playlists.js` na raiz**. Existem duas listas independentes: `musical` e `bits`.
+
+Exemplo de linha dentro da lista `bits`:
+
+```js
+'rock: https://www.deezer.com/playlist/123456',
 ```
 
-Para adicionar um novo jogo, crie `jogos/novo-jogo/index.html` e inclua sua página no array `games` em `js/inicio.js`. Os outros jogos não precisam ser alterados.
+Também aceita `rock: playlist:123456` ou nomes de artistas separados por vírgula. Mantenha as aspas e as vírgulas entre as linhas. No Bits, use as categorias `pop`, `anime`, `rock` ou `metal`: a categoria `geral` combina as quatro. No Musical, os nomes de gêneros são livres.
 
-## Bits: como jogar
+**IMPORTANTE:** o arquivo que você edita é público. Não adicione chaves de API privadas, tokens ou senhas. Depois de editar, faça **Commit** e **Push origin** no GitHub Desktop. As playlists passam a ser as mesmas para todos os visitantes.
 
-- Cinco categorias: **Geral** (todas), **Pop**, **Anime**, **Rock** e **Metal**.
-- Duas colunas na página do Bits: **Diário** (uma resposta por categoria e data) e **Aleatório** (repetível).
-- Uma única música por partida; **seis tentativas**. Trechos: 1, 2, 4, 7, 11 e 16 segundos, sempre a partir da introdução.
-- Digite artista ou música para localizar uma opção e confirme seu palpite. Pular ou errar desbloqueia um trecho maior.
-- Progresso do Diário, estatísticas e streak são salvos no `localStorage`; o streak **Bits** aparece no cartão da página inicial.
-- A lista padrão de artistas por categoria pode ser editada em `jogos/bits/config.js`.
-- O menu **Fontes de músicas e configurações** permite escolher outros artistas ou playlists Deezer ou carregar arquivos do próprio computador. Playlists Deezer têm paginação pelo campo `next`.
-- A pesquisa e as respostas do Bits se limitam às músicas carregadas (com prévias válidas); uma música não presente na lista não pode ser escolhida.
+Os jogos iniciam as consultas ao Deezer automaticamente ao abrir suas páginas. O carregamento de playlists permanece paginado, consultando `next` até o fim; prévias ausentes e duplicatas são ignoradas. Conforme tamanho da playlist e a disponibilidade da API, isso pode demorar ou falhar. **Não é possível garantir que todas as faixas sejam reproduzíveis.**
 
-### Limites conhecidos
+Removi os controles de adicionar músicas e arquivos locais das interfaces de Musical e Bits. A configuração anterior em `localStorage` deixa de ser utilizada, mas não foi apagada. Estatísticas e salvamentos dos jogos são preservados.
 
-- As fontes Deezer são consultadas diretamente do navegador por JSONP; seu funcionamento depende da disponibilidade e das regras da API. **O uso público ou comercial de prévias precisa de autorização apropriada.** Não há faixas de áudio comerciais incluídas no projeto.
-- O desafio diário é determinístico **enquanto os jogadores tiverem o mesmo catálogo carregado**. A API pode retornar catálogos diferentes ou mudar seus resultados, então não há garantia de que todos receberão a mesma música globalmente. Um catálogo fixo/licenciado seria necessário para isso.
-- As estatísticas são locais ao navegador e à origem do site, não sincronizadas entre dispositivos.
-- Os áudios locais não são enviados nem hospedados pelo site, e precisam ser escolhidos novamente após recarregar.
-- A playlist pode conter faixas sem prévia; elas são ignoradas.
+## Testar
 
-## Testar e publicar
+Use Live Server no VS Code ou GitHub Pages. Confira se os cartões de categorias aparecem depois do carregamento e se as prévias estão disponíveis. Não dependa de abrir diretamente por `file://` para testar o site completo.
 
-Em desenvolvimento, na raiz do projeto:
+## Direitos musicais
 
-```bash
-python -m http.server 8000
-```
-
-Abra `http://localhost:8000/`. Em `file://`, o navegador pode impedir chamadas e armazenamento; por isso recomenda-se Live Server ou servidor local.
-
-No GitHub Pages, envie **o conteúdo desta pasta para a raiz do repositório**, com `index.html`, `css`, `js`, `jogos` e `dados` lado a lado. Ative Pages em `main` / `/(root)`.
-
-O uso do Deezer e a licença dos dicionários de terceiros devem ser revisados antes de uma publicação pública ou monetização.
-
-### Bits — melhorias do player
-
-O Bits possui volume/mudo próprio (salvo no navegador), linha do tempo dividida em seis segmentos proporcionais aos trechos de 1, 2, 4, 7, 11 e 16 segundos, pulo que não interrompe áudio em reprodução e indicação amarela de palpites com artista correto e música incorreta. Todas essas mudanças ficam apenas em `jogos/bits/`.
-
-- **Bits:** músicas já usadas como palpite deixam de aparecer nas sugestões da rodada e não podem consumir outra tentativa, inclusive após retomar o desafio diário.
-
-## Teclado e navegação (atualização)
-
-- **Esc** retorna da partida para a seleção de modos/categorias de cada jogo. Não redireciona automaticamente para o HUBA. No Wording, Esc fecha as estatísticas primeiro.
-- **Wording:** Backspace apaga letras que estejam à direita mesmo se o cursor tiver voltado à primeira casa; a tecla Espaço continua inserindo o marcador `·`.
-- **Musical:** quando uma prévia falha, aparece **Sortear outra música**. A substituição ocorre apenas naquela pergunta, sem registrar erro ou consumir tentativa. Em desafios diários a substituição após falha pode diferir de outros navegadores, porque a disponibilidade de áudio não é universal.
-- A pasta do jogo de palavras agora é `jogos/wording/`, com `wording.js`. Os links da página inicial foram atualizados. Chaves de armazenamento permanecem inalteradas para preservar estatísticas e partidas antigas.
-
-- **Bits:** se a prévia não tocar, **Sortear outra música** reinicia as tentativas daquela rodada sem penalidade. Quando necessário, a resposta diária salva muda neste navegador.
+Usar o Deezer e prévias no site público depende das respectivas permissões e condições de uso; hospedagem no GitHub Pages não fornece direitos de reprodução nem elimina essas restrições.

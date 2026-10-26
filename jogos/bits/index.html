@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="../../css/style.css">
 <link rel="stylesheet" href="bits.css">
 <script src="../../js/comum.js" defer></script>
-<script src="config.js" defer></script>
+<script src="../../playlists.js" defer></script>
 <script src="bits.js" defer></script>
 </head>
 <body>
@@ -25,21 +25,7 @@
     <section class="bits-category-panel"><h2>Diário</h2><p class="note">Uma música por categoria a cada dia.</p><div class="bits-tiles" id="dailyTiles"></div></section>
     <section class="bits-category-panel"><h2>Aleatório</h2><p class="note">Jogue quantas vezes quiser.</p><div class="bits-tiles" id="randomTiles"></div></section>
   </div>
-  <details class="bits-settings" id="settings"><summary>♫ Fontes de músicas e configurações</summary>
-    <div class="bits-settings-inside">
-      <p class="note">O Bits usa prévias disponibilizadas pelo Deezer, quando acessíveis. Você pode configurar artistas ou playlists por gênero. As músicas não são baixadas nem armazenadas pelo site.</p>
-      <label for="sources">Fontes (uma categoria por linha)</label>
-      <textarea id="sources" rows="7" spellcheck="false"></textarea>
-      <div class="row"><button type="button" id="loadSources" class="primary">Carregar músicas</button><button type="button" id="resetSources">Restaurar padrão</button></div>
-      <p class="note" id="loadStatus" role="status" aria-live="polite"></p>
-      <hr class="bits-rule">
-      <label for="localFiles">Ou use arquivos de áudio do seu próprio computador</label>
-      <div class="row"><button type="button" id="pickFolder">Escolher pasta por gênero</button><button type="button" id="pickFiles">Escolher arquivos</button></div>
-      <input hidden id="folderInput" type="file" webkitdirectory multiple>
-      <input hidden id="filesInput" type="file" accept="audio/*" multiple>
-      <p class="note">Em uma pasta, use subpastas chamadas pop, anime, rock ou metal. Arquivos soltos entram em Geral. Os arquivos locais não são enviados para servidores.</p>
-    </div>
-  </details>
+  <p class="note" id="loadStatus" role="status" aria-live="polite">Carregando músicas automaticamente…</p>
 </section>
 <section id="bitsGame" class="hidden">
   <div class="bits-game-head"><button type="button" id="backGame">‹ Voltar</button><div><h1 id="gameTitle">Bits</h1><p id="gameSubtitle" class="note"></p></div><span id="attemptLabel" class="bits-counter"></span></div>

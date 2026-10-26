@@ -8,8 +8,8 @@ var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0;
 var unavailableSongs={};
-var statsKey='huba:bits:stats:v1', sourcesKey='huba:bits:sources:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
-var configs=window.BITS_DEFAULT_SOURCES||'';
+var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
+var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.bits)?window.HUBA_MUSICAS.bits.join('\n'):'';
 var norm=HUBA.norm, hash=HUBA.hash;
 function setStatus(message){$('loadStatus').textContent=message}
 function storageGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -83,33 +83,20 @@ function getSongs(entry){
  return page(base);
 }
 function loadRemote(){
- var entries=parseSource($('sources').value);
- if(!entries.length){setStatus('Adicione ao menos um artista ou playlist em Pop, Anime, Rock ou Metal.');return}
+ var entries=parseSource(configs);
+ if(!entries.length){setStatus('Configure playlists em playlists.js, na raiz do HUBA.');return}
  var token=++loadToken, total=entries.length, completed=0, fails=0, found=[];
- $('loadSources').disabled=true;setStatus('Carregando músicas: 0 / '+total+' fontes…');
+ setStatus('Carregando músicas: 0 / '+total+' fontes…');
  // No máximo três fontes simultâneas para não sobrecarregar a API.
  var next=0;
  function worker(){if(next>=entries.length)return Promise.resolve();var e=entries[next++];return getSongs(e).then(function(s){found=found.concat(s)},function(){fails++}).then(function(){completed++;if(token===loadToken)setStatus('Carregando músicas: '+completed+' / '+total+' fontes…');return worker()})}
  Promise.all([worker(),worker(),worker()]).then(function(){
    if(token!==loadToken)return;
-   // Preserve os arquivos locais selecionados, se existirem.
-   ingest(found.concat(localSongs));
+   ingest(found);
    var note=catalog.length+' músicas elegíveis. '+(fails?fails+' fonte(s) falharam. ':'')+'Clique em uma categoria para jogar.';
-   if(!catalog.length)note='Nenhuma prévia disponível. Tente outros artistas ou arquivos locais.';
+   if(!catalog.length)note='Nenhuma prévia disponível. Verifique playlists.js ou tente novamente mais tarde.';
    setStatus(note);
- }).catch(function(){if(token===loadToken)setStatus('Falha inesperada. Tente novamente.')} ).then(function(){if(token===loadToken)$('loadSources').disabled=false});
-}
-var localSongs=[];
-function loadLocal(fileList){
- var files=Array.prototype.slice.call(fileList||[]);var added=[];
- files.forEach(function(file){if(!/^audio\//.test(file.type)&&!/\.(mp3|m4a|ogg|wav|flac|aac|opus)$/i.test(file.name))return;
- var path=(file.webkitRelativePath||'').split('/'), genre=path.length>=3?norm(path[1]):'geral';
- if(cats.indexOf(genre)<0)genre='geral';
- var name=file.name.replace(/\.[^/.]+$/,'').replace(/_/g,' '), parts=name.split(/\s+-\s+/),artist=parts.length>1?parts.shift().trim():'Arquivo local',title=parts.length?parts.join(' - '):name;
- added.push({id:'local-'+file.name+'-'+file.size+'-'+file.lastModified,genre:genre,label:artist+' - '+title,artist:artist,title:title,file:file});
- });
- if(!added.length){setStatus('Nenhum arquivo de áudio compatível selecionado.');return}
- localSongs=added;ingest(catalog.filter(function(s){return !s.file}).concat(localSongs));setStatus(localSongs.length+' arquivos locais selecionados; '+catalog.length+' músicas no total.');
+ }).catch(function(){if(token===loadToken)setStatus('Falha inesperada. Tente novamente.')} ).then(function(){/* carregamento automático concluído */});
 }
 function chooseSong(cat,daily){
  var list=byCat[cat]||[];if(!list.length)return null;
@@ -271,7 +258,6 @@ function back(){$('replaceAudio').classList.add('hidden');stopAudio();if(audioUr
 document.addEventListener('keydown',function(e){
  if(e.key!=='Escape')return;
  if($('bitsGame').classList.contains('hidden')){
-   if($('settings').open){e.preventDefault();$('settings').open=false}
    return;
  }
  e.preventDefault();back();
@@ -280,10 +266,5 @@ $('backGame').onclick=back;$('finishBack').onclick=back;$('playAgain').onclick=f
 $('playAudio').onclick=play;$('skipGuess').onclick=function(){submit(true)};$('submitGuess').onclick=function(){submit(false)};
 $('guessInput').addEventListener('input',function(){selected=null;$('submitGuess').disabled=true;$('selectedText').textContent='Selecione uma música da lista.';showSuggestions()});
 $('guessInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(selected)submit(false);else{var first=$('suggestions').querySelector('button');if(first)first.click()}}});
-$('loadSources').onclick=function(){storageSet(sourcesKey,$('sources').value);loadRemote()};
-$('resetSources').onclick=function(){$('sources').value=configs;storageSet(sourcesKey,configs);setStatus('Fontes padrão restauradas. Clique em Carregar músicas.')};
-$('pickFolder').onclick=function(){$('folderInput').click()};$('pickFiles').onclick=function(){$('filesInput').click()};
-$('folderInput').onchange=function(){loadLocal(this.files)};$('filesInput').onchange=function(){loadLocal(this.files)};
-$('sources').value=storageGet(sourcesKey)||configs;
 ingest([]);renderStats();loadRemote();
 })();

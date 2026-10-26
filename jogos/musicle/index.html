@@ -28,35 +28,8 @@
   </div>
 
   <div class="hub-grid">
-    <div class="hub-side">
-      <details class="dropdown-tool">
-        <summary aria-label="Abrir músicas locais" title="Músicas do computador"><span>♫</span><span class="chevron">＋</span></summary>
-        <div class="dropdown-content">
-          <strong>Carregar músicas do computador</strong>
-          <p class="note">Escolha uma pasta com subpastas por gênero (rock, anime, pop...) ou selecione arquivos de áudio. As músicas ficam no seu computador.</p>
-          <div class="row">
-            <button id="pickFolder">Escolher pasta</button>
-            <button id="pickFiles">Escolher arquivos</button>
-          </div>
-          <input id="folderInput" type="file" webkitdirectory multiple hidden>
-          <input id="filesInput" type="file" accept="audio/*" multiple hidden>
-          <p class="note" id="summary"></p>
-          <p class="err" id="setupErr" role="alert"></p>
-        </div>
-      </details>
-      <details class="dropdown-tool deezer-tool">
-        <summary aria-label="Abrir configuração do Deezer" title="Deezer: playlists e artistas"><span>♪</span><span class="chevron">＋</span></summary>
-        <div class="dropdown-content">
-          <strong>Escolher músicas do Deezer</strong>
-          <p class="note">Uma linha por gênero: <code>rock: Queen, Nirvana</code>. Para playlist, use <code>rock: playlist:123456</code> ou cole um link do Deezer, por exemplo <code>rock: https://www.deezer.com/playlist/123456</code>. As prévias têm até 30 segundos.</p>
-          <textarea id="cfg" rows="5" spellcheck="false" aria-label="Gêneros, artistas e playlists"></textarea>
-          <div class="row">
-            <button class="primary" id="loadDz">Carregar do Deezer</button>
-            <span class="note grow" id="dzStatus"></span>
-          </div>
-        </div>
-      </details>
-    </div>
+    <p class="note" id="dzStatus" role="status" aria-live="polite">Carregando músicas automaticamente…</p>
+    <p id="summary" class="hidden"></p><p id="setupErr" class="hidden"></p>
 
     <div class="hub-center">
       <div class="games-grid">
@@ -110,6 +83,7 @@
 </section>
 </main>
 <script src="../../js/comum.js" defer></script>
+<script src="../../playlists.js" defer></script>
 <script src="musicle.js" defer></script>
 </body>
 </html>

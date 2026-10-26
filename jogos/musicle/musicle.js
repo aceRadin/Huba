@@ -64,33 +64,7 @@ function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
   function setDifficulty(seconds){CLIP=seconds; $('#clipHard').classList.toggle('selected',CLIP===1.5); $('#clipCasual').classList.toggle('selected',CLIP===7); try{localStorage.setItem('playhub:musicle:clip',String(CLIP))}catch(e){} renderHome();}
   $('#clipHard').onclick=function(){setDifficulty(1.5)}; $('#clipCasual').onclick=function(){setDifficulty(7)};
 
-/* ---------- carregar músicas ---------- */
-$('#pickFolder').onclick=function(){$('#folderInput').click()};
-$('#pickFiles').onclick=function(){$('#filesInput').click()};
-$('#folderInput').onchange=function(e){load(e.target.files)};
-$('#filesInput').onchange=function(e){load(e.target.files)};
-
-function parse(file){
-  var name=file.name.replace(/\.[^.]+$/,'').replace(/_/g,' ').trim();
-  var p=name.split(/\s+-\s+/);
-  var label=p.length>=2?p[0].trim()+' - '+p.slice(1).join(' - ').trim():name;
-  var parts=(file.webkitRelativePath||'').split('/');
-  var genre=parts.length>=3?parts[1].trim().toLowerCase():'geral';
-  return {file:file,label:label,genre:genre};
-}
-function load(list){
-  var arr=Array.prototype.slice.call(list).filter(function(f){
-    return /^audio\//.test(f.type)||/\.(mp3|m4a|ogg|wav|flac|aac|opus)$/i.test(f.name);
-  }).map(parse);
-  var seen={}; arr=arr.filter(function(s){var k=s.genre+'|'+s.label.toLowerCase(); if(seen[k])return false; seen[k]=1; return true});
-  if(arr.length<NOPT){
-    $('#setupErr').textContent='Encontrei '+arr.length+' música(s) de áudio. Escolha uma pasta com pelo menos '+NOPT+' arquivos (mp3, m4a, ogg, wav...).';
-    return;
-  }
-  $('#setupErr').textContent='';
-  arr.sort(function(a,b){return a.label.localeCompare(b.label,'pt-BR')});
-  local=arr; rebuild();
-}
+/* As fontes musicais são configuradas em ../../playlists.js. */
 
 function rebuild(){
   var seen={}, arr=[];
@@ -180,28 +154,24 @@ function fetchItem(g,it){
   });
 }
   function loadDeezer(){
-    var txt=$('#cfg').value;
-    try{localStorage.setItem('musicle:cfg',txt)}catch(e){}
-    var cfg=parseCfg(txt);
-    if(!cfg.length){$('#dzStatus').textContent='Nenhum gênero válido. Use o formato gênero: artista, artista.'; return}
-    $('#loadDz').disabled=true; $('#dzStatus').textContent='Consultando o Deezer...';
+    var lines=window.HUBA_MUSICAS && window.HUBA_MUSICAS.musical;
+    var cfg=parseCfg(Array.isArray(lines)?lines.join('\n'):'');
+    if(!cfg.length){$('#dzStatus').textContent='Nenhuma fonte configurada em playlists.js para Musical.';return}
+    $('#dzStatus').textContent='Carregando músicas automaticamente do Deezer…';
     var fails=0, empty=0, jobs=[];
     cfg.forEach(function(c){c.items.forEach(function(it){
-      jobs.push(fetchItem(c.g,it).then(function(r){if(!r.length)empty++; return r},function(){fails++; return []}));
+      jobs.push(fetchItem(c.g,it).then(function(r){if(!r.length)empty++;return r},function(){fails++;return []}));
     })});
     Promise.all(jobs).then(function(res){
-      var all=[]; res.forEach(function(r){all=all.concat(r)});
-      remote=all; rebuild();
-      var extra=[]; if(fails)extra.push(fails+' busca(s) falharam'); if(empty)extra.push(empty+' busca(s) sem prévias disponíveis');
-      $('#dzStatus').textContent=all.length+' faixa(s) com prévia carregada(s)'+(extra.length?' · '+extra.join(' · '):'')+'.';
-      if(!all.length)$('#dzStatus').textContent+=' Confira a conexão e os nomes de artistas/IDs de playlists.';
-    }).catch(function(){ $('#dzStatus').textContent='Não foi possível concluir as buscas. Tente novamente.'; })
-      .then(function(){$('#loadDz').disabled=false;});
+      var all=[];res.forEach(function(r){all=all.concat(r)});
+      remote=all;rebuild();
+      var extra=[];if(fails)extra.push(fails+' fonte(s) falharam');if(empty)extra.push(empty+' fonte(s) sem prévias');
+      $('#dzStatus').textContent=all.length+' músicas carregadas'+(extra.length?' · '+extra.join(' · '):'')+'.';
+      if(!all.length)$('#dzStatus').textContent+=' Verifique playlists.js e a disponibilidade do Deezer.';
+    }).catch(function(){
+      $('#dzStatus').textContent='Não foi possível carregar as músicas. Atualize a página para tentar novamente.';
+    });
   }
-$('#loadDz').onclick=loadDeezer;
-$('.deezer-tool').addEventListener('toggle',function(){
-  if(!this.open){this.style.width=''; this.style.height=''}
-});
 
 /* ---------- home ---------- */
 function renderHome(){
@@ -419,9 +389,6 @@ function showResult(){
 }
 
 
-var DEFAULT_CFG='Jogos: Toby Fox, Nobuo Uematsu, Mick Gordon, Koji Kondo, Lena Raine\nmetal: Metallica, Iron Maiden, Slipknot, Nightwish, System of a Down, Sepultura\nTv: Hans Zimmer, Ramin Djawadi, John Williams, Bear McCreary, Michael Giacchino\nrap: Eminem, Kendrick Lamar, 50 Cent, Racionais MCs, Sabotage, Drake';
-var saved=null; try{saved=localStorage.getItem('musicle:cfg')}catch(e){}
-$('#cfg').value=saved||DEFAULT_CFG;
 try{var savedClip=parseFloat(localStorage.getItem('playhub:musicle:clip')); if(savedClip===3)savedClip=1.5; if(savedClip===1.5||savedClip===7)CLIP=savedClip;}catch(e){}
 setDifficulty(CLIP);
 renderStats();
