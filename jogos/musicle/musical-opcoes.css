@@ -1,5 +1,6 @@
 /* Alternativas do Musical: quatro capas lado a lado, sem alterar outros jogos. */
-#play .opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+#play .opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width: 900px;
+margin: 0 auto;align-items:stretch}
 #play .musical-option{display:flex;min-width:0;flex-direction:column;gap:9px;padding:10px;align-items:stretch;text-align:center;border-radius:12px;overflow:hidden}
 #play .musical-cover{display:grid;place-items:center;position:relative;aspect-ratio:1;width:100%;overflow:hidden;border-radius:9px;background:var(--seg)}
 #play .musical-cover-fallback{font-size:clamp(1.8rem,5vw,3.5rem);color:var(--muted)}
