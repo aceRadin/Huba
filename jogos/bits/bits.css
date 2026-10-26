@@ -20,3 +20,16 @@
 .bits-history-line.same-artist{border-color:#d5a320;background:color-mix(in srgb,#efbc36 17%,var(--card))}
 .bits-history-line.same-artist small{color:var(--fg)}
 @media(max-width:680px){.bits-timeline{order:2;flex:1}.bits-player #clipLength{order:3}.bits-player #playAudio{order:1}}
+
+/* Bits: recolhe o painel de apoio após a terceira tentativa. */
+body.bits-support-collapsed .huba-support{display:none}
+.bits-support-toggle{
+ position:fixed;left:50%;bottom:max(4px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);z-index:31;min-width:58px;height:28px;
+ padding:2px 14px;border:1px solid var(--line);border-radius:12px 12px 0 0;
+ background:var(--card);color:var(--fg);box-shadow:0 0 10px #0002;
+ font-size:1rem;line-height:1;cursor:pointer;
+}
+.bits-support-toggle[hidden]{display:none!important}
+body:not(.bits-support-collapsed) .bits-support-toggle{bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px))}
+@media(max-width:560px){body:not(.bits-support-collapsed) .bits-support-toggle{bottom:max(122px,calc(env(safe-area-inset-bottom) + 122px))}}
