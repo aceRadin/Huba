@@ -156,7 +156,7 @@ function fetchItem(g,it){
   });
 }
 var musicCfg=parseCfg(Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'');
-var genrePromises={}, loadedGenres={}, selectionToken=0;
+var genrePromises={}, loadedGenres={}, selectionToken=0, loadingChoice=null;
 function configuredGenres(){return musicCfg.map(function(c){return c.g}).filter(function(g,i,a){return a.indexOf(g)===i})}
 function loadGenre(g){
   if(loadedGenres[g])return Promise.resolve();
@@ -189,18 +189,18 @@ function initCatalog(){
 }
 function enterGenre(daily,g){
   var token=++selectionToken;
-  musicLoading=true;renderHome();
+  musicLoading=true;loadingChoice={genre:g,daily:daily};renderHome();
   $('#dzStatus').textContent='Carregando playlists de '+gName(g)+'…';
   $('#summary').textContent='Aguarde o carregamento do gênero escolhido.';
   loadSelection(g).then(function(failures){
     if(token!==selectionToken)return;
-    musicLoading=false;
+    musicLoading=false;loadingChoice=null;
     if(poolOf(g).length<2 || poolOf(g).length<(typeof optionCount==='function'?optionCount():2))throw new Error('Poucas músicas disponíveis nesta categoria.');
     $('#dzStatus').textContent=failures.length?failures.length+' fonte(s) não puderam ser carregadas.':'';
     openGame(daily,g);
   }).catch(function(err){
     if(token!==selectionToken)return;
-    musicLoading=false;
+    musicLoading=false;loadingChoice=null;
     $('#dzStatus').textContent=err.message||'Falha ao carregar gênero. Clique novamente para tentar.';
     renderHome();
   });
@@ -215,7 +215,7 @@ function renderHome(){
     keys.forEach(function(g){
       var b=document.createElement('button'); b.className='tile';
       var n=songs.length?poolOf(g).length:0, small='';
-      if(musicLoading) small='Carregando gênero…';
+      if(musicLoading && loadingChoice && loadingChoice.genre===g && loadingChoice.daily===daily) small='Carregando gênero…';
       else if(!loadedGenres[g] && g!==ALL) small='';
       else if(loadedGenres[g] && n<optionCount()) small='precisa de '+optionCount()+'+ músicas';
       else if(daily){
@@ -227,7 +227,7 @@ function renderHome(){
       b.querySelector('.tn').textContent=gName(g);
       b.querySelector('.tacc').textContent='precisão '+genreAcc(g);
       b.lastChild.textContent=small;
-      b.disabled=musicLoading;
+      b.disabled=!!(musicLoading && loadingChoice && loadingChoice.genre===g && loadingChoice.daily===daily);
       b.onclick=function(){enterGenre(daily,g)};
       box.appendChild(b);
     });
@@ -248,6 +248,7 @@ function buildQuestions(pool,rng,exclude){
 }
 function openGame(daily,g){
   var pool=poolOf(g);
+  $('#gameCatalogCount').textContent=pool.length.toLocaleString('pt-BR')+' músicas carregadas neste gênero';
   $('#home').classList.add('hidden'); $('#play').classList.remove('hidden');
   $('#play').classList.toggle('musical-hard',CLIP===1.5);
   $('#playTitle').textContent='Musical · '+gName(g)+' · '+modeName();

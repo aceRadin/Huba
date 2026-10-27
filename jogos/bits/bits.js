@@ -6,7 +6,7 @@ var cats=['geral','pop','anime','rock','metal','games','power metal'];
 var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal',games:'Games','power metal':'Power Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
-var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true;
+var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true, loadingChoice=null;
 var unavailableSongs={};
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
 var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'';
@@ -38,8 +38,8 @@ function drawTiles(){
  cats.forEach(function(cat){var list=byCat[cat]||[], prev=dailyRead(cat), btn=document.createElement('button');
  btn.type='button';btn.className='bits-tile';if(mode==='daily'&&prev&&prev.finished)btn.classList.add('completed');
  var name=document.createElement('span'),small=document.createElement('small');name.textContent=labels[cat];
- small.textContent=musicLoading?'Carregando gênero…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
- btn.append(name,small);btn.disabled=musicLoading;btn.onclick=function(){enterCategory(cat,mode==='daily')};parent.appendChild(btn);
+ small.textContent=musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(mode==='daily')?'Carregando gênero…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
+ btn.append(name,small);btn.disabled=!!(musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(mode==='daily'));btn.onclick=function(){enterCategory(cat,mode==='daily')};parent.appendChild(btn);
  });
  });
 }
@@ -104,14 +104,14 @@ function loadCategory(cat){
 }
 function enterCategory(cat,daily){
  var token=++loadToken;
- musicLoading=true;drawTiles();setStatus('Carregando playlists de '+labels[cat]+'…');
+ musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();setStatus('Carregando playlists de '+labels[cat]+'…');
  loadCategory(cat).then(function(){
    if(token!==loadToken)return;
-   musicLoading=false;drawTiles();setStatus('');
+   musicLoading=false;loadingChoice=null;drawTiles();setStatus('');
    start(cat,daily);
  }).catch(function(err){
    if(token!==loadToken)return;
-   musicLoading=false;drawTiles();setStatus(err.message||'Falha ao carregar gênero. Tente novamente.');
+   musicLoading=false;loadingChoice=null;drawTiles();setStatus(err.message||'Falha ao carregar gênero. Tente novamente.');
  });
 }
 function initCatalog(){
@@ -149,6 +149,7 @@ function bitsSupportCollapsed(collapse){
 function start(cat,daily){
  var list=byCat[cat]||[];if(!list.length){setStatus('Carregue músicas antes de jogar.');return}
  stopAudio();unavailableSongs={};var song=chooseSong(cat,daily);if(!song)return;
+ $('gameCatalogCount').textContent=list.length.toLocaleString('pt-BR')+' músicas carregadas neste gênero';
  active={cat:cat,daily:daily,song:song,guesses:[],finished:false,won:false,recorded:false};
  if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished}}
  roundId++;
