@@ -22,16 +22,16 @@ function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
 function renderHome(){
   $('#statGames').textContent=readJSON(GAMES_KEY,{n:0}).n||0;
   ['Daily','Random'].forEach(function(mode){var daily=mode==='Daily',box=$('#tiles'+mode);box.innerHTML='';
-    var keys=songs.length?(genres.length>1?[ALL].concat(genres):genres):['rock','metal','pop','anime','games','power metal'];
+    var keys=[ALL].concat(configuredGenres());
     keys.forEach(function(g){var pool=poolOf(g),b=document.createElement('button');b.type='button';b.className='tile';
       var st=daily?readJSON(dailyKey(g),null):null;
       b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
       b.querySelector('.tn').textContent=gName(g);
       b.querySelector('.tacc').textContent='Recorde: '+best(g);
-      b.lastChild.textContent=musicLoading?'Loading…':pool.length<2?'Precisa de 2+ músicas':st&&st.done?'Feito · '+st.score+' acertos':'';
+      b.lastChild.textContent=musicLoading?'Carregando gênero…':st&&st.done?'Feito · '+st.score+' acertos':loadedGenres[g]&&pool.length<2?'Precisa de 2+ músicas':'';
       if(st&&st.done)b.classList.add('done');
-      b.disabled=musicLoading||pool.length<2;
-      b.onclick=function(){openGame(daily,g)};box.appendChild(b);
+      b.disabled=musicLoading;
+      b.onclick=function(){enterGenre(daily,g)};box.appendChild(b);
     });
   });
 }
@@ -115,12 +115,57 @@ function fetchItem(g,it){
   });
 }
 
-function loadDeezer(){
-  var lines=window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes,cfg=parseCfg(Array.isArray(lines)?lines.join('\n'):'');
-  if(!cfg.length){musicLoading=false;$('#dzStatus').textContent='Não foi possível ler playlists.js';renderHome();return}
-  var jobs=[];cfg.forEach(function(c){c.items.forEach(function(it){jobs.push(fetchItem(c.g,it).catch(function(){return []}))})});
-  Promise.all(jobs).then(function(groups){remote=[].concat.apply([],groups);musicLoading=false;rebuild();$('#dzStatus').textContent=remote.length?'':'Nenhuma prévia disponível no momento.'}).catch(function(){musicLoading=false;renderHome();$('#dzStatus').textContent='Falha ao carregar músicas.'});
+var musicCfg=parseCfg(Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'');
+var genrePromises={}, loadedGenres={}, selectionToken=0;
+function configuredGenres(){return musicCfg.map(function(c){return c.g}).filter(function(g,i,a){return a.indexOf(g)===i})}
+function loadGenre(g){
+  if(loadedGenres[g])return Promise.resolve();
+  if(genrePromises[g])return genrePromises[g];
+  var entries=[];
+  musicCfg.filter(function(c){return c.g===g}).forEach(function(c){entries=entries.concat(c.items)});
+  if(!entries.length)return Promise.reject(new Error('Nenhuma playlist configurada para '+g));
+  // Busca somente fontes do gênero escolhido, uma após outra, para evitar pico de requisições.
+  var found=[],errors=0;
+  var chain=Promise.resolve();
+  entries.forEach(function(it){chain=chain.then(function(){return fetchItem(g,it).then(function(items){found=found.concat(items)},function(){errors++})})});
+  genrePromises[g]=chain.then(function(){
+    if(!found.length)throw new Error('Nenhuma música disponível em '+g+'.'+(errors?' Algumas playlists falharam.':''));
+    remote=remote.concat(found);loadedGenres[g]=true;rebuild();
+  }).then(function(x){delete genrePromises[g];return x},function(e){delete genrePromises[g];throw e});
+  return genrePromises[g];
 }
+function loadSelection(g){
+  var groups=g===ALL?configuredGenres():[g];
+  // A opção Todos os gêneros é a única que precisa consultar todas as categorias.
+  var chain=Promise.resolve(),failures=[];
+  groups.forEach(function(genre){chain=chain.then(function(){return loadGenre(genre).catch(function(e){failures.push(e.message)})})});
+  return chain.then(function(){if(poolOf(g).length===0)throw new Error(failures[0]||'Nenhuma música encontrada');return failures});
+}
+function initCatalog(){
+  musicLoading=false;
+  $('#dzStatus').textContent=musicCfg.length?'Escolha um gênero para carregar apenas suas playlists.':'Nenhuma fonte configurada em playlists.js.';
+  $('#summary').textContent='As músicas são carregadas ao escolher o gênero.';
+  renderHome();
+}
+function enterGenre(daily,g){
+  var token=++selectionToken;
+  musicLoading=true;renderHome();
+  $('#dzStatus').textContent='Carregando playlists de '+gName(g)+'…';
+  $('#summary').textContent='Aguarde o carregamento do gênero escolhido.';
+  loadSelection(g).then(function(failures){
+    if(token!==selectionToken)return;
+    musicLoading=false;
+    if(poolOf(g).length<2 || poolOf(g).length<(typeof optionCount==='function'?optionCount():2))throw new Error('Poucas músicas disponíveis nesta categoria.');
+    $('#dzStatus').textContent=failures.length?failures.length+' fonte(s) não puderam ser carregadas.':'';
+    openGame(daily,g);
+  }).catch(function(err){
+    if(token!==selectionToken)return;
+    musicLoading=false;
+    $('#dzStatus').textContent=err.message||'Falha ao carregar gênero. Clique novamente para tentar.';
+    renderHome();
+  });
+}
+
 function newRun(daily,g){return {genre:g,daily:daily,pool:poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,penaltyNotice:'',used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
 /* Painel de apoio recolhível exclusivo do Streakal, a partir da 4ª rodada. */
 var streakalSupportToggle=null;
@@ -392,5 +437,5 @@ function goHome(){stop();songLoadToken++;$('#play').classList.add('hidden');$('#
 $('#backBtn').onclick=goHome;$('#backBtn2').onclick=goHome;
 $('#again').onclick=function(){openGame(false,cur.genre)};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#play').classList.contains('hidden')){e.preventDefault();goHome()}});
-renderHome();loadDeezer();
+initCatalog();
 })();

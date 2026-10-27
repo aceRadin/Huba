@@ -38,8 +38,8 @@ function drawTiles(){
  cats.forEach(function(cat){var list=byCat[cat]||[], prev=dailyRead(cat), btn=document.createElement('button');
  btn.type='button';btn.className='bits-tile';if(mode==='daily'&&prev&&prev.finished)btn.classList.add('completed');
  var name=document.createElement('span'),small=document.createElement('small');name.textContent=labels[cat];
- small.textContent=musicLoading?'Loading…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
- btn.append(name,small);btn.disabled=musicLoading||!list.length;btn.onclick=function(){start(cat,mode==='daily')};parent.appendChild(btn);
+ small.textContent=musicLoading?'Carregando gênero…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
+ btn.append(name,small);btn.disabled=musicLoading;btn.onclick=function(){enterCategory(cat,mode==='daily')};parent.appendChild(btn);
  });
  });
 }
@@ -83,22 +83,43 @@ function getSongs(entry){
  }
  return page(base);
 }
-function loadRemote(){
- var entries=parseSource(configs);
- if(!entries.length){musicLoading=false;ingest([]);setStatus(window.HUBA_MUSICAS?'Nenhuma fonte válida na lista fontes de playlists.js.':'Configuração indisponível: confira se playlists.js está na raiz publicada do repositório.');return}
- var token=++loadToken, total=entries.length, completed=0, fails=0, found=[];
- musicLoading=true;drawTiles();setStatus('Loading…');
- // No máximo três fontes simultâneas para não sobrecarregar a API.
- var next=0;
- function worker(){if(next>=entries.length)return Promise.resolve();var e=entries[next++];return getSongs(e).then(function(s){found=found.concat(s)},function(){fails++}).then(function(){completed++;if(token===loadToken)setStatus('Loading…');return worker()})}
- Promise.all([worker(),worker(),worker()]).then(function(){
-   if(token!==loadToken)return;
-   musicLoading=false;ingest(found);
-   var note=(fails?fails+' fonte(s) falharam. ':'');
-   if(!catalog.length)note='Nenhuma prévia disponível. Verifique playlists.js ou tente novamente mais tarde.';
-   setStatus(note);
- }).catch(function(){if(token===loadToken){musicLoading=false;drawTiles();$('catalogCount').textContent='Total: '+catalog.length+' músicas';setStatus('Falha inesperada. Tente novamente.')}} ).then(function(){/* carregamento automático concluído */});
+var loadedCats={}, categoryPromises={};
+function loadCategory(cat){
+ if(loadedCats[cat])return Promise.resolve();
+ if(categoryPromises[cat])return categoryPromises[cat];
+ var entries=parseSource(configs).filter(function(e){return cat==='geral'||e.genre===cat});
+ if(!entries.length)return Promise.reject(new Error('Nenhuma playlist configurada para '+labels[cat]));
+ var found=[], failures=0, chain=Promise.resolve();
+ entries.forEach(function(entry){chain=chain.then(function(){return getSongs(entry).then(function(items){found=found.concat(items)},function(){failures++})})});
+ categoryPromises[cat]=chain.then(function(){
+   if(!found.length)throw new Error('Nenhuma música disponível em '+labels[cat]+'.');
+   // Mantém em cache os gêneros já consultados para alternar sem repetir downloads.
+   var already={};catalog.forEach(function(song){already[song.genre+'|'+norm(song.label)]=true});
+   var merged=catalog.concat(found.filter(function(song){return !already[song.genre+'|'+norm(song.label)]}));
+   loadedCats[cat]=true;
+   ingest(merged);
+   if(failures)setStatus(failures+' fonte(s) não puderam ser carregadas.');
+ }).then(function(){delete categoryPromises[cat]},function(err){delete categoryPromises[cat];throw err});
+ return categoryPromises[cat];
 }
+function enterCategory(cat,daily){
+ var token=++loadToken;
+ musicLoading=true;drawTiles();setStatus('Carregando playlists de '+labels[cat]+'…');
+ loadCategory(cat).then(function(){
+   if(token!==loadToken)return;
+   musicLoading=false;drawTiles();setStatus('');
+   start(cat,daily);
+ }).catch(function(err){
+   if(token!==loadToken)return;
+   musicLoading=false;drawTiles();setStatus(err.message||'Falha ao carregar gênero. Tente novamente.');
+ });
+}
+function initCatalog(){
+ musicLoading=false;ingest([]);
+ setStatus(parseSource(configs).length?'Escolha um gênero para carregar apenas suas playlists.':'Nenhuma fonte configurada em playlists.js.');
+ $('catalogCount').textContent='Músicas carregadas sob demanda';
+}
+
 function chooseSong(cat,daily){
  var list=byCat[cat]||[];if(!list.length)return null;
  if(daily){var stored=dailyRead(cat);if(stored){var old=list.find(function(s){return s.id===stored.id});if(old)return old}
@@ -303,5 +324,5 @@ document.addEventListener('keydown',function(e){
  }
  if(selected){e.preventDefault();submit(false)}
 });
-ingest([]);renderStats();loadRemote();
+renderStats();initCatalog();
 })();
