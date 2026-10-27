@@ -12,6 +12,6 @@ window.HUBA_MUSICAS = {
     'pop: playlist:8326097522, playlist:8282573142, playlist:1036183001, playlist:10806335362, playlist:12104186351',
     'anime: playlist:12283980831, playlist:7967291482',
     'games: playlist:10753812222, playlist:7290479924',
-    'power metal: playlist:10035573042, playlist:9076579722'
+    'power metal: playlist:10035573042, playlist:9076579722, playlist:13004031423'
   ]
 };
