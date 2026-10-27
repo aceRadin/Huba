@@ -180,7 +180,7 @@ function renderHome(){
   ['Daily','Random'].forEach(function(m){
     var box=$('#tiles'+m); box.innerHTML='';
     var daily=m==='Daily';
-    var keys=songs.length?(genres.length>1?[ALL].concat(genres):genres):['rock','anime','pop'];
+    var keys=songs.length?(genres.length>1?[ALL].concat(genres):genres):['rock','metal','pop','anime','games','power metal'];
     keys.forEach(function(g){
       var b=document.createElement('button'); b.className='tile';
       var n=songs.length?poolOf(g).length:0, small='';

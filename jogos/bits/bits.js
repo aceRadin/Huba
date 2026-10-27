@@ -2,8 +2,8 @@
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
-var cats=['geral','pop','anime','rock','metal'];
-var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal'};
+var cats=['geral','pop','anime','rock','metal','games','power metal'];
+var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal',games:'Games','power metal':'Power Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true;

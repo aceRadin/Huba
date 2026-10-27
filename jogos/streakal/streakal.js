@@ -22,7 +22,7 @@ function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
 function renderHome(){
   $('#statGames').textContent=readJSON(GAMES_KEY,{n:0}).n||0;
   ['Daily','Random'].forEach(function(mode){var daily=mode==='Daily',box=$('#tiles'+mode);box.innerHTML='';
-    var keys=songs.length?(genres.length>1?[ALL].concat(genres):genres):['rock','metal','pop','anime'];
+    var keys=songs.length?(genres.length>1?[ALL].concat(genres):genres):['rock','metal','pop','anime','games','power metal'];
     keys.forEach(function(g){var pool=poolOf(g),b=document.createElement('button');b.type='button';b.className='tile';
       var st=daily?readJSON(dailyKey(g),null):null;
       b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
