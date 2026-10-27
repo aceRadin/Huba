@@ -1,0 +1,112 @@
+/* Alternativas do Musical: quatro capas lado a lado, sem alterar outros jogos. */
+#play .opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+#play .musical-option{display:flex;min-width:0;flex-direction:column;gap:9px;padding:10px;align-items:stretch;text-align:center;border-radius:12px;overflow:hidden}
+#play .musical-cover{display:grid;place-items:center;position:relative;aspect-ratio:1;width:100%;overflow:hidden;border-radius:9px;background:var(--seg)}
+#play .musical-cover-fallback{font-size:clamp(1.8rem,5vw,3.5rem);color:var(--muted)}
+#play .musical-cover img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#play .musical-option-info{display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
+#play .musical-option-title{font-size:.92rem;line-height:1.3;font-weight:700}
+#play .musical-option-artist{font-size:.79rem;line-height:1.35;font-weight:400;color:var(--muted)}
+#play .musical-option.right .musical-option-artist,#play .musical-option.wrong .musical-option-artist{color:var(--fg)}
+@media(max-width:620px){#play .opts{gap:6px}#play .musical-option{padding:5px;gap:5px;border-radius:8px}#play .musical-option-title{font-size:.72rem}#play .musical-option-artist{font-size:.66rem}}
+
+
+/* Organização exclusiva da tela de perguntas do Musical. */
+#play {max-width:1100px;margin-inline:auto}
+#play .musical-play-header {display:grid;grid-template-columns: minmax(90px,1fr) minmax(0,5fr) minmax(90px,1fr);align-items:start;gap:12px;margin-bottom:18px}
+#play .musical-play-header #backBtn {justify-self:start;align-self:start;margin:3px 0 0}
+#play .musical-play-heading {min-width:0;text-align:center}
+#play .musical-play-heading #playTitle {font-size:clamp(1.5rem,3.2vw,2.3rem);overflow-wrap:anywhere}
+#play .musical-play-heading #playSub {margin:8px 0 0;text-align:center}
+#play .musical-audio-row {display:flex;align-items:center;gap:16px;margin:14px 0}
+#play .musical-audio-row .vol {display:flex;flex:0 0 auto;gap:7px;align-items:center;margin:0}
+#play .musical-audio-row .vol input[type=range] {width:clamp(75px,11vw,135px);max-width:none;flex:0 0 auto;min-width:0}
+#play .musical-audio-row .vol span {min-width:2.6em}
+#play .musical-audio-row .clip {display:flex;flex:1;min-width:0;gap:12px;margin:0}
+#play .musical-audio-row .clip .bar {min-width:28px}
+@media(max-width:700px){
+  #play .musical-play-header {grid-template-columns:auto minmax(0,1fr) auto;gap:8px}
+  #play .musical-play-header .musical-header-spacer {width:60px}
+  #play .musical-play-header #backBtn {padding:7px 9px;font-size:.82rem}
+  #play .musical-audio-row {gap:9px;align-items:stretch}
+  #play .musical-audio-row .vol {flex-wrap:wrap;justify-content:center;max-width:118px;gap:5px}
+  #play .musical-audio-row .vol input[type=range] {width:75px}
+  #play .musical-audio-row .vol span {font-size:.75rem}
+  #play .musical-audio-row .clip {flex-wrap:wrap;gap:7px;align-items:center}
+  #play .musical-audio-row .clip #playBtn {padding:8px 10px}
+  #play .musical-audio-row .clip .bar {flex-basis:80px}
+}
+@media(max-width:400px){
+  #play .musical-play-header .musical-header-spacer {width:48px}
+  #play .musical-audio-row .vol {max-width:92px}
+  #play .musical-audio-row .vol input[type=range] {width:65px}
+  #play .musical-audio-row .clip #replaceSong {font-size:.75rem;padding:7px}
+}
+
+
+/* Tela de resultado do Musical — cinco capas na mesma linha. */
+#play.is-result .musical-play-heading {text-align:center}
+#play.is-result #playTitle, #play.is-result #playSub {text-align:center}
+#play #result {text-align:center}
+#play #result #resultTitle {text-align:center;margin:4px 0 16px}
+#play #result .recap {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+  padding:0;
+  margin:12px 0 20px;
+  list-style:none;
+  align-items:stretch;
+}
+#play #result .musical-recap-card {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:9px;
+  min-width:0;
+  padding:10px;
+  text-align:center;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+}
+#play #result .musical-recap-card.ok {border-color:var(--ok)}
+#play #result .musical-recap-card.no {border-color:var(--bad)}
+#play #result .musical-recap-number {font-weight:700;font-size:.75rem;color:var(--muted)}
+#play #result .musical-recap-guess {
+  display:block;
+  margin-top:5px;
+  padding-top:7px;
+  border-top:1px solid var(--line);
+  font-size:.72rem;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#play #result > .row {justify-content:center}
+@media(max-width:760px){
+  #play #result .recap {
+    grid-template-columns:repeat(5,minmax(144px,1fr));
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    padding-bottom:12px;
+    gap:9px;
+    scroll-snap-type:x proximity;
+  }
+  #play #result .musical-recap-card {scroll-snap-align:start;padding:8px;gap:6px}
+  #play #result .musical-option-title {font-size:.8rem}
+  #play #result .musical-option-artist {font-size:.72rem}
+}
+
+/* Correção do cabeçalho do resultado: elementos ocultos não devem
+   deslocar automaticamente o título para a coluna estreita da esquerda. */
+#play .musical-play-heading {grid-column:2;grid-row:1;justify-self:stretch;width:100%;}
+#play .musical-play-header .musical-header-spacer {grid-column:3;grid-row:1;}
+#play.is-result .musical-play-header {grid-template-columns:minmax(0,1fr);}
+#play.is-result .musical-play-heading {grid-column:1;grid-row:1;max-width:100%;margin-inline:auto;}
+#play.is-result .musical-play-header .musical-header-spacer {display:none;}
+#play.is-result #playTitle {overflow-wrap:normal;word-break:normal;}
+#play.is-result #playSub {max-width:760px;margin:8px auto 0;line-height:1.45;}
+
+/* No Desafiador, a quinta alternativa divide a linha com as demais capas. */
+#play.musical-hard .opts{grid-template-columns:repeat(5,minmax(0,1fr))}

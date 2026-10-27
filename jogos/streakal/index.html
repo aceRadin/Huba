@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
+<title>HUBA — Streakal</title>
+<link rel="stylesheet" href="../../css/style.css">
+<link rel="stylesheet" href="streakal.css?v=4">
+</head>
+<body >
+<main>
+<section id="home">
+  <div class="hub-top">
+    <h1><button type="button" class="brand-back" id="toLanding" onclick="window.location.href='../../index.html'" title="Voltar à tela inicial" aria-label="Voltar à tela inicial">‹ HUBA</button></h1>
+    <div class="hub-stats" id="statsPanel">
+      <div class="stats-heading"><h2>Streakal</h2></div>
+      <div class="statsgrid">
+        <div class="stat"><strong id="statGames">0</strong><span>partidas</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hub-grid">
+    <p class="note" id="dzStatus" role="status" aria-live="polite">Carregando músicas automaticamente…</p>
+    <p id="summary" class="huba-catalog-count" aria-live="polite">Loading…</p><p id="setupErr" class="hidden"></p>
+
+    <div class="hub-center">
+      <div class="games-grid">
+        <div class="game-column">
+          <h2>Diário</h2>
+          <p class="note">Desafio do dia</p>
+          <div class="tiles" id="tilesDaily"></div>
+        </div>
+        <div class="game-column">
+          <h2>Aleatório</h2>
+          <p class="note">Jogue quantas vezes quiser</p>
+          <div class="tiles" id="tilesRandom"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="play" class="hidden">
+  <header class="musical-play-header">
+    <button class="back" id="backBtn">Voltar</button>
+    <div class="musical-play-heading">
+      <h1 id="playTitle">Streakal</h1>
+      <p class="sub" id="playSub"></p>
+    </div>
+    <span class="musical-header-spacer" aria-hidden="true"></span>
+  </header>
+
+  <div class="panel">
+    <div id="quiz">
+      <div id="limitStatus" class="streakal-limit-status hidden" role="status" aria-live="polite"></div>
+      <div class="qhead"><strong id="qcount">Sequência: 0</strong><strong id="runSettings"></strong></div>
+      <div class="musical-audio-row">
+        <div class="vol">
+          <button id="muteBtn" aria-label="Silenciar" title="Silenciar">🔊</button>
+          <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
+          <span id="volLabel">80%</span>
+        </div>
+        <div class="clip">
+          <button class="primary" id="playBtn">Tocar trecho</button>
+          <button id="replaceSong" class="hidden" type="button" title="Trocar somente a música que falhou">Sortear outra música</button>
+          <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+        </div>
+      </div>
+      <p class="note" style="margin:0 0 12px" id="qhint">Qual música tocou?</p>
+      <div class="opts" id="opts"></div>
+      <div class="streakal-upgrade hidden" id="upgradePanel" aria-live="polite">
+        <h3>Acertou! Escolha a dificuldade da próxima rodada</h3>
+        <p class="note">A dificuldade escolhida se acumula e permanece até você errar.</p>
+        <div class="streakal-upgrade-actions">
+          <button type="button" id="extraOption">+1 alternativa na próxima rodada</button>
+          <button type="button" id="shorterClip">Trecho 5% menor na próxima rodada</button>
+        </div>
+      </div>
+    </div>
+    <div class="result hidden" id="result">
+      <h3 id="resultTitle"></h3>
+      <p id="resultInfo" class="note"></p>
+      <div id="lastSong" class="streakal-last-song"></div>
+      <div class="row">
+        <button class="primary" id="backBtn2">Voltar</button>
+        <button id="again">Nova rodada</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<script src="../../js/comum.js" defer></script>
+<script src="../../playlists.js?v=2" defer></script>
+<script src="streakal.js?v=8" defer></script>
+<script src="../../js/apoio-config.js" defer></script>
+<script src="../../js/apoio.js" defer></script>
+</body>
+</html>

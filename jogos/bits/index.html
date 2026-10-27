@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HUBA — Bits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/style.css">
+<link rel="stylesheet" href="bits.css">
+<script src="../../js/comum.js" defer></script>
+<script src="../../playlists.js?v=2" defer></script>
+<script src="bits.js?v=3" defer></script>
+</head>
+<body>
+<main>
+<section id="bitsHome">
+  <header class="bits-top">
+    <h1><a class="bits-back" href="../../index.html">‹ HUBA</a> <span class="bits-brand">/ Bits</span></h1>
+    <div class="bits-summary"><strong id="totalGames">0</strong><span>partidas</span><strong id="streakValue">0</strong><span>dias seguidos</span></div>
+  </header>
+  <p class="bits-lead">Reconheça a música pelo começo. São até seis tentativas: cada erro revela um trecho maior.</p>
+  <div class="bits-columns">
+    <section class="bits-category-panel"><h2>Diário</h2><p class="note">Uma música por categoria a cada dia.</p><div class="bits-tiles" id="dailyTiles"></div></section>
+    <section class="bits-category-panel"><h2>Aleatório</h2><p class="note">Jogue quantas vezes quiser.</p><div class="bits-tiles" id="randomTiles"></div></section>
+  </div>
+  <p class="note" id="loadStatus" role="status" aria-live="polite">Carregando músicas automaticamente…</p>
+</section>
+<section id="bitsGame" class="hidden">
+  <div class="bits-game-head"><button type="button" id="backGame">‹ Voltar</button><div><h1 id="gameTitle">Bits</h1><p id="gameSubtitle" class="note"></p></div><span id="attemptLabel" class="bits-counter"></span></div>
+  <div class="bits-play-card">
+    <p class="bits-instruction" id="instruction">Reconhece este trecho?</p>
+    <div class="bits-player">
+      <button type="button" class="primary" id="playAudio">▶ Ouvir trecho</button>
+      <button type="button" id="replaceAudio" class="hidden">Sortear outra música</button>
+      <div class="bits-timeline" id="timeline" role="progressbar" aria-label="Progresso do trecho" aria-valuemin="0" aria-valuemax="16" aria-valuenow="0"></div>
+      <strong id="clipLength">1 s</strong>
+    </div>
+    <div class="bits-volume" role="group" aria-label="Volume do Bits">
+      <button type="button" id="muteAudio" aria-label="Silenciar" title="Silenciar">🔊</button>
+      <input type="range" id="volumeAudio" min="0" max="100" value="80" aria-label="Volume do áudio">
+      <span id="volumeLabel">80%</span>
+    </div>
+    <p class="bits-status" id="message" role="status" aria-live="polite"></p>
+    <div id="guessArea">
+      <label for="guessInput">Qual é a música?</label>
+      <input id="guessInput" type="search" placeholder="Pesquise artista ou nome da música" autocomplete="off" spellcheck="false" aria-controls="suggestions" aria-expanded="false">
+      <div id="suggestions" class="bits-suggestions" role="listbox"></div>
+      <p class="bits-selection" id="selectedText">Selecione uma música da lista.</p>
+      <div class="row bits-actions"><button type="button" id="submitGuess" class="primary" disabled>Confirmar palpite</button><button type="button" id="skipGuess">Pular (+ trecho)</button></div>
+    </div>
+    <div id="history" class="bits-history"></div>
+    <div id="finish" class="bits-finish hidden"><h2 id="finishTitle"></h2><p id="finishSong"></p><p id="finishDetail" class="note"></p><div class="row"><button type="button" id="finishBack" class="primary">Voltar aos jogos</button><button type="button" id="playAgain" class="hidden">Outra música</button></div></div>
+  </div>
+</section>
+</main>
+<div id="catalogCount" class="huba-catalog-count" aria-live="polite">Loading…</div>
+<script src="../../js/apoio-config.js" defer></script>
+<script src="../../js/apoio.js" defer></script>
+</body>
+</html>

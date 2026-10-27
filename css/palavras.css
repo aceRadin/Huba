@@ -1,0 +1,72 @@
+/* ===== Wording ===== */
+:root{--warn:#b07d0a;--abs:#8f8bb0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--warn:#a67c10;--abs:#4b477f}}
+:root[data-theme="dark"]{--warn:#a67c10;--abs:#4b477f}
+.brand-back{font:inherit;letter-spacing:.06em;color:inherit;background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
+.brand-back:hover{color:var(--accent)}
+.w-top{max-width:920px;margin:0 auto 16px;padding:8px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px}
+.w-top h1{font-size:1.3rem;line-height:1;margin:0}
+.w-pill{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);justify-self:center}
+.w-pill strong{font-size:.95rem}
+.w-lab{font:700 .68rem/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.w-btn{font-size:.8rem;font-weight:700;justify-self:end;cursor:pointer}
+@media(max-width:520px){.w-lab{display:none}}
+.w-gtop{max-width:920px;margin:0 auto 4px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.w-gtop .back{margin:0;justify-self:start}
+.w-gtop h2{font-size:1.4rem;text-align:center}
+.w-gtop #wGameStats{justify-self:end}
+.w-msg{text-align:center;min-height:1.5em;margin:8px 0;font-weight:600}
+.w-boards{display:grid;gap:18px 14px;justify-content:center;margin:6px auto}
+.w-boards[data-n="1"]{grid-template-columns:minmax(0,400px)}
+.w-boards[data-n="2"]{grid-template-columns:repeat(2,minmax(0,360px))}
+.w-boards[data-n="4"]{grid-template-columns:repeat(4,minmax(0,290px))}
+@media(max-width:1000px){.w-boards[data-n="4"]{grid-template-columns:repeat(2,minmax(0,340px))}}
+@media(max-width:700px){.w-boards[data-n="2"],.w-boards[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 8px;margin-left:-6px;margin-right:-6px}.w-boards[data-n="1"]{grid-template-columns:minmax(0,340px)}.w-board,.w-row{gap:3px}}
+.w-board{display:grid;gap:5px;container-type:inline-size}
+.w-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.w-tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:6px;background:var(--card);font:800 10.5cqw/1 "Bricolage Grotesque","Segoe UI",system-ui,sans-serif;text-transform:uppercase;color:var(--fg)}
+.w-tile.f{border-color:var(--muted)}
+.w-tile.c{--tc:var(--ok)}
+.w-tile.p{--tc:var(--warn)}
+.w-tile.a{--tc:var(--abs)}
+.w-tile.c,.w-tile.p,.w-tile.a{background:var(--tc);border-color:var(--tc);color:#fff}
+.w-row.flip .w-tile{animation:wflip .6s ease both}
+@keyframes wflip{0%{transform:rotateX(0);background:var(--card);border-color:var(--muted);color:var(--fg)}49%{transform:rotateX(90deg);background:var(--card);border-color:var(--muted);color:var(--fg)}50%{transform:rotateX(90deg);background:var(--tc);border-color:var(--tc);color:#fff}100%{transform:rotateX(0);background:var(--tc);border-color:var(--tc);color:#fff}}
+.w-boards.shake{animation:wshake .35s}
+@keyframes wshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.w-result{max-width:520px;margin:14px auto 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);text-align:center}
+.w-result h3{font-size:1.3rem}
+.w-kb{display:grid;gap:6px;max-width:620px;margin:16px auto 0}
+.w-kbnote{text-align:center;font-size:.8rem;color:var(--muted);margin:8px 0 0}
+.w-krow{display:flex;gap:5px;justify-content:center}
+.w-krow.indent{padding:0 5%}
+.w-key{flex:1 1 0;min-width:0;height:54px;padding:0;font-size:1.05rem;font-weight:700;text-transform:uppercase;border-radius:8px;cursor:pointer}
+.w-key.wide{flex:1.6 1 0;font-size:.85rem}
+.w-key.kc{background:var(--ok);color:#fff;border:2px solid var(--ok)}
+.w-key.kp{background:var(--warn);color:#fff;border:2px solid var(--warn)}
+.w-key.kd{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500;opacity:.38}
+.w-key.free{background:var(--card);color:var(--fg);border:2px solid var(--muted);font-weight:800;box-shadow:0 2px 0 var(--muted)}
+dialog#wStats{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:16px;padding:18px;width:calc(100% - 32px);max-width:520px;max-height:85vh;overflow:auto}
+dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
+.w-dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.w-dhead h2{font-size:1.4rem}
+.w-sblock{padding:12px 0;border-top:1px solid var(--line)}
+.w-sblock h3{font-size:1.05rem;margin-bottom:8px}
+.w-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-bottom:10px}
+.w-nums strong{display:block;font-size:1.3rem;line-height:1.1}
+.w-nums span{font-size:.7rem;color:var(--muted)}
+.w-dist{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center;font-size:.78rem}
+.w-bar{height:16px;border-radius:4px;background:var(--seg);min-width:18px;color:var(--fg);padding:0 6px;font-weight:700;display:flex;align-items:center;justify-content:flex-end}
+.w-bar.on{background:var(--accent);color:var(--accent-fg)}
+@media(max-width:520px){.w-gtop{grid-template-columns:1fr 1fr;row-gap:2px}.w-gtop h2{grid-column:1/-1;grid-row:2;font-size:1.25rem}.w-gtop #wGameStats{grid-column:2;grid-row:1}}
+.w-lang{display:flex;justify-content:center;margin:0 auto 6px}
+.w-lang button{border-radius:0;padding:8px 20px;font-size:.88rem}
+.w-lang button:first-child{border-radius:10px 0 0 10px}
+.w-lang button:last-child{border-radius:0 10px 10px 0;margin-left:-1px}
+.w-lang button.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);position:relative}
+.w-meta{max-width:920px;margin:0 auto 14px;text-align:center;font-size:.8rem;color:var(--muted)}
+.w-meta button{font-size:.76rem;padding:3px 9px;border-radius:7px;margin:2px 3px}
+.w-tile.act{cursor:pointer}
+.w-tile.cur{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent)}
+.w-key.w-space{flex:0 1 55%;font-size:.85rem;font-weight:700;text-transform:none}
+.w-tile.ph{border-style:dashed;border-color:var(--muted);color:var(--muted);font-weight:800}

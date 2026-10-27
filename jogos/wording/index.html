@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
+<title>HUBA — Wording</title>
+<link rel="stylesheet" href="../../css/style.css">
+<link rel="stylesheet" href="../../css/palavras.css">
+</head>
+<body>
+<main>
+<section id="word">
+  <div class="w-top">
+    <h1><button type="button" class="brand-back" id="wToLanding" title="Voltar à tela inicial" aria-label="Voltar à tela inicial">‹ HUBA</button></h1>
+    <div class="w-pill"><span class="w-lab">Rodadas</span><strong id="wGames">0</strong></div>
+    <button type="button" class="w-pill w-btn" id="wStatsBtn">Estatísticas</button>
+  </div>
+  <div class="w-lang" id="wLang" role="group" aria-label="Idioma das palavras">
+    <button type="button" data-lang="pt">Português</button>
+    <button type="button" data-lang="en">English</button>
+  </div>
+  <p class="w-meta">
+    <span id="wSrc"></span>
+    <button type="button" id="wLoadJson">Selecionar arquivos…</button>
+    <button type="button" id="wResetJson" class="hidden">Esquecer arquivos salvos</button>
+    <input type="file" id="wJsonInput" accept=".json,application/json" multiple hidden>
+  </p>
+  <div class="hub-grid">
+    <div class="games-grid">
+      <div class="game-column">
+        <h2>Diário</h2>
+        <p class="note">A mesma palavra para todos no dia.</p>
+        <div class="tiles" id="wTilesDaily"></div>
+      </div>
+      <div class="game-column">
+        <h2>Aleatório</h2>
+        <p class="note">Palavras novas sempre que quiser.</p>
+        <div class="tiles" id="wTilesRandom"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="wgame" class="hidden">
+  <div class="w-gtop">
+    <button class="back" id="wBack">Voltar</button>
+    <h2 id="wTitle">Wording</h2>
+    <button type="button" id="wGameStats">Estatísticas</button>
+  </div>
+  <p class="w-msg" id="wMsg" role="status" aria-live="polite"></p>
+  <div class="w-boards" id="wBoards"></div>
+  <div class="w-result hidden" id="wResult">
+    <h3 id="wResTitle"></h3>
+    <p class="note" id="wResText"></p>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="wBack2">Voltar</button>
+      <button id="wAgain" class="hidden">Jogar de novo</button>
+    </div>
+  </div>
+  <div class="w-kb" id="wKb"></div>
+  <p class="w-kbnote hidden" id="wKbNote">Verde: posição certa · Amarelo: letra em outro lugar · Apagada: não está em nenhuma palavra · Espaço: deixa uma casa em branco (·) para preencher depois</p>
+</section>
+<dialog id="wStats">
+  <div class="w-dhead"><h2>Estatísticas</h2><button type="button" id="wStatsClose" aria-label="Fechar">✕</button></div>
+  <div id="wStatsBody"></div>
+</dialog>
+</main>
+<script src="../../js/comum.js" defer></script>
+<script src="wording.js" defer></script>
+<script src="../../js/apoio-config.js" defer></script>
+<script src="../../js/apoio.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+.bits-top{max-width:1000px;margin:0 auto 16px;padding:8px 0 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.bits-top h1{font-size:1.35rem}.bits-back{color:inherit;text-decoration:none}.bits-back:hover{color:var(--accent)}.bits-brand{color:var(--muted)}
+.bits-summary{display:flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px}.bits-summary strong{font-size:1.25rem}.bits-summary span{font-size:.8rem;color:var(--muted);margin-right:9px}
+.bits-lead{color:var(--muted);max-width:1000px;margin:0 auto 18px;text-align:center}
+.bits-columns{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}.bits-category-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}.bits-category-panel h2{font-size:1.35rem}.bits-category-panel>.note{margin:2px 0 14px}.bits-tiles{display:grid;gap:9px}.bits-tile{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;background:var(--bg);padding:13px 14px}.bits-tile span{font-weight:700}.bits-tile small{font-size:.77rem;color:var(--muted);font-weight:400;text-align:right}.bits-tile.completed{border-color:var(--ok)}.bits-tile.completed small{color:var(--ok)}
+.bits-settings{max-width:1000px;margin:20px auto;border:1px solid var(--line);background:var(--card);border-radius:12px;overflow:hidden}.bits-settings summary{cursor:pointer;font-weight:700;padding:13px 17px}.bits-settings-inside{border-top:1px solid var(--line);padding:16px}.bits-settings-inside label{display:block;font-weight:700;margin:10px 0 5px}.bits-rule{border:0;border-top:1px solid var(--line);margin:20px 0}
+.bits-game-head{max-width:780px;margin:0 auto 18px;display:flex;gap:16px;align-items:center;justify-content:space-between}.bits-game-head>div{flex:1}.bits-game-head h1{font-size:1.55rem}.bits-counter{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}.bits-play-card{max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(15px,3vw,28px)}.bits-instruction{text-align:center;font-weight:800;font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;margin:0 0 14px}.bits-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:0 0 24px}.bits-step{height:9px;border-radius:12px;background:var(--seg)}.bits-step.active{background:var(--accent)}.bits-step.missed{background:var(--bad)}.bits-step.won{background:var(--ok)}
+.bits-player{display:flex;align-items:center;gap:13px}.bits-progress{height:14px;background:var(--seg);border-radius:8px;flex:1;overflow:hidden}.bits-progress i{display:block;width:100%;height:100%;background:var(--accent);transform:scaleX(0);transform-origin:left}.bits-player strong{white-space:nowrap;min-width:40px;text-align:right}.bits-status{min-height:1.7em;text-align:center;color:var(--muted);margin:16px 0}.bits-play-card label{display:block;font-weight:700;margin:0 0 8px}.bits-play-card input[type=search]{width:100%;border-radius:10px;padding:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);font:inherit;box-sizing:border-box}.bits-suggestions{border:1px solid var(--line);border-radius:10px;margin-top:4px;max-height:230px;overflow:auto;display:none}.bits-suggestions.open{display:block}.bits-choice{border:0;border-radius:0;display:block;text-align:left;width:100%;padding:10px 12px;background:var(--card);font-weight:500}.bits-choice+.bits-choice{border-top:1px solid var(--line)}.bits-choice:hover{background:var(--bg)}.bits-selection{font-size:.83rem;color:var(--muted);min-height:1.4em}.bits-actions{justify-content:space-between}.bits-history{margin-top:22px;display:grid;gap:8px}.bits-history-line{padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:.9rem}.bits-history-line small{display:block;color:var(--muted)}.bits-finish{border-top:1px solid var(--line);padding-top:19px;margin-top:22px;text-align:center}.bits-finish h2{font-size:1.45rem}.bits-finish .row{justify-content:center}.bits-finish>p{margin:8px 0}.bits-empty{color:var(--muted);font-size:.83rem;margin:7px 0}
+@media(max-width:680px){.bits-columns{grid-template-columns:1fr}.bits-category-panel{padding:14px}.bits-player{flex-wrap:wrap}.bits-player button{width:100%}.bits-game-head{gap:8px}.bits-game-head h1{font-size:1.2rem}.bits-top{align-items:flex-start}}
+
+/* Linha do tempo segmentada: cada bloco corresponde ao NOVO trecho liberado. */
+.bits-timeline{height:14px;display:flex;gap:4px;flex:1;min-width:60px}
+.bits-segment{position:relative;min-width:0;border-radius:8px;background:var(--seg);overflow:hidden;opacity:.55}
+.bits-segment.unlocked{opacity:1;background:color-mix(in srgb,var(--accent) 35%,var(--seg))}
+.bits-segment .bits-segment-fill{display:block;width:100%;height:100%;background:var(--accent);transform:scaleX(0);transform-origin:left}
+.bits-volume{display:flex;align-items:center;gap:9px;justify-content:flex-start;margin-top:12px}
+.bits-volume button{padding:6px 10px;min-width:44px}
+.bits-volume input{width:min(230px,50vw);accent-color:var(--accent)}
+.bits-volume span{color:var(--muted);font-size:.85rem;min-width:40px}
+.bits-history-line.same-artist{border-color:#d5a320;background:color-mix(in srgb,#efbc36 17%,var(--card))}
+.bits-history-line.same-artist small{color:var(--fg)}
+@media(max-width:680px){.bits-timeline{order:2;flex:1}.bits-player #clipLength{order:3}.bits-player #playAudio{order:1}}
+
+/* Bits: recolhe o painel de apoio após a terceira tentativa. */
+body.bits-support-collapsed .huba-support{display:none}
+.bits-support-toggle{
+ position:fixed;left:50%;bottom:max(4px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);z-index:31;min-width:58px;height:28px;
+ padding:2px 14px;border:1px solid var(--line);border-radius:12px 12px 0 0;
+ background:var(--card);color:var(--fg);box-shadow:0 0 10px #0002;
+ font-size:1rem;line-height:1;cursor:pointer;
+}
+.bits-support-toggle[hidden]{display:none!important}
+body:not(.bits-support-collapsed) .bits-support-toggle{bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px))}
+@media(max-width:560px){body:not(.bits-support-collapsed) .bits-support-toggle{bottom:max(122px,calc(env(safe-area-inset-bottom) + 122px))}}
