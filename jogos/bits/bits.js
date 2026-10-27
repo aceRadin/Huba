@@ -2,8 +2,8 @@
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
-var cats=['geral','pop','anime','rock','metal','games','power metal'];
-var labels={geral:'Geral',pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal',games:'Games','power metal':'Power Metal'};
+var cats=['pop','anime','rock','metal','games','power metal'];
+var labels={pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal',games:'Games','power metal':'Power Metal'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true, loadingChoice=null;
@@ -29,7 +29,7 @@ function ingest(items){
  });
  // Lista ordenada dá resultados reproduzíveis com um catálogo de músicas idêntico.
  out.sort(function(a,b){return a.label.localeCompare(b.label,'pt-BR')});
- catalog=out;byCat={};cats.forEach(function(c){byCat[c]=c==='geral'?catalog:catalog.filter(function(s){return s.genre===c})});
+ catalog=out;byCat={};cats.forEach(function(c){byCat[c]=catalog.filter(function(s){return s.genre===c})});
  drawTiles();renderStats();
  $('catalogCount').textContent=musicLoading?'Loading…':('Total: '+catalog.length+' músicas');
 }
@@ -44,7 +44,7 @@ function drawTiles(){
  });
 }
 function formatSong(t){return (t.artist||'')+' - '+(t.title||'')}
-function parseSource(text){var entries=[];text.split(/\r?\n/).forEach(function(line){var at=line.indexOf(':');if(at<1)return;var genre=norm(line.slice(0,at));if(cats.indexOf(genre)<0||genre==='geral')return;line.slice(at+1).split(',').forEach(function(item){item=item.trim();if(item)entries.push({genre:genre,item:item})})});return entries}
+function parseSource(text){var entries=[];text.split(/\r?\n/).forEach(function(line){var at=line.indexOf(':');if(at<1)return;var genre=norm(line.slice(0,at));if(cats.indexOf(genre)<0)return;line.slice(at+1).split(',').forEach(function(item){item=item.trim();if(item)entries.push({genre:genre,item:item})})});return entries}
 var jsonpCount=0;
 function jsonp(url){return new Promise(function(resolve,reject){
  var cb='bitsCb'+(++jsonpCount)+'_'+Date.now(), script=document.createElement('script'), done=false;
@@ -87,7 +87,7 @@ var loadedCats={}, categoryPromises={};
 function loadCategory(cat){
  if(loadedCats[cat])return Promise.resolve();
  if(categoryPromises[cat])return categoryPromises[cat];
- var entries=parseSource(configs).filter(function(e){return cat==='geral'||e.genre===cat});
+ var entries=parseSource(configs).filter(function(e){return e.genre===cat});
  if(!entries.length)return Promise.reject(new Error('Nenhuma playlist configurada para '+labels[cat]));
  var found=[], failures=0, chain=Promise.resolve();
  entries.forEach(function(entry){chain=chain.then(function(){return getSongs(entry).then(function(items){found=found.concat(items)},function(){failures++})})});

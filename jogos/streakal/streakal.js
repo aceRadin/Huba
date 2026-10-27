@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var ALL='__todos__', MAX_CLIP=30, MIN_CLIP=1.5, MAX_OPTIONS=15, BASE_REDUCTION=.05, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
+var MAX_CLIP=30, MIN_CLIP=1.5, MAX_OPTIONS=15, BASE_REDUCTION=.05, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm;
 var songs=[],byGenre={},genres=[],local=[],remote=[],musicLoading=true;
@@ -11,8 +11,8 @@ function applyVol(){audio.volume=volume;audio.muted=muted;$('#vol').value=volume
 $('#vol').oninput=function(){volume=this.value/100;if(volume>0)muted=false;applyVol()};
 $('#muteBtn').onclick=function(){muted=!muted;if(!muted&&volume===0)volume=.5;applyVol()};applyVol();
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
-function poolOf(g){return g===ALL?songs:(byGenre[g]||[])}
-function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
+function poolOf(g){return byGenre[g]||[]}
+function gName(g){return cap(g)}
 function readJSON(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch(e){return def}}
 function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function records(){return readJSON(RECORD_KEY,{})}
@@ -21,8 +21,9 @@ function saveBest(g,n){var r=records();if(n>(r[g]||0)){r[g]=n;writeJSON(RECORD_K
 function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
 function renderHome(){
   $('#statGames').textContent=readJSON(GAMES_KEY,{n:0}).n||0;
+  $('#statDailyStreak').textContent=HUBA.currentStreak('streakal');
   ['Daily','Random'].forEach(function(mode){var daily=mode==='Daily',box=$('#tiles'+mode);box.innerHTML='';
-    var keys=[ALL].concat(configuredGenres());
+    var keys=configuredGenres();
     keys.forEach(function(g){var pool=poolOf(g),b=document.createElement('button');b.type='button';b.className='tile';
       var st=daily?readJSON(dailyKey(g),null):null;
       b.innerHTML='<span class="tname"><span class="tn"></span><em class="tacc"></em></span><small></small>';
@@ -135,8 +136,7 @@ function loadGenre(g){
   return genrePromises[g];
 }
 function loadSelection(g){
-  var groups=g===ALL?configuredGenres():[g];
-  // A opção Todos os gêneros é a única que precisa consultar todas as categorias.
+  var groups=[g];
   var chain=Promise.resolve(),failures=[];
   groups.forEach(function(genre){chain=chain.then(function(){return loadGenre(genre).catch(function(e){failures.push(e.message)})})});
   return chain.then(function(){if(poolOf(g).length===0)throw new Error(failures[0]||'Nenhuma música encontrada');return failures});
@@ -426,7 +426,11 @@ function upgrade(type){if(!cur||!cur.pending||cur.ended)return;
 $('#extraOption').onclick=function(){upgrade('extra')};$('#shorterClip').onclick=function(){upgrade('shorter')};
 function endRun(exhausted){if(!cur||cur.ended)return;cur.ended=true;stop();songLoadToken++;saveBest(cur.genre,cur.score);
   var games=readJSON(GAMES_KEY,{n:0});games.n=(games.n||0)+1;writeJSON(GAMES_KEY,games);
-  if(cur.daily)writeJSON(dailyKey(cur.genre),{done:true,score:cur.score});showResult(false,exhausted);
+  if(cur.daily){
+    writeJSON(dailyKey(cur.genre),{done:true,score:cur.score});
+    HUBA.recordDailyStreak('streakal'); // Conta no máximo um dia, independente do gênero.
+  }
+  showResult(false,exhausted);
 }
 function showResult(revisit,exhausted){stop();$('#quiz').classList.add('hidden');$('#result').classList.remove('hidden');$('#play').classList.add('is-result');
   $('#resultTitle').textContent=revisit?'Desafio de hoje concluído':'Sequência encerrada: '+cur.score+' acertos';

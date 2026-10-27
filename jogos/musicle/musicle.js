@@ -1,6 +1,6 @@
 (function(){
 
-var CLIP=7, NQ=5, ALL='__todos__';
+var CLIP=7, NQ=5;
 var SKIP_FRAC=0.25, SKIP_MAX=60;   // o trecho nunca começa nos primeiros 25% da música (no máximo 60 s), por causa de introduções longas
   var STATS_KEY='playhub:musicle:stats:v1', HISTORY_KEY='playhub:musicle:recent:v1';
 var $=function(s){return document.querySelector(s)};
@@ -34,8 +34,8 @@ applyVol();
 
 /* ---------- utilidades ---------- */
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
-function poolOf(g){return g===ALL?songs:(byGenre[g]||[])}
-function gName(g){return g===ALL?'Todos os gêneros':cap(g)}
+function poolOf(g){return byGenre[g]||[]}
+function gName(g){return cap(g)}
   function storeKey(g){return 'musicle3:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP}
   function readState(g){try{var r=localStorage.getItem(storeKey(g)); return r?JSON.parse(r):null}catch(e){return null}}
   function nq(pool){return Math.min(NQ,pool.length)}
@@ -175,8 +175,7 @@ function loadGenre(g){
   return genrePromises[g];
 }
 function loadSelection(g){
-  var groups=g===ALL?configuredGenres():[g];
-  // A opção Todos os gêneros é a única que precisa consultar todas as categorias.
+  var groups=[g];
   var chain=Promise.resolve(),failures=[];
   groups.forEach(function(genre){chain=chain.then(function(){return loadGenre(genre).catch(function(e){failures.push(e.message)})})});
   return chain.then(function(){if(poolOf(g).length===0)throw new Error(failures[0]||'Nenhuma música encontrada');return failures});
@@ -211,12 +210,12 @@ function renderHome(){
   ['Daily','Random'].forEach(function(m){
     var box=$('#tiles'+m); box.innerHTML='';
     var daily=m==='Daily';
-    var keys=[ALL].concat(configuredGenres());
+    var keys=configuredGenres();
     keys.forEach(function(g){
       var b=document.createElement('button'); b.className='tile';
       var n=songs.length?poolOf(g).length:0, small='';
       if(musicLoading && loadingChoice && loadingChoice.genre===g && loadingChoice.daily===daily) small='Carregando gênero…';
-      else if(!loadedGenres[g] && g!==ALL) small='';
+      else if(!loadedGenres[g]) small='';
       else if(loadedGenres[g] && n<optionCount()) small='precisa de '+optionCount()+'+ músicas';
       else if(daily){
         var st=readState(g);
