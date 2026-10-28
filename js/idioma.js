@@ -126,6 +126,8 @@ function build(){
    picker.addEventListener('toggle',function(){if(!picker.open)return;var rect=difficultyTitle.getBoundingClientRect();difficulty.style.left=Math.max(12,Math.min(rect.left,innerWidth-242))+'px';difficulty.style.top=(rect.bottom+8)+'px'});
    picker.addEventListener('keydown',function(e){if(e.key==='Escape'){picker.open=false;difficultyTitle.focus();e.preventDefault();e.stopPropagation()}});
  }
+ var stats=document.getElementById('wGameStats');
+ if(stats){stats.textContent='📊';stats.title='Estatísticas';stats.setAttribute('aria-label','Estatísticas');nav.appendChild(stats)}
  var mode=document.createElement('details');mode.className='huba-mode';
  var modeTitle=document.createElement('summary');modeTitle.setAttribute('aria-label','Modo de jogo');mode.appendChild(modeTitle);
  var modeOptions=document.createElement('div');modeOptions.className='huba-mode-options';

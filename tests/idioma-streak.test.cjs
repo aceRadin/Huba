@@ -85,6 +85,8 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  await page.evaluate(() => HUBA.setMode('training'));
  await page.locator('#wTilesDaily button').first().click();
  await checkHeader();
+ assert.equal(await page.locator('.huba-language #wGameStats').count(),1);
+ await page.locator('#wGameStats').click();assert.equal(await page.locator('#wStats').evaluate(el=>el.open),true);assert.ok(await page.locator('#wStatsBody .w-sblock').count()>0);await page.locator('#wStatsClose').click();
  await page.locator('#wTitle').click();await page.keyboard.type('ab');await page.keyboard.press('Space');
  const input=await page.locator('#wBoards .w-row').first().textContent();await language('pt');assert.doesNotMatch(await page.locator('#wTitle').textContent(),/English/);await language('en');assert.match(await page.locator('#wTitle').textContent(),/English/);assert.equal(await page.locator('#wBoards .w-row').first().textContent(),input);
  assert.deepEqual(await audit(),[],'Wording: instruções em inglês');
@@ -133,7 +135,7 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  await context.route('**/dados/words.json',r=>r.fulfill({status:404,body:'Not found'}));
  await page.reload();await page.waitForFunction(()=>document.querySelector('#wSrc').textContent.includes('Could not load'));
  assert.equal(await page.locator('#wTilesDaily button').first().isDisabled(),true,'não usa uma lista antiga salva no navegador');
- await context.unroute('**/dados/words.json');await page.reload();await page.waitForFunction(()=>!document.querySelector('#wTilesDaily button').disabled);
+ await context.unroute('**/dados/words.json');await page.reload();await page.waitForFunction(()=>document.querySelector('#wTilesDaily button')?.disabled===false);
  assert.equal(await page.locator('#wSrc').textContent(),'');
  assert.deepEqual(errors,[]);
 });

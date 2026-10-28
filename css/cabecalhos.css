@@ -1,10 +1,19 @@
 /* Regras comuns carregadas após os estilos de cada jogo. */
+/* Uma única reserva para o apoio, em vez de somar body, main e seção. */
+body.scroll-fit{padding-bottom:0;--huba-footer-space:160px}
+body.scroll-fit main{padding-bottom:var(--huba-footer-space)}
+body.scroll-fit #home{min-height:0;padding-bottom:0}
+body.scroll-fit.wording-support-ready{--huba-footer-space:70px}
+body.scroll-fit.wording-support-ready:has(.huba-support-dropdown[open]){--huba-footer-space:200px}
+body.scroll-fit.streakal-support-collapsed{--huba-footer-space:48px}
 .huba-difficulty{position:relative}
 .huba-difficulty>summary{list-style:none;display:grid;place-items:center;box-sizing:border-box;width:34px;height:34px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:1rem}
 .huba-difficulty>summary::-webkit-details-marker{display:none}
 .huba-language #difficultyTool{position:fixed;box-sizing:border-box;width:230px;height:auto;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 16px #0003}
 .huba-language #difficultyTool .tool-label{display:block}
 .huba-language #difficultyTool .difficulty{display:flex;gap:6px;margin:0}
+.huba-language #wGameStats{display:none}
+.w-gtop>.huba-language #wGameStats{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:34px;height:34px;padding:4px;font-size:1rem}
 body.has-game-header{padding-top:0}
 body.has-game-header .huba-game-header,
 #home .hub-top.huba-game-header,
