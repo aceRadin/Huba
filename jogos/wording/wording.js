@@ -2,7 +2,7 @@
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm,recordDailyStreak=HUBA.recordDailyStreak;
 /* ---------- Wording ---------- */
-var WCFG={}, WFROM={}, WLANG='pt', WLOADING=true, WALLFETCHED=false, WNOTE='';
+var WCFG={}, WFROM={}, WLANG=HUBA_I18N.language, WLOADING=true, WALLFETCHED=false, WNOTE='';
 var WFILES=['words.json','palavra.json'], WSAVE_KEY='playhub:word:files:v2';
 try{var wl=localStorage.getItem('playhub:word:lang'); if(wl==='pt'||wl==='en')WLANG=wl}catch(e){}
 function wLangOfFile(name){return /palavra|(^|[^a-z])pt([^a-z]|$)|port/i.test(name)?'pt':'en'}
@@ -226,6 +226,7 @@ function wSubmit(){
   renderWord();
 }
 function wFinish(){
+  HUBA.recordPlayedGame('word');
   var st=wRead(); st.games=(st.games||0)+1;
   if(w.daily){
     var sk=wStatKey(w.lang,w.mode), m=st.modes[sk]=st.modes[sk]||{p:0,w:0,s:0,b:0,d:[]};
@@ -304,7 +305,7 @@ document.addEventListener('keydown',function(e){
   }
   if(!w||$('#wgame').classList.contains('hidden')||$('#wStats').open)return;
   if(e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.target.closest&&e.target.closest('.huba-settings, .huba-support-dropdown'))return;
+  if(e.target.closest&&e.target.closest('.huba-settings, .huba-support-dropdown, .huba-language'))return;
   var k=e.key;
   var ae=document.activeElement; if(ae&&ae!==document.body&&ae.tagName==='BUTTON')ae.blur();
   if(k==='Enter'){e.preventDefault(); wKey('enter')}

@@ -8,7 +8,9 @@ No Bits, `top` reúne os três rankings e remove músicas repetidas. Cada rankin
 
 O botão ⚙ no canto inferior esquerdo abre Configurações → Tema em qualquer página ou partida. Há Claro, Escuro, Oceano, Floresta, Pôr do sol, Rosa e Café, além de Automático (acompanha o sistema). A escolha fica salva neste navegador.
 
-O topo dos jogos mostra somente o streak diário; no Musical, acompanha a dificuldade selecionada. Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar HUBA” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
+O Musical tem um único streak para Casual e Desafiador. Na página inicial, o streak geral do HUBA conta qualquer partida concluída, mesmo com derrota, uma vez por dia. O seletor Português/English no canto superior direito funciona em todas as páginas e preserva partidas em andamento. Veja [idioma e streaks](docs/idioma-e-streaks.md).
+
+Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar HUBA” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
 
 ## Configurar
 

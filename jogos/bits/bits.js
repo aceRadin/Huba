@@ -257,7 +257,7 @@ function submit(skip){
  if(active.finished)recordFinish();dailySave();renderRound();
  if(active.finished)showFinish();else message(skip?'Tentativa pulada. Agora o trecho ficou maior.':'Não foi dessa vez. Ouça um trecho maior!');
 }
-function recordFinish(){if(!active||active.recorded)return;var st=getStats();st.games=(st.games||0)+1;if(active.won)st.wins=(st.wins||0)+1;saveStats(st);active.recorded=true;
+function recordFinish(){if(!active||active.recorded)return;HUBA.recordPlayedGame('bits');var st=getStats();st.games=(st.games||0)+1;if(active.won)st.wins=(st.wins||0)+1;saveStats(st);active.recorded=true;
  // Streak somente para conclusão de desafio diário, uma vez por data, independentemente da categoria.
  if(active.daily)HUBA.recordDailyStreak('bits');renderStats();}
 function showFinish(){$('replaceAudio').classList.add('hidden');stopAudio();$('guessArea').classList.add('hidden');$('finish').classList.remove('hidden');

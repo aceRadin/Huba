@@ -47,7 +47,7 @@ function gName(g){return cap(g)}
   function readStats(){try{return JSON.parse(localStorage.getItem(STATS_KEY))||{games:0}}catch(e){return {games:0}}}
   function saveStats(st){try{localStorage.setItem(STATS_KEY,JSON.stringify(st))}catch(e){}}
   function renderStats(){
-    $('#statDailyStreak').textContent=HUBA.currentStreak(CLIP===1.5?'musicle-hard':'musicle');
+    $('#statDailyStreak').textContent=HUBA.currentStreak('musicle');
   }
   function genreAcc(g){
     var st=readStats(), r=st.genres&&st.genres[modeOf()+'|'+g];
@@ -294,7 +294,7 @@ function playClip(){
     begin();
   });
 }
-$('#playBtn').onclick=function(){ $('#playBtn').textContent==='Parar'?stop():playClip() };
+$('#playBtn').onclick=function(){ HUBA_I18N.isText($('#playBtn'),'Parar')?stop():playClip() };
 
 /* ---------- perguntas ---------- */
 function dots(){
@@ -346,7 +346,7 @@ function showQuestion(){
 }
 function finishRound(){
   recordStats();
-  if(cur.daily)recordDailyStreak(CLIP===1.5?'musicle-hard':'musicle');
+  HUBA.recordPlayedGame('musicle');
   renderStats();
   if(!cur.daily){
     var labels=cur.qs.map(function(q){return norm(cur.pool[q.a].label)});

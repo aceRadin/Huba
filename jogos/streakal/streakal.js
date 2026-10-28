@@ -238,7 +238,7 @@ function playClip(){
     else audio.addEventListener('loadedmetadata',function ready(){audio.removeEventListener('loadedmetadata',ready);begin()},{once:true});
   }).catch(function(){if(request===playRequest)failAudio()});
 }
-$('#playBtn').onclick=function(){if($('#playBtn').textContent==='Parar')stop();else playClip()};
+$('#playBtn').onclick=function(){if(HUBA_I18N.isText($('#playBtn'),'Parar'))stop();else playClip()};
 function makeCard(song){var b=document.createElement('button');b.type='button';b.className='opt musical-option';
   var cover=document.createElement('span');cover.className='musical-cover';var fallback=document.createElement('span');fallback.className='musical-cover-fallback';fallback.textContent='♫';cover.appendChild(fallback);
   if(song.cover){var img=document.createElement('img');img.src=song.cover;img.alt='';img.loading='lazy';img.onerror=function(){img.remove()};cover.appendChild(img)}
@@ -361,6 +361,7 @@ function upgrade(type){if(!cur||!cur.pending||cur.ended)return;
 }
 $('#extraOption').onclick=function(){upgrade('extra')};$('#shorterClip').onclick=function(){upgrade('shorter')};
 function endRun(exhausted){if(!cur||cur.ended)return;cur.ended=true;stop();songLoadToken++;saveBest(cur.genre,cur.score);
+  HUBA.recordPlayedGame('streakal');
   var games=readJSON(GAMES_KEY,{n:0});games.n=(games.n||0)+1;writeJSON(GAMES_KEY,games);
   if(cur.daily){
     writeJSON(dailyKey(cur.genre),{done:true,score:cur.score});

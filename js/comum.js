@@ -10,7 +10,15 @@ window.HUBA = (function(){
   function readStreak(id){try{return JSON.parse(localStorage.getItem(streakKey(id)))||{}}catch(e){return {}}}
   function currentStreak(id){var st=readStreak(id),y=new Date();y.setDate(y.getDate()-1);return (st.last===dayKey()||st.last===keyOf(y))?(st.count||0):0}
   function recordDailyStreak(id){var st=readStreak(id),today=dayKey(),y=new Date();y.setDate(y.getDate()-1);if(st.last===today)return;st.count=(st.last===keyOf(y))?(st.count||0)+1:1;st.last=today;st.best=Math.max(st.best||0,st.count);try{localStorage.setItem(streakKey(id),JSON.stringify(st))}catch(e){}}
-  return {dayKey:dayKey,hash:hash,mulberry:mulberry,shuffle:shuffle,norm:norm,currentStreak:currentStreak,recordDailyStreak:recordDailyStreak};
+  // Conserva a maior sequência ativa anterior; não soma dias que podem coincidir.
+  try{if(!localStorage.getItem('huba:musicle:unified:v1')){
+    var casual=readStreak('musicle'),hard=readStreak('musicle-hard');
+    var merged=currentStreak('musicle-hard')>currentStreak('musicle')?hard:casual;
+    merged.best=Math.max(casual.best||0,hard.best||0,merged.count||0);
+    localStorage.setItem(streakKey('musicle'),JSON.stringify(merged));localStorage.setItem('huba:musicle:unified:v1','1');
+  }}catch(e){}
+  function recordPlayedGame(id){recordDailyStreak('huba');if(id==='musicle')recordDailyStreak('musicle');document.dispatchEvent(new Event('huba:streak'))}
+  return {dayKey:dayKey,hash:hash,mulberry:mulberry,shuffle:shuffle,norm:norm,currentStreak:currentStreak,recordDailyStreak:recordDailyStreak,recordPlayedGame:recordPlayedGame};
 })();
 
 /* Preferência visual compartilhada, disponível em todas as telas. */
