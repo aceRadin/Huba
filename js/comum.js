@@ -12,3 +12,38 @@ window.HUBA = (function(){
   function recordDailyStreak(id){var st=readStreak(id),today=dayKey(),y=new Date();y.setDate(y.getDate()-1);if(st.last===today)return;st.count=(st.last===keyOf(y))?(st.count||0)+1:1;st.last=today;st.best=Math.max(st.best||0,st.count);try{localStorage.setItem(streakKey(id),JSON.stringify(st))}catch(e){}}
   return {dayKey:dayKey,hash:hash,mulberry:mulberry,shuffle:shuffle,norm:norm,currentStreak:currentStreak,recordDailyStreak:recordDailyStreak};
 })();
+
+/* Preferência visual compartilhada, disponível em todas as telas. */
+(function(){
+  'use strict';
+  var themes={system:'Automático',light:'Claro',dark:'Escuro',ocean:'Oceano',forest:'Floresta',sunset:'Pôr do sol',rose:'Rosa',coffee:'Café'};
+  var selected='system',key='huba:theme:v1';
+  try{var saved=localStorage.getItem(key);if(Object.prototype.hasOwnProperty.call(themes,saved))selected=saved}catch(e){}
+  function apply(theme){
+    selected=theme;
+    if(theme==='system')document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme',theme);
+  }
+  apply(selected);
+  function buildSettings(){
+    var nav=document.createElement('nav');nav.className='huba-settings';nav.setAttribute('aria-label','Configurações do HUBA');
+    var menu=document.createElement('details'),summary=document.createElement('summary');
+    summary.textContent='⚙';summary.title='Configurações';summary.setAttribute('aria-label','Configurações');menu.appendChild(summary);
+    var content=document.createElement('div');content.className='huba-settings-content';
+    var heading=document.createElement('strong');heading.textContent='Configurações';content.appendChild(heading);
+    var dropdown=document.createElement('details'),label=document.createElement('summary');label.textContent='Tema';dropdown.appendChild(label);
+    var options=document.createElement('div');options.className='huba-theme-options';options.setAttribute('role','group');options.setAttribute('aria-label','Tema do site');
+    Object.keys(themes).forEach(function(theme){
+      var button=document.createElement('button');button.type='button';button.textContent=themes[theme];button.dataset.theme=theme;
+      button.setAttribute('aria-pressed',String(selected===theme));
+      button.onclick=function(){
+        apply(theme);try{localStorage.setItem(key,theme)}catch(e){}
+        options.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.theme===theme))});
+      };
+      options.appendChild(button);
+    });
+    dropdown.appendChild(options);content.appendChild(dropdown);menu.appendChild(content);nav.appendChild(menu);document.body.appendChild(nav);
+    nav.addEventListener('keydown',function(e){if(e.key==='Escape'){menu.open=false;summary.focus();e.preventDefault();e.stopPropagation()}});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',buildSettings);else buildSettings();
+})();

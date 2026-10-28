@@ -122,7 +122,7 @@ function wStatus(mode){
   return g.length>=M.tries?'lose':'play';
 }
 function renderWordHub(){
-  $('#wGames').textContent=wRead().games||0;
+  $('#wDailyStreak').textContent=HUBA.currentStreak('word');
   wRenderLang();
   [['Daily',true],['Random',false]].forEach(function(x){
     var box=$('#wTiles'+x[0]); box.innerHTML='';
@@ -171,6 +171,7 @@ function startWord(mode,daily){
   $('#wTitle').textContent=M.name+' · '+(daily?'Diário':'Aleatório')+(WLANG==='en'?' · English':'');
   $('#wMsg').textContent='';
   wBuildKb(); renderWord();
+  document.dispatchEvent(new Event('huba:word-screen'));
 }
 function wEval(){
   w.won=w.targets.every(function(t){return w.guesses.indexOf(t.n)>=0});
@@ -204,6 +205,7 @@ function wKey(k){
 }
 function wShake(){var b=$('#wBoards'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake')}
 function wSubmit(){
+  document.dispatchEvent(new Event('huba:word-guess'));
   var cur=w.slots.join('');
   if(!/^[a-z]{5}$/.test(cur)){
     var vis=w.slots.map(function(x){return (x&&x!==' ')?x:' '}).join('');
@@ -299,6 +301,7 @@ document.addEventListener('keydown',function(e){
   }
   if(!w||$('#wgame').classList.contains('hidden')||$('#wStats').open)return;
   if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.target.closest&&e.target.closest('.huba-settings, .huba-support-dropdown'))return;
   var k=e.key;
   var ae=document.activeElement; if(ae&&ae!==document.body&&ae.tagName==='BUTTON')ae.blur();
   if(k==='Enter'){e.preventDefault(); wKey('enter')}
@@ -329,7 +332,7 @@ function renderWStats(){
   });
 }
 function openWStats(){renderWStats(); var d=$('#wStats'); if(d.showModal)d.showModal(); else d.setAttribute('open','')}
-$('#wStatsBtn').onclick=openWStats; $('#wGameStats').onclick=openWStats;
+$('#wGameStats').onclick=openWStats;
 $('#wStatsClose').onclick=function(){$('#wStats').close()};
 $('#wStats').addEventListener('click',function(e){if(e.target===this)this.close()});
 

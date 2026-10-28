@@ -2,21 +2,21 @@
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
-var cats=['pop','anime','rock','metal','games','power metal'];
-var labels={pop:'Pop',anime:'Anime',rock:'Rock',metal:'Metal',games:'Games','power metal':'Power Metal'};
+var cats=['top','pop','rock','rap'];
+var labels={top:'Top',pop:'Pop',rock:'Rock',rap:'Rap'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
 var catalog=[], byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true, loadingChoice=null;
 var unavailableSongs={};
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
-var configs=Array.isArray(window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes)?window.HUBA_MUSICAS.fontes.join('\n'):'';
+var configs=Array.isArray(window.HUBA_BITS_MUSICAS&&window.HUBA_BITS_MUSICAS.fontes)?window.HUBA_BITS_MUSICAS.fontes.join('\n'):'';
 var norm=HUBA.norm, hash=HUBA.hash;
 function setStatus(message){$('loadStatus').textContent=message}
 function storageGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function storageSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function getStats(){try{return JSON.parse(storageGet(statsKey))||{games:0,wins:0}}catch(e){return {games:0,wins:0}}}
 function saveStats(st){storageSet(statsKey,JSON.stringify(st))}
-function renderStats(){var s=getStats();$('totalGames').textContent=s.games||0;$('streakValue').textContent=HUBA.currentStreak('bits')}
+function renderStats(){$('streakValue').textContent=HUBA.currentStreak('bits')}
 function dailyKey(cat){return 'huba:bits:daily:v1:'+HUBA.dayKey()+':'+cat}
 function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
@@ -88,7 +88,7 @@ function loadCategory(cat){
  if(loadedCats[cat])return Promise.resolve();
  if(categoryPromises[cat])return categoryPromises[cat];
  var entries=parseSource(configs).filter(function(e){return e.genre===cat});
- if(!entries.length)return Promise.reject(new Error('Nenhuma playlist configurada para '+labels[cat]));
+ if(!entries.length)return Promise.reject(new Error('Configure as playlists de '+labels[cat]+' em jogos/bits/playlists.js.'));
  var found=[], failures=0, chain=Promise.resolve();
  entries.forEach(function(entry){chain=chain.then(function(){return getSongs(entry).then(function(items){found=found.concat(items)},function(){failures++})})});
  categoryPromises[cat]=chain.then(function(){
@@ -116,7 +116,7 @@ function enterCategory(cat,daily){
 }
 function initCatalog(){
  musicLoading=false;ingest([]);
- setStatus(parseSource(configs).length?'Escolha um gênero para carregar apenas suas playlists.':'Nenhuma fonte configurada em playlists.js.');
+ setStatus(parseSource(configs).length?'Escolha um gênero para carregar apenas suas playlists.':'Adicione suas playlists exclusivas em jogos/bits/playlists.js para começar.');
  $('catalogCount').textContent='Músicas carregadas sob demanda';
 }
 

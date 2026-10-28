@@ -1,6 +1,12 @@
-# HUBA — Catálogo musical único
+# HUBA — Jogos
 
-Agora **Musical e Bits usam a mesma lista** de playlists em `playlists.js`, na raiz. O arquivo contém somente `window.HUBA_MUSICAS.fontes`. Para adicionar outro jogo musical, consulte essa mesma propriedade. Os jogos continuam com lógica e estatísticas próprias.
+**Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa somente `jogos/bits/playlists.js`** (`window.HUBA_BITS_MUSICAS.fontes`). Os jogos continuam com lógica e estatísticas próprias.
+
+O arquivo do Bits começa vazio, com as categorias `top`, `pop`, `rock` e `rap`. Preencha depois de cada dois-pontos com `playlist:ID`, separando várias playlists com vírgulas. Top tem suas próprias fontes. Enquanto não configurar, os botões informam onde adicionar as playlists e não consultam o Deezer.
+
+O botão ⚙ no canto inferior esquerdo abre Configurações → Tema em qualquer página ou partida. Há Claro, Escuro, Oceano, Floresta, Pôr do sol, Rosa e Café, além de Automático (acompanha o sistema). A escolha fica salva neste navegador.
+
+O topo dos jogos mostra somente o streak diário; no Musical, acompanha a dificuldade selecionada. Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar HUBA” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
 
 ## Configurar
 
@@ -10,7 +16,7 @@ Abra `playlists.js` e edite os IDs ou links dentro da lista `fontes`. Os IDs env
 'rock: playlist:1306931615, playlist:4047160366'
 ```
 
-As categorias configuradas são `rock`, `metal`, `pop` e `anime`; o Bits também combina as quatro em `geral`.
+As categorias do catálogo compartilhado são `rock`, `metal`, `pop`, `anime`, `games` e `power metal`. O catálogo do Bits é independente.
 
 ## Publicar no GitHub Pages
 
@@ -25,7 +31,7 @@ As categorias configuradas são `rock`, `metal`, `pop` e `anime`; o Bits também
 
 ## Sobre funcionamento
 
-As fontes são as mesmas para Musical e Bits. Ambos consultam o Deezer independentemente quando a página é aberta; por isso o número exato de prévias disponíveis pode variar conforme falhas da API ou limites de acesso. O Musical e o Bits podem ter jogos e filtros de exibição diferentes, mas partem das mesmas playlists. Não há servidor nem chave privada no site.
+Musical e Streakal compartilham as fontes; Bits tem fontes próprias. Cada jogo consulta o Deezer ao selecionar um gênero, e o número de prévias disponíveis pode variar conforme falhas da API ou limites de acesso. Não há servidor nem chave privada no site.
 
 Se o arquivo `playlists.js` for encontrado e as músicas ainda não aparecerem, inspecione F12 → Console e Rede (Network); pode ser um problema separado de disponibilidade da API Deezer.
 

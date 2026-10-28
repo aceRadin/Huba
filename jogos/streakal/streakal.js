@@ -20,7 +20,6 @@ function best(g){return records()[g]||0}
 function saveBest(g,n){var r=records();if(n>(r[g]||0)){r[g]=n;writeJSON(RECORD_KEY,r)}}
 function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
 function renderHome(){
-  $('#statGames').textContent=readJSON(GAMES_KEY,{n:0}).n||0;
   $('#statDailyStreak').textContent=HUBA.currentStreak('streakal');
   ['Daily','Random'].forEach(function(mode){var daily=mode==='Daily',box=$('#tiles'+mode);box.innerHTML='';
     var keys=configuredGenres();

@@ -1,6 +1,6 @@
 :root{--bg:#ecebf5;--card:#fff;--fg:#1b1740;--muted:#6a6788;--accent:#5b3df5;--accent-fg:#fff;--ok:#1f9d6b;--bad:#d6455d;--line:#d7d4e8;--seg:#cfcbe8;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14122b;--card:#1e1b3d;--fg:#edebfa;--muted:#a09dc4;--accent:#8b75ff;--accent-fg:#14122b;--ok:#3ccf92;--bad:#ff6b82;--line:#363262;--seg:#3a3670}}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#14122b;--card:#1e1b3d;--fg:#edebfa;--muted:#a09dc4;--accent:#8b75ff;--accent-fg:#14122b;--ok:#3ccf92;--bad:#ff6b82;--line:#363262;--seg:#3a3670}}
 :root[data-theme="dark"]{--bg:#14122b;--card:#1e1b3d;--fg:#edebfa;--muted:#a09dc4;--accent:#8b75ff;--accent-fg:#14122b;--ok:#3ccf92;--bad:#ff6b82;--line:#363262;--seg:#3a3670}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
@@ -235,3 +235,30 @@ body{padding-bottom:180px}
 
 /* Contador discreto, apenas dentro da tela da partida. */
 .huba-game-catalog-count{margin:8px 5px 0;text-align:right;font-size:.7rem;line-height:1.3;color:var(--muted);opacity:.8}
+
+/* Temas: as mesmas variáveis colorem todos os jogos. */
+:root[data-theme="ocean"]{--bg:#e5f1f8;--card:#f8fcff;--fg:#123448;--muted:#526c7c;--accent:#086e9e;--accent-fg:#fff;--line:#b9d5e5;--seg:#c2ddea}
+:root[data-theme="forest"]{--bg:#eaf2e6;--card:#fcfff8;--fg:#233c29;--muted:#576d59;--accent:#386d38;--accent-fg:#fff;--line:#c1d4b8;--seg:#c8dbbd}
+:root[data-theme="sunset"]{--bg:#fff0e4;--card:#fffaf6;--fg:#542d27;--muted:#856257;--accent:#ae442e;--accent-fg:#fff;--line:#e6c7b6;--seg:#efd0b9}
+:root[data-theme="rose"]{--bg:#f9eaf1;--card:#fffafd;--fg:#512c41;--muted:#805f73;--accent:#a73571;--accent-fg:#fff;--line:#e5c4d6;--seg:#edcddd}
+:root[data-theme="coffee"]{--bg:#25201d;--card:#332b26;--fg:#f5ebdf;--muted:#c4b2a0;--accent:#e9b87c;--accent-fg:#29201a;--ok:#63cc95;--bad:#ff8991;--line:#605044;--seg:#6b5542;--warn:#a67c10;--abs:#685a50}
+:root[data-theme="light"],:root[data-theme="ocean"],:root[data-theme="forest"],:root[data-theme="sunset"],:root[data-theme="rose"]{color-scheme:light}
+:root[data-theme="dark"],:root[data-theme="coffee"]{color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark}}
+.daily-streak{display:flex;align-items:center;justify-content:center;gap:8px;justify-self:center;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:8px 12px;text-align:center}
+.daily-streak strong{font-size:1.25rem;line-height:1}
+.daily-streak span{font-size:.75rem;color:var(--muted)}
+.huba-settings{position:fixed;left:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:50}
+.huba-settings>details>summary{list-style:none;cursor:pointer;display:grid;place-items:center;width:42px;height:42px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:1.3rem;box-shadow:0 3px 12px #0002}
+.huba-settings>details>summary::-webkit-details-marker{display:none}
+.huba-settings-content{position:absolute;left:0;bottom:50px;width:min(270px,calc(100vw - 24px));max-height:70vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 5px 24px #0003}
+.huba-settings-content>details{margin-top:12px}
+.huba-settings-content summary{cursor:pointer;font-weight:700;padding:6px 0}
+.huba-theme-options{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.huba-theme-options button{font-size:.8rem;padding:8px}
+.huba-theme-options button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+body.wording-support-ready{padding-bottom:70px}
+.huba-support-dropdown{position:fixed;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom));z-index:30}
+.huba-support-dropdown>summary{cursor:pointer;white-space:nowrap;padding:8px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:.8rem;font-weight:700;box-shadow:0 3px 12px #0002}
+.huba-support-dropdown .huba-support{position:absolute;bottom:calc(100% + 8px);width:min(440px,calc(100vw - 24px))}
+@media(max-width:760px){#home .daily-streak{grid-column:1/-1;grid-row:2}.w-top .daily-streak{justify-self:end}}

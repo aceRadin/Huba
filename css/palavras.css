@@ -1,10 +1,11 @@
 /* ===== Wording ===== */
 :root{--warn:#b07d0a;--abs:#8f8bb0}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--warn:#a67c10;--abs:#4b477f}}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--warn:#a67c10;--abs:#4b477f}}
 :root[data-theme="dark"]{--warn:#a67c10;--abs:#4b477f}
+:root[data-theme="coffee"]{--warn:#a67c10;--abs:#685a50}
 .brand-back{font:inherit;letter-spacing:.06em;color:inherit;background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
 .brand-back:hover{color:var(--accent)}
-.w-top{max-width:920px;margin:0 auto 16px;padding:8px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px}
+.w-top{max-width:920px;margin:0 auto 16px;padding:8px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}
 .w-top h1{font-size:1.3rem;line-height:1;margin:0}
 .w-pill{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);justify-self:center}
 .w-pill strong{font-size:.95rem}

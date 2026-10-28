@@ -32,5 +32,17 @@ panel.appendChild(links);
 
 var note=document.createElement('small');note.className='huba-support-note';
 note.textContent='Apoio opcional · Todos os jogos continuam gratuitos.';panel.appendChild(note);
-document.body.appendChild(panel);
+if(document.body.dataset.supportCollapse==='wording'){
+  var dropdown=document.createElement('details');dropdown.className='huba-support-dropdown';dropdown.open=true;
+  var toggle=document.createElement('summary');toggle.textContent='♡ Apoiar HUBA';
+  dropdown.appendChild(toggle);dropdown.appendChild(panel);document.body.appendChild(dropdown);
+  document.body.classList.add('wording-support-ready');
+  var collapseTimer;
+  function collapse(){clearTimeout(collapseTimer);dropdown.open=false}
+  function showBriefly(){clearTimeout(collapseTimer);dropdown.open=true;collapseTimer=setTimeout(collapse,3000)}
+  document.addEventListener('huba:word-guess',collapse);
+  document.addEventListener('huba:word-screen',showBriefly);
+  dropdown.addEventListener('keydown',function(e){if(e.key==='Escape'){collapse();toggle.focus();e.preventDefault();e.stopPropagation()}});
+  showBriefly();
+}else document.body.appendChild(panel);
 })();
