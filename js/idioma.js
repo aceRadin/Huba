@@ -46,6 +46,7 @@ phrases['Português']='Portuguese';
 phrases['Carvão']='Charcoal';
 phrases['Treino']='Training';phrases['Modo de jogo']='Game mode';phrases['Rodada de treino.']='Training round.';
 phrases['Você pode tentar outra música no modo Treino.']='You can try another song in Training mode.';
+phrases['Não foi possível carregar a lista de palavras deste idioma. Atualize a página para tentar novamente.']='Could not load the word list for this language. Refresh the page to try again.';
 var entries=Object.keys(phrases).sort(function(a,b){return b.length-a.length});
 var escaped=entries.map(function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')});
 var matcher=new RegExp(escaped.join('|'),'g');

@@ -122,5 +122,13 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  }
  await page.goto(base);assert.equal(await page.locator('#globalStreak').textContent(),'1');assert.equal(await page.locator('.gcard').filter({hasText:'Musical'}).locator('.gstreak strong').textContent(),'1');
  assert.equal(await page.locator('.huba-support-coffee').getAttribute('href'),'https://buymeacoffee.com/aceradin');
+ await page.goto(base+'/jogos/wording/');
+ assert.equal(await page.locator('#wLoadJson,#wResetJson,#wJsonInput,input[type="file"]').count(),0);
+ await page.evaluate(text=>{localStorage.setItem('playhub:word:files:v2',JSON.stringify({'words.json':text}));HUBA_I18N.setLanguage('en')},await fs.readFile(path.join(root,'dados/words.json'),'utf8'));
+ await context.route('**/dados/words.json',r=>r.fulfill({status:404,body:'Not found'}));
+ await page.reload();await page.waitForFunction(()=>document.querySelector('#wSrc').textContent.includes('Could not load'));
+ assert.equal(await page.locator('#wTilesDaily button').first().isDisabled(),true,'não usa uma lista antiga salva no navegador');
+ await context.unroute('**/dados/words.json');await page.reload();await page.waitForFunction(()=>!document.querySelector('#wTilesDaily button').disabled);
+ assert.equal(await page.locator('#wSrc').textContent(),'');
  assert.deepEqual(errors,[]);
 });

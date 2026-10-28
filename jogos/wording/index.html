@@ -15,10 +15,7 @@
     <div class="daily-streak" aria-live="polite"><strong id="wDailyStreak">0</strong><span>dias de streak diário</span></div>
   </div>
   <p class="w-meta">
-    <span id="wSrc"></span>
-    <button type="button" id="wLoadJson">Selecionar arquivos…</button>
-    <button type="button" id="wResetJson" class="hidden">Esquecer arquivos salvos</button>
-    <input type="file" id="wJsonInput" accept=".json,application/json" multiple hidden>
+    <span id="wSrc" role="status" aria-live="polite"></span>
   </p>
   <div class="hub-grid">
     <div class="games-grid single-game-modes">
@@ -56,7 +53,7 @@
 </main>
 <script src="../../js/comum.js?v=3" defer></script>
 <script src="../../js/idioma.js?v=5" defer></script>
-<script src="wording.js?v=5" defer></script>
+<script src="wording.js?v=7" defer></script>
 <script src="../../js/apoio-config.js" defer></script>
 <script src="../../js/apoio.js" defer></script>
 </body>

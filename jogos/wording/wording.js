@@ -2,8 +2,9 @@
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm,recordDailyStreak=HUBA.recordDailyStreak;
 /* ---------- Wording ---------- */
-var WCFG={}, WFROM={}, WLANG=HUBA_I18N.language, WLOADING=true, WALLFETCHED=false, WNOTE='';
-var WFILES=['words.json','palavra.json'], WSAVE_KEY='playhub:word:files:v2';
+var WCFG={}, WLANG=HUBA_I18N.language, WLOADING=true;
+var WFILES=['words.json','palavra.json'];
+var WDATA_URL=new URL('../../dados/wording-listas.js',document.currentScript.src).href;
 var suspendedWords={};
 function wLangOfFile(name){return /palavra|(^|[^a-z])pt([^a-z]|$)|port/i.test(name)?'pt':'en'}
 function wPrepare(d,defLang){
@@ -27,39 +28,32 @@ function wPrepare(d,defLang){
 }
 function wParse(name,text){try{return wPrepare(JSON.parse(text),wLangOfFile(name))}catch(e){return null}}
 function wPickLang(){WLANG=HUBA_I18N.language}
-function wSaved(){try{return JSON.parse(localStorage.getItem(WSAVE_KEY))||{}}catch(e){return {}}}
 function wInitWords(){
-  var saved=wSaved(), names=WFILES.slice();
-  Object.keys(saved).forEach(function(k){if(names.indexOf(k)<0)names.push(k)});
   WLOADING=true;
-  Promise.all(names.map(function(name){
-    return fetch('../../dados/'+name,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0; return r.text()}).then(function(t){
-      if(!wParse(name,t))throw 0;
-      return {name:name,text:t,src:'arquivo'};
-    }).catch(function(){return saved[name]?{name:name,text:saved[name],src:'salva'}:null});
-  })).then(function(res){
-    var cfg={}, from={};
-    res.forEach(function(r){
-      if(!r)return; var c=wParse(r.name,r.text); if(!c)return;
-      Object.keys(c).forEach(function(l){cfg[l]=c[l]; from[l]={file:r.name,src:r.src}});
-    });
-    WALLFETCHED=WFILES.every(function(name){return res.some(function(r){return r&&r.name===name&&r.src==='arquivo'})});
-    WCFG=cfg; WFROM=from; WLOADING=false; wPickLang(); renderWordHub();
+  var source;
+  if(location.protocol==='file:'){
+    source=new Promise(function(resolve,reject){
+      function ready(){resolve(WFILES.map(function(name){return wPrepare(window.HUBA_WORD_LISTS[name],wLangOfFile(name))}))}
+      if(window.HUBA_WORD_LISTS){ready();return}
+      var script=document.createElement('script');script.src=WDATA_URL;
+      script.onload=function(){script.remove();if(window.HUBA_WORD_LISTS)ready();else reject(new Error('Listas indisponíveis'))};
+      script.onerror=function(){script.remove();reject(new Error('Listas indisponíveis'))};document.head.appendChild(script);
+    }).catch(function(){return []});
+  }else source=Promise.all(WFILES.map(function(name){
+    return fetch('../../dados/'+name,{cache:'no-store'}).then(function(r){
+      if(!r.ok)throw new Error('Lista indisponível');return r.text();
+    }).then(function(text){var cfg=wParse(name,text);if(!cfg)throw new Error('Lista inválida');return cfg}).catch(function(){return null});
+  }));
+  source.then(function(results){
+    var cfg={};results.forEach(function(result){if(result)Object.keys(result).forEach(function(lang){cfg[lang]=result[lang]})});
+    WCFG=cfg;WLOADING=false;wPickLang();renderWordHub();
   });
 }
 function wRenderLang(){
-  var c=WCFG[WLANG], btn=$('#wLoadJson'), txt;
-  if(WLOADING)txt='Carregando as listas de palavras…';
-  else if(c)txt='';
-  else txt='Nenhuma lista carregada. Coloque words.json e palavra.json na pasta dados/ do HUBA e abra por um servidor local, ou selecione os arquivos aqui: eles ficam salvos neste navegador.';
-  if(WNOTE)txt+=(txt?' · ':'')+WNOTE;
-  $('#wSrc').textContent=txt;
-  btn.textContent=Object.keys(WCFG).length?'Atualizar arquivos…':'Selecionar arquivos…';
-  btn.classList.toggle('primary',!Object.keys(WCFG).length);
-  btn.classList.toggle('hidden',WLOADING||WALLFETCHED);
-  $('#wResetJson').classList.toggle('hidden',!Object.keys(WFROM).some(function(l){return WFROM[l].src==='salva'}));
-  $('#wSrc').parentElement.classList.toggle('hidden',!txt&&btn.classList.contains('hidden')&&$('#wResetJson').classList.contains('hidden'));
+  var txt=WLOADING?'Carregando as listas de palavras…':WCFG[WLANG]?'':'Não foi possível carregar a lista de palavras deste idioma. Atualize a página para tentar novamente.';
+  $('#wSrc').textContent=txt;$('#wSrc').parentElement.classList.toggle('hidden',!txt);
 }
+
 document.addEventListener('huba:language',function(){
   var playing=w&&!$('#wgame').classList.contains('hidden'),mode=w&&w.mode,daily=w&&w.daily;
   if(playing)suspendedWords[w.lang+'|'+mode+'|'+daily]=w;
@@ -71,27 +65,6 @@ document.addEventListener('huba:language',function(){
   else renderWordHub();
   if($('#wStats').open)renderWStats();
 });
-$('#wLoadJson').onclick=function(){$('#wJsonInput').click()};
-$('#wJsonInput').onchange=function(){
-  var files=Array.prototype.slice.call(this.files||[]); this.value='';
-  if(!files.length)return;
-  var saved=wSaved(), bad=[], pend=files.length; WNOTE='';
-  files.forEach(function(f){
-    var rd=new FileReader();
-    rd.onload=function(){
-      var txt=String(rd.result||'');
-      if(wParse(f.name,txt))saved[f.name]=txt; else bad.push(f.name);
-      if(--pend===0){
-        try{localStorage.setItem(WSAVE_KEY,JSON.stringify(saved))}catch(e){}
-        if(bad.length)WNOTE='arquivo inválido: '+bad.join(', ');
-        wInitWords();
-      }
-    };
-    rd.readAsText(f);
-  });
-};
-$('#wResetJson').onclick=function(){try{localStorage.removeItem(WSAVE_KEY)}catch(e){} WNOTE=''; WCFG={}; WFROM={}; wInitWords()};
-
 var WMODES={
   termo:{name:'Wording',n:1,tries:6,desc:'1 palavra · 6 tentativas'},
   dueto:{name:'Woording',n:2,tries:7,desc:'2 palavras · 7 tentativas'},
