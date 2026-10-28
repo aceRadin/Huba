@@ -1,5 +1,7 @@
 # Carregamento progressivo de músicas
 
+Atualização do Bits: o jogo agora usa `jogos/bits/rankings.js`, com os rankings de Pop (132), Rock (152) e Rap/Hip Hop (116). Top combina os três, sem duplicatas. Cada ranking pede até 300 faixas de uma vez, pois o endpoint pode omitir `next` mesmo com mais resultados disponíveis. As fontes abaixo que descrevem playlists próprias do Bits e seu primeiro lote de uma faixa documentam a implementação anterior; Musical e Streakal mantêm o carregamento progressivo descrito. O arquivo antigo de playlists do Bits permanece preservado, sem ser carregado.
+
 ## Antes e depois
 
 Antes, cada jogo percorria todas as páginas de cada playlist do gênero, uma fonte após outra, e só então iniciava a partida. As novas tentativas de algumas consultas aconteciam imediatamente. Musical e Streakal tinham implementações quase iguais dessa consulta.

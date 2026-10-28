@@ -1,8 +1,8 @@
 # HUBA — Jogos
 
-**Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa somente `jogos/bits/playlists.js`** (`window.HUBA_BITS_MUSICAS.fontes`). Os jogos continuam com lógica e estatísticas próprias.
+**Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa os rankings populares** de Pop, Rock e Rap/Hip Hop, configurados em `jogos/bits/rankings.js`. Os jogos continuam com lógica e estatísticas próprias.
 
-O arquivo do Bits começa vazio, com as categorias `top`, `pop`, `rock` e `rap`. Preencha depois de cada dois-pontos com `playlist:ID`, separando várias playlists com vírgulas. Top tem suas próprias fontes. Enquanto não configurar, os botões informam onde adicionar as playlists e não consultam o Deezer.
+No Bits, `top` reúne os três rankings e remove músicas repetidas. Cada ranking é consultado com `limit=300`, pois esse endpoint pode omitir `next`. Top aguarda as três fontes; nenhum ranking é consultado antes de escolher uma categoria. `jogos/bits/playlists.js` foi preservado como referência, mas não é mais carregado pelo jogo. Os diários de rankings têm uma chave de salvamento própria; os dados dos antigos diários de playlists não são apagados.
 
 O botão ⚙ no canto inferior esquerdo abre Configurações → Tema em qualquer página ou partida. Há Claro, Escuro, Oceano, Floresta, Pôr do sol, Rosa e Café, além de Automático (acompanha o sistema). A escolha fica salva neste navegador.
 

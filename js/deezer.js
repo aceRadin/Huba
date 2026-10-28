@@ -78,6 +78,9 @@ function parse(lines){
   });return result;
 }
 function source(item,initial){
+  var chart=/^chart:\s*(\d+)$/i.exec(item);
+  // Rankings não fornecem next de forma confiável; peça a seleção completa de 300.
+  if(chart)return {artist:null,url:'https://api.deezer.com/chart/'+chart[1]+'/tracks?limit=300',seen:new Set(),done:false};
   var match=/^(?:playlist:\s*)?(?:https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?playlist\/)?(\d+)(?:\?.*)?$/i.exec(item);
   return {artist:match?null:item,url:match?'https://api.deezer.com/playlist/'+match[1]+'/tracks?limit='+initial:'https://api.deezer.com/search?limit=50&order=RANKING&q='+encodeURIComponent('artist:"'+item+'"'),seen:new Set(),done:false};
 }
