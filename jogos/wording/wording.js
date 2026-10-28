@@ -196,6 +196,9 @@ function wKey(k){
       if(target<0){for(var j=4;j>=0;j--)if(w.slots[j]===' '){target=j;break}}
     }
     if(target>=0){w.slots[target]='';w.pos=target}
+    // Depois de limpar a palavra (inclusive placeholders), recomeça na primeira casa.
+    // Backspace em uma linha já vazia também deve levar o cursor ao início.
+    if(target<0||w.slots.every(function(slot){return slot===''}))w.pos=0;
   }
   else if(k==='space'){if(!w.slots[w.pos])w.slots[w.pos]=' '; if(w.pos<4)w.pos++}
   else if(k==='left'){if(w.pos>0)w.pos--}
