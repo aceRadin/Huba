@@ -4,7 +4,7 @@ var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffl
 /* ---------- Wording ---------- */
 var WCFG={}, WFROM={}, WLANG=HUBA_I18N.language, WLOADING=true, WALLFETCHED=false, WNOTE='';
 var WFILES=['words.json','palavra.json'], WSAVE_KEY='playhub:word:files:v2';
-try{var wl=localStorage.getItem('playhub:word:lang'); if(wl==='pt'||wl==='en')WLANG=wl}catch(e){}
+var suspendedWords={};
 function wLangOfFile(name){return /palavra|(^|[^a-z])pt([^a-z]|$)|port/i.test(name)?'pt':'en'}
 function wPrepare(d,defLang){
   var out={}, any=false, root=d;
@@ -26,7 +26,7 @@ function wPrepare(d,defLang){
   return any?out:null;
 }
 function wParse(name,text){try{return wPrepare(JSON.parse(text),wLangOfFile(name))}catch(e){return null}}
-function wPickLang(){if(!WCFG[WLANG])WLANG=WCFG.pt?'pt':(WCFG.en?'en':WLANG)}
+function wPickLang(){WLANG=HUBA_I18N.language}
 function wSaved(){try{return JSON.parse(localStorage.getItem(WSAVE_KEY))||{}}catch(e){return {}}}
 function wInitWords(){
   var saved=wSaved(), names=WFILES.slice();
@@ -47,27 +47,30 @@ function wInitWords(){
     WCFG=cfg; WFROM=from; WLOADING=false; wPickLang(); renderWordHub();
   });
 }
-function wSetLang(l){
-  if(!WCFG[l])return; WLANG=l;
-  try{localStorage.setItem('playhub:word:lang',l)}catch(e){}
-  renderWordHub();
-}
 function wRenderLang(){
-  document.querySelectorAll('#wLang button').forEach(function(b){
-    var l=b.dataset.lang; b.classList.toggle('on',l===WLANG); b.classList.toggle('hidden',!WCFG[l]);
-  });
-  var c=WCFG[WLANG], fr=WFROM[WLANG], btn=$('#wLoadJson'), txt;
+  var c=WCFG[WLANG], btn=$('#wLoadJson'), txt;
   if(WLOADING)txt='Carregando as listas de palavras…';
-  else if(c)txt=c.words.length.toLocaleString('pt-BR')+' palavras ('+(WLANG==='pt'?'português':'inglês')+') · '+(c.validate?'palpites validados':'palpites livres')+' · '+(fr.src==='arquivo'?'lidas de '+fr.file:fr.file+' salvo neste navegador');
+  else if(c)txt='';
   else txt='Nenhuma lista carregada. Coloque words.json e palavra.json na pasta dados/ do HUBA e abra por um servidor local, ou selecione os arquivos aqui: eles ficam salvos neste navegador.';
-  if(WNOTE)txt+=' · '+WNOTE;
+  if(WNOTE)txt+=(txt?' · ':'')+WNOTE;
   $('#wSrc').textContent=txt;
   btn.textContent=Object.keys(WCFG).length?'Atualizar arquivos…':'Selecionar arquivos…';
   btn.classList.toggle('primary',!Object.keys(WCFG).length);
   btn.classList.toggle('hidden',WLOADING||WALLFETCHED);
   $('#wResetJson').classList.toggle('hidden',!Object.keys(WFROM).some(function(l){return WFROM[l].src==='salva'}));
+  $('#wSrc').parentElement.classList.toggle('hidden',!txt&&btn.classList.contains('hidden')&&$('#wResetJson').classList.contains('hidden'));
 }
-document.querySelectorAll('#wLang button').forEach(function(b){b.onclick=function(){wSetLang(b.dataset.lang)}});
+document.addEventListener('huba:language',function(){
+  var playing=w&&!$('#wgame').classList.contains('hidden'),mode=w&&w.mode,daily=w&&w.daily;
+  if(playing)suspendedWords[w.lang+'|'+mode+'|'+daily]=w;
+  wPickLang();
+  if(playing&&WCFG[WLANG]){
+    var saved=suspendedWords[WLANG+'|'+mode+'|'+daily];
+    if(saved){w=saved;showWordGame()}else startWord(mode,daily,true);
+  }else if(playing)wBackToHub();
+  else renderWordHub();
+  if($('#wStats').open)renderWStats();
+});
 $('#wLoadJson').onclick=function(){$('#wJsonInput').click()};
 $('#wJsonInput').onchange=function(){
   var files=Array.prototype.slice.call(this.files||[]); this.value='';
@@ -161,12 +164,17 @@ function wBuildKb(){
   sb.title='Pula uma posição, deixando um espaço em branco'; sb.addEventListener('mousedown',function(e){e.preventDefault()}); sb.onclick=function(){wKey('space')};
   rs.appendChild(sb); kb.appendChild(rs);
 }
-function startWord(mode,daily){
+function startWord(mode,daily,preserve){
   if(!WCFG[WLANG])return;
+  if(!preserve)suspendedWords={};
   var M=WMODES[mode];
   w={mode:mode,lang:WLANG,M:M,daily:daily,targets:wTargets(mode,daily),guesses:[],slots:['','','','',''],pos:0,done:false,won:false,flip:-1};
   if(daily){var g=wLoad(mode); if(g)w.guesses=g.slice()}
   wEval();
+  showWordGame();
+}
+function showWordGame(){
+  var M=w.M,daily=w.daily;
   $('#word').classList.add('hidden'); $('#wgame').classList.remove('hidden');
   $('#wTitle').textContent=M.name+' · '+(daily?'Diário':'Aleatório')+(WLANG==='en'?' · English':'');
   $('#wMsg').textContent='';

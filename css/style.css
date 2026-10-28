@@ -240,6 +240,10 @@ body{padding-top:52px}
 .huba-language{position:fixed;top:max(10px,env(safe-area-inset-top));right:12px;z-index:60;display:flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px #0002}
 .huba-language button{font-size:.76rem;padding:5px 9px}
 .huba-language button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.huba-language svg{display:block;width:30px;height:22px}
+.global-streak{gap:7px;line-height:1.25}
+.global-streak strong,.global-streak span{display:block;margin:0;line-height:1.25}
+.global-streak strong{font-size:1rem;font-variant-numeric:tabular-nums}
 .landing-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px}
 body.home-header-language{padding-top:0}
 .landing-top h1{justify-self:start}

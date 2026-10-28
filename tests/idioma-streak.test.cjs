@@ -34,26 +34,45 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  await context.route('**/dados/bits-us/*.json',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({schema:1,country:'US',date:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),genres:Object.fromEntries(['pop','rock','rap'].map(g=>[g,tracks.map(s=>({id:s.id,title:s.title,artist:s.artist.name}))]))})}));
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  async function language(value){await page.locator('[data-site-lang="'+value+'"]').click();await page.waitForFunction(v=>document.documentElement.lang===(v==='en'?'en':'pt-BR'),value)}
+ async function checkHeader(){
+  for(const width of [320,390,1280]){
+   await page.setViewportSize({width,height:900});
+   const metrics=await page.locator('.huba-language').evaluate(nav=>{const header=nav.parentElement,a=nav.getBoundingClientRect(),b=header.getBoundingClientRect(),s=header.querySelector('.daily-streak')?.getBoundingClientRect(),title=header.querySelector('.musical-play-heading,.bits-game-head>div,.w-gtop>h2')?.getBoundingClientRect();return {inHeader:header.classList.contains('huba-game-header'),visible:!header.closest('.hidden'),right:a.right<=b.right+1,left:a.left>=b.left-1,center:s?Math.abs(s.x+s.width/2-b.x-b.width/2):0,overlap:title&&Math.min(a.right,title.right)-Math.max(a.left,title.left)>1&&Math.min(a.bottom,title.bottom)-Math.max(a.top,title.top)>1}});
+   assert.ok(metrics.inHeader&&metrics.visible&&metrics.right&&metrics.left,'idioma no cabeçalho visível em '+width+'px');assert.ok(metrics.center<1,'streak centralizado em '+width+'px');
+   assert.ok(!metrics.overlap,'idioma não sobrepõe título em '+width+'px');
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  }
+  await page.setViewportSize({width:390,height:844});
+ }
  async function audit(){return page.evaluate(()=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),out=[];let n;while(n=w.nextNode()){const el=n.parentElement;if(!el||!el.getClientRects().length||el.closest('script,style,.huba-language,#wLang,.w-tile,.musical-option-title,.musical-option-artist,.bits-choice,.bits-history-line,#finishSong'))continue;const text=n.nodeValue.trim();if(/[ãçõ]|Diário|Aleatório|tentativas|Carregando|Próxima/.test(text))out.push(text)}return out})}
  await page.goto(base);await language('en');assert.equal(await page.locator('#globalStreak').textContent(),'0');
  assert.equal(await page.locator('.landing-top .huba-language').count(),1);
+ assert.equal(await page.locator('[data-site-lang] svg').count(),2);
+ assert.equal(await page.locator('[data-site-lang="pt"]').getAttribute('aria-label'),'Português');
  await page.setViewportSize({width:1280,height:900});
  const centers=await page.locator('.landing-top').evaluate(header=>Array.from(header.children).map(el=>{const r=el.getBoundingClientRect();return r.y+r.height/2}));
  assert.ok(Math.max(...centers)-Math.min(...centers)<2,'nome, streak e idioma alinhados no computador');
+ const streakCenters=await page.locator('.global-streak').evaluate(el=>Array.from(el.children).map(n=>{const r=n.getBoundingClientRect();return r.y+r.height/2}));
+ assert.ok(Math.max(...streakCenters)-Math.min(...streakCenters)<1,'número e texto do streak alinhados');
  for(const width of [320,390]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)}
  assert.equal(await page.locator('.gcard').filter({hasText:'Musical'}).locator('.gstreak').count(),1);
  assert.equal(await page.locator('.gcard').filter({hasText:'Streakal'}).locator('small').count(),1);
  for(const game of ['bits','musicle','streakal','wording']){
   await page.goto(base+'/jogos/'+game+'/');assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  await checkHeader();
   assert.equal(await page.locator('h2').filter({hasText:/^Daily$/}).count(),1);
   await language('pt');assert.equal(await page.locator('h2').filter({hasText:/^Diário$/}).count(),1);await language('en');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   assert.deepEqual(await audit(),[],game+': texto não traduzido');
  }
  // Wording: físico e virtual, espaço e troca de idioma não apagam a linha.
- await page.locator('#wLang [data-lang="en"]').click();await page.locator('#wTilesRandom button').first().click();
+ assert.equal(await page.locator('#wLang').count(),0);assert.equal(await page.locator('#wSrc').textContent(),'');
+ for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});const delta=await page.locator('#word').evaluate(el=>{const a=el.querySelector('.daily-streak').getBoundingClientRect(),b=el.querySelector('.hub-grid').getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)});assert.ok(delta<1,'streak centralizado com cartões em '+width+'px')}
+ await language('pt');assert.equal(await page.locator('#wSrc').textContent(),'');await language('en');
+ await page.locator('#wTilesRandom button').first().click();
+ await checkHeader();
  await page.locator('#wTitle').click();await page.keyboard.type('ab');await page.keyboard.press('Space');
- const input=await page.locator('#wBoards .w-row').first().textContent();await language('pt');await language('en');assert.equal(await page.locator('#wBoards .w-row').first().textContent(),input);
+ const input=await page.locator('#wBoards .w-row').first().textContent();await language('pt');assert.doesNotMatch(await page.locator('#wTitle').textContent(),/English/);await language('en');assert.match(await page.locator('#wTitle').textContent(),/English/);assert.equal(await page.locator('#wBoards .w-row').first().textContent(),input);
  assert.deepEqual(await audit(),[],'Wording: instruções em inglês');
  await page.locator('#wTitle').click();for(let i=0;i<8;i++)await page.keyboard.press('Backspace');
  const words=JSON.parse(await fs.readFile(path.join(root,'dados/words.json'),'utf8'));const word=Array.isArray(words)?words[0]:words.en.words[0];
@@ -61,17 +80,21 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  assert.equal(await page.locator('#wResult').isVisible(),true);assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
  assert.deepEqual(await audit(),[],'Wording: resultado em inglês');
  await page.goto(base+'/jogos/bits/');await page.locator('#randomTiles button').filter({hasText:'Pop'}).click();await page.waitForSelector('#guessInput:visible');
+ await checkHeader();
  for(let i=0;i<6;i++)await page.locator('#skipGuess').click();assert.equal(await page.locator('#finishTitle').textContent(),'No guesses left');assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
  assert.deepEqual(await audit(),[],'Bits: resultado em inglês');
  await page.goto(base+'/jogos/streakal/');await page.locator('#tilesRandom button').first().click();await page.waitForFunction(()=>testAudio[0].src);
  const id=await page.evaluate(()=>/\/(\d+)$/.exec(testAudio[0].src)[1]);await page.locator('#opts button').filter({hasNot:page.locator('[unused]')}).evaluateAll((buttons,id)=>buttons.find(b=>!b.getAttribute('aria-label').startsWith('Artista '+id+' - ')).click(),id);
  await page.waitForSelector('#result:visible');assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
+ await checkHeader();
  for(const mode of ['#clipHard','#clipCasual']){
   await page.goto(base+'/jogos/musicle/');await page.locator(mode).click();await page.locator('#tilesRandom button').first().click();await page.waitForSelector('#opts button');
+  await checkHeader();
   await page.locator('#playBtn').click();await page.locator('#playBtn').click();assert.equal(await page.locator('#playBtn').textContent(),'Play clip');
   for(let i=0;i<5;i++){await page.locator('#opts button').first().click();await page.locator('#nextBtn').click()}
   assert.equal(await page.evaluate(()=>HUBA.currentStreak('musicle')),1);assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
   assert.deepEqual(await audit(),[],'Musical: resultado em inglês');
+  await checkHeader();
  }
  await page.goto(base);assert.equal(await page.locator('#globalStreak').textContent(),'1');assert.equal(await page.locator('.gcard').filter({hasText:'Musical'}).locator('.gstreak strong').textContent(),'1');
  assert.equal(await page.locator('.huba-support-coffee').getAttribute('href'),'https://buymeacoffee.com/aceradin');

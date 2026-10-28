@@ -1,10 +1,10 @@
 # Idioma e sequências diárias
 
-O botão Português / English fica no canto superior direito de todas as páginas. A escolha é salva no navegador em `huba:language:v1` e não reinicia as partidas.
+As bandeiras do Brasil e dos Estados Unidos selecionam Português / English no cabeçalho. Elas têm rótulos acessíveis e dicas com os nomes dos idiomas. A escolha é salva no navegador em `huba:language:v1`.
 
 `js/idioma.js` reúne as traduções de textos fixos, mensagens numéricas, dicas e rótulos acessíveis. O módulo conserva o texto original de cada elemento e acompanha os textos novos gerados pelos jogos. Assim, a troca de idioma não substitui formulários, tabuleiros ou controles de áudio. Títulos de músicas, artistas, letras digitadas e respostas não são traduzidos. Para acrescentar mensagens, inclua a tradução em `phrases` ou um padrão para os valores dinâmicos e teste os dois sentidos da troca.
 
-No Wording, o idioma da interface e o das palavras são escolhas separadas: a seleção de palavras em Português/English continua disponível. Sem preferência anterior de palavras salva, uma nova página usa o idioma da interface como padrão. Alterar a interface durante a partida preserva as palavras já sorteadas.
+No Wording, as palavras acompanham o idioma da página; não há seletor separado. Ao trocar a bandeira durante uma partida, abre-se a partida correspondente ao novo idioma. A partida anterior fica guardada em memória para retomada ao voltar à bandeira anterior, incluindo letras e placeholders. Diários continuam salvos por idioma no navegador. Reiniciar uma rodada limpa essa alternância de partidas aleatórias; o jogo não mistura palpites ou palavras de línguas diferentes. Sem lista do idioma escolhido, o jogo informa que falta a lista, sem mudar para outro idioma silenciosamente.
 
 O streak ao lado de HUBA cresce ao terminar qualquer partida, mesmo perdendo, tanto no Diário quanto no Aleatório. Não exige jogar os quatro jogos nem vencer. Conta no máximo uma vez por data; abrir ou abandonar uma partida não conta. As falhas técnicas que não encerram uma partida também não contam. O dia usa a mesma referência local já utilizada pelo sistema compartilhado de streaks.
 
