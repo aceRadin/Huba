@@ -5,9 +5,10 @@ var $=function(id){return document.getElementById(id)};
 var cats=['top','pop','rock','rap'];
 var labels={top:'Top',pop:'Pop',rock:'Rock',rap:'Rap'};
 var lengths=[1,2,4,7,11,16], maxAttempts=lengths.length;
-var catalog=[], byCat={}, active=null, selected=null, roundId=0;
+var byCat={}, active=null, selected=null, roundId=0;
 var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true, loadingChoice=null;
 var unavailableSongs={};
+var audioToken=0,recoveredSong=false,recoveringSong=false;
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
 var configs=Array.isArray(window.HUBA_BITS_MUSICAS&&window.HUBA_BITS_MUSICAS.fontes)?window.HUBA_BITS_MUSICAS.fontes.join('\n'):'';
 var norm=HUBA.norm, hash=HUBA.hash;
@@ -20,19 +21,6 @@ function renderStats(){$('streakValue').textContent=HUBA.currentStreak('bits')}
 function dailyKey(cat){return 'huba:bits:daily:v1:'+HUBA.dayKey()+':'+cat}
 function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
-function makeID(song){return song.id||norm(song.label)}
-function ingest(items){
- var seen={}, out=[];
- items.forEach(function(s){if(!s||!s.label||!(s.url||s.file))return;
-   var id=makeID(s), key=s.genre+'|'+norm(s.label);
-   if(!seen[key]){seen[key]=true;out.push({id:id,label:s.label,artist:s.artist||'',title:s.title||'',genre:s.genre,url:s.url||null,file:s.file||null})}
- });
- // Lista ordenada dá resultados reproduzíveis com um catálogo de músicas idêntico.
- out.sort(function(a,b){return a.label.localeCompare(b.label,'pt-BR')});
- catalog=out;byCat={};cats.forEach(function(c){byCat[c]=catalog.filter(function(s){return s.genre===c})});
- drawTiles();renderStats();
- $('catalogCount').textContent=musicLoading?'Loading…':('Total: '+catalog.length+' músicas');
-}
 function drawTiles(){
  ['daily','random'].forEach(function(mode){var parent=$(mode+'Tiles');parent.textContent='';
  cats.forEach(function(cat){var list=byCat[cat]||[], prev=dailyRead(cat), btn=document.createElement('button');
@@ -43,86 +31,42 @@ function drawTiles(){
  });
  });
 }
-function formatSong(t){return (t.artist||'')+' - '+(t.title||'')}
-function parseSource(text){var entries=[];text.split(/\r?\n/).forEach(function(line){var at=line.indexOf(':');if(at<1)return;var genre=norm(line.slice(0,at));if(cats.indexOf(genre)<0)return;line.slice(at+1).split(',').forEach(function(item){item=item.trim();if(item)entries.push({genre:genre,item:item})})});return entries}
-var jsonpCount=0;
-function jsonp(url){return new Promise(function(resolve,reject){
- var cb='bitsCb'+(++jsonpCount)+'_'+Date.now(), script=document.createElement('script'), done=false;
- var timeout=setTimeout(function(){finish(new Error('tempo esgotado'))},12000);
- function finish(error,data){if(done)return;done=true;clearTimeout(timeout);try{delete window[cb]}catch(e){window[cb]=undefined}script.remove();if(error)reject(error);else resolve(data)}
- window[cb]=function(d){if(d&&d.error)finish(new Error(d.error.message||'erro Deezer'));else finish(null,d)};
- script.onerror=function(){finish(new Error('falha de rede'))};
- script.src=url+(url.indexOf('?')>=0?'&':'?')+'output=jsonp&callback='+cb;
- document.head.appendChild(script);
- })}
-function getSongs(entry){
- var item=entry.item, match=/^(?:playlist:\s*)?(?:https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?playlist\/)?(\d+)(?:\?.*)?$/i.exec(item);
- var base=match?'https://api.deezer.com/playlist/'+match[1]+'/tracks?limit=100':'https://api.deezer.com/search?limit=50&order=RANKING&q='+encodeURIComponent('artist:"'+item+'"');
- var all=[], seen={}, visited={};
- function page(url){
-   var parsed;
-   try{parsed=new URL(url)}catch(e){return Promise.reject(new Error('endereço inválido'))}
-   if(parsed.hostname!=='api.deezer.com'||!/^https?:$/.test(parsed.protocol))return Promise.reject(new Error('página de API não autorizada'));
-   parsed.protocol='https:';url=parsed.href;
-   if(visited[url])return Promise.reject(new Error('paginação repetida'));
-   visited[url]=true;
-   function retry(n){return jsonp(url).catch(function(err){if(n<1)return retry(n+1);throw err})}
-   return retry(0).then(function(response){
-     if(!response||!Array.isArray(response.data))throw new Error('resposta inválida');
-     response.data.forEach(function(t){
-       if(!t||!t.preview||!t.artist||!t.artist.name||!t.title)return;
-       if(!match){var artist=norm(t.artist.name), requested=norm(item);if(artist!==requested&&artist.indexOf(requested)<0&&requested.indexOf(artist)<0)return}
-       var title=t.title.replace(/\s*[\(\[][\s\S]*?[\)\]]/g,'').trim()||t.title;
-       var label=t.artist.name+' - '+title,k=norm(label);
-       if(seen[k])return;seen[k]=true;
-       all.push({id:'dz-'+String(t.id||k),label:label,artist:t.artist.name,title:title,genre:entry.genre,url:t.preview});
-     });
-     // Para artistas apenas uma página, como no Musicle; playlists percorrem todas as páginas.
-     return match&&response.next?page(response.next):all;
-   });
- }
- return page(base);
-}
-var loadedCats={}, categoryPromises={};
-function loadCategory(cat){
- if(loadedCats[cat])return Promise.resolve();
- if(categoryPromises[cat])return categoryPromises[cat];
- var entries=parseSource(configs).filter(function(e){return e.genre===cat});
- if(!entries.length)return Promise.reject(new Error('Configure as playlists de '+labels[cat]+' em jogos/bits/playlists.js.'));
- var found=[], failures=0, chain=Promise.resolve();
- entries.forEach(function(entry){chain=chain.then(function(){return getSongs(entry).then(function(items){found=found.concat(items)},function(){failures++})})});
- categoryPromises[cat]=chain.then(function(){
-   if(!found.length)throw new Error('Nenhuma música disponível em '+labels[cat]+'.');
-   // Mantém em cache os gêneros já consultados para alternar sem repetir downloads.
-   var already={};catalog.forEach(function(song){already[song.genre+'|'+norm(song.label)]=true});
-   var merged=catalog.concat(found.filter(function(song){return !already[song.genre+'|'+norm(song.label)]}));
-   loadedCats[cat]=true;
-   ingest(merged);
-   if(failures)setStatus(failures+' fonte(s) não puderam ser carregadas.');
- }).then(function(){delete categoryPromises[cat]},function(err){delete categoryPromises[cat];throw err});
- return categoryPromises[cat];
-}
+/* As fontes exclusivas do Bits continuam separadas dos demais jogos. */
+var selectedCat=null;
+var musicLoader=HUBADeezer.create({sources:configs.split('\n'),onUpdate:function(s){
+  byCat[s.genre]=s.songs.map(function(song){return Object.assign({},song,{deezerId:song.id,id:'dz-'+song.id})});
+  if(selectedCat===s.genre){
+    musicLoader.paint($('catalogCount'),s);musicLoader.paint($('gameCatalogCount'),s);
+    if(active&&!active.finished&&active.cat===s.genre&&!selected&&$('guessInput').value)showSuggestions();
+    drawTiles();
+  }
+}});
 function enterCategory(cat,daily){
- var token=++loadToken;
- musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();setStatus('Carregando playlists de '+labels[cat]+'…');
- loadCategory(cat).then(function(){
+ var token=++loadToken;selectedCat=cat;
+ musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();
+ setStatus(daily?'Preparando todas as músicas para manter o desafio diário consistente…':'Carregando músicas de '+labels[cat]+'…');
+ musicLoader.select(cat,1,daily).then(function(s){
    if(token!==loadToken)return;
-   musicLoading=false;loadingChoice=null;drawTiles();setStatus('');
-   start(cat,daily);
+   musicLoading=false;loadingChoice=null;drawTiles();
+   if(!s.songs.length)throw new Error('Nenhuma música disponível nesta categoria.');
+   setStatus('');start(cat,daily);musicLoader.paint($('gameCatalogCount'),s);
  }).catch(function(err){
-   if(token!==loadToken)return;
-   musicLoading=false;loadingChoice=null;drawTiles();setStatus(err.message||'Falha ao carregar gênero. Tente novamente.');
+   if(token!==loadToken||err.name==='AbortError')return;
+   musicLoading=false;loadingChoice=null;drawTiles();
+   setStatus((daily?'O diário precisa de todas as páginas. ':'')+err.message+' · Configure as fontes em jogos/bits/playlists.js.');
  });
 }
 function initCatalog(){
- musicLoading=false;ingest([]);
- setStatus(parseSource(configs).length?'Escolha um gênero para carregar apenas suas playlists.':'Adicione suas playlists exclusivas em jogos/bits/playlists.js para começar.');
+ musicLoading=false;drawTiles();
+ setStatus(musicLoader.genres().length?'Escolha um gênero para carregar apenas suas playlists.':'Adicione suas playlists exclusivas em jogos/bits/playlists.js para começar.');
  $('catalogCount').textContent='Músicas carregadas sob demanda';
 }
+function pauseCatalog(){loadToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedCat)musicLoader.paint($('catalogCount'),musicLoader.state(selectedCat))}
+window.addEventListener('pagehide',pauseCatalog);
 
 function chooseSong(cat,daily){
- var list=byCat[cat]||[];if(!list.length)return null;
- if(daily){var stored=dailyRead(cat);if(stored){var old=list.find(function(s){return s.id===stored.id});if(old)return old}
+ var list=(byCat[cat]||[]).slice();if(daily)list.sort(HUBADeezer.compare);if(!list.length)return null;
+ if(daily){var stored=dailyRead(cat);if(stored){var old=list.find(function(s){return s.id===stored.id});if(old)return old;setStatus('A música do diário salvo não está disponível no catálogo. Tente carregar novamente mais tarde.');return null}
    var random=HUBA.mulberry(hash('bits|'+cat+'|'+HUBA.dayKey()));return list[Math.floor(random()*list.length)];
  }
  var last=active&&active.song&&active.song.id;var options=list.filter(function(s){return s.id!==last});return (options.length?options:list)[Math.floor(Math.random()*(options.length?options:list).length)];
@@ -150,7 +94,7 @@ function start(cat,daily){
  var list=byCat[cat]||[];if(!list.length){setStatus('Carregue músicas antes de jogar.');return}
  stopAudio();unavailableSongs={};var song=chooseSong(cat,daily);if(!song)return;
  $('gameCatalogCount').textContent=list.length.toLocaleString('pt-BR')+' músicas carregadas neste gênero';
- active={cat:cat,daily:daily,song:song,guesses:[],finished:false,won:false,recorded:false};
+ active={cat:cat,daily:daily,pool:daily?(byCat[cat]||[]).slice().sort(HUBADeezer.compare):null,song:song,guesses:[],finished:false,won:false,recorded:false};
  if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished}}
  roundId++;
  $('bitsHome').classList.add('hidden');$('bitsGame').classList.remove('hidden');
@@ -178,7 +122,8 @@ function stopAudio(){
  audio.pause();try{audio.currentTime=0}catch(e){}
  updateTimeline();$('playAudio').textContent='▶ Ouvir trecho';
 }
-function prepareAudio(song){
+function prepareAudio(song,recovered){
+ audioToken++;recoveredSong=!!recovered;recoveringSong=false;
  if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}
  audioUrl=song.file?URL.createObjectURL(song.file):null;
  audio.preload='metadata';audio.src=audioUrl||song.url;audio.load();updateTimeline();
@@ -186,6 +131,19 @@ function prepareAudio(song){
 function clipDuration(){return lengths[Math.min(active.guesses.length,lengths.length-1)]}
 function audioFailed(){
  if(!active||active.finished||$('bitsGame').classList.contains('hidden'))return;
+ if(recoveringSong)return;
+ var song=active.song,token=audioToken;
+ if(song.deezerId&&!recoveredSong){
+   recoveredSong=true;recoveringSong=true;pauseAudio();message('Atualizando a prévia desta música…');
+   HUBADeezer.request('https://api.deezer.com/track/'+encodeURIComponent(song.deezerId),null,true).then(function(data){
+     if(token!==audioToken)return;
+     if(!data||!data.preview)throw new Error('Prévia indisponível');
+     song.url=data.preview;prepareAudio(song,true);message('Prévia atualizada. Tente ouvir novamente.');
+   }).catch(function(){if(token===audioToken){recoveringSong=false;showAudioFailure()}});return;
+ }
+ showAudioFailure();
+}
+function showAudioFailure(){
  pauseAudio();$('replaceAudio').classList.remove('hidden');
  message('Esta prévia não tocou. Sorteie outra música sem perder a rodada.');
 }
@@ -223,7 +181,7 @@ function play(){
  // Ao clicar de novo, o trecho reinicia desde o começo, mesmo se já estiver tocando.
  try{audio.currentTime=0}catch(e){}
  updateTimeline();
- var p=audio.play();if(p&&p.catch)p.catch(audioFailed);
+ var token=audioToken,p=audio.play();if(p&&p.catch)p.catch(function(){if(token===audioToken)audioFailed()});
  $('playAudio').textContent='↻ Ouvir novamente';
 }
 function applyVolume(){
@@ -241,7 +199,7 @@ $('volumeAudio').oninput=function(){volume=Number(this.value)/100;if(volume>0)mu
 $('muteAudio').onclick=function(){muted=!muted;if(!muted&&volume===0)volume=.5;applyVolume()};
 applyVolume();
 function message(msg){$('message').textContent=msg}
-function guessOptions(){return byCat[active.cat]||[]}
+function guessOptions(){return active.daily?active.pool:(byCat[active.cat]||[])}
 function showSuggestions(){
  var list=$('suggestions');list.replaceChildren();if(!active||active.finished)return;
  var value=norm($('guessInput').value);$('guessInput').setAttribute('aria-expanded','false');
@@ -249,7 +207,8 @@ function showSuggestions(){
  // Não sugere músicas já escolhidas nesta rodada, inclusive em partidas diárias retomadas.
  var tried=new Set(active.guesses.filter(function(id){return id!=='__skip__'}));
  var options=guessOptions().filter(function(s){return !tried.has(s.id)&&norm(s.label).includes(value)}).slice(0,12);
- if(!options.length){list.classList.remove('open');return}
+ if(!options.length){list.classList.remove('open');var s=musicLoader.state(active.cat);$('selectedText').textContent=s.complete?'Nenhuma música encontrada.':s.error?'Busca incompleta: retome o carregamento no contador de músicas.':'Buscando nas músicas que ainda estão chegando…';return}
+ $('selectedText').textContent='Selecione uma música da lista.'+(musicLoader.state(active.cat).complete?'':' A lista continua carregando.');
  options.forEach(function(song){var b=document.createElement('button');b.type='button';b.className='bits-choice';b.setAttribute('role','option');b.textContent=song.label;b.onclick=function(){selected=song;$('guessInput').value=song.label;$('selectedText').textContent='Selecionada: '+song.label;$('submitGuess').disabled=false;list.classList.remove('open');$('guessInput').setAttribute('aria-expanded','false')};list.appendChild(b)});
  list.classList.add('open');$('guessInput').setAttribute('aria-expanded','true');
 }
@@ -298,7 +257,7 @@ function showFinish(){$('replaceAudio').classList.add('hidden');stopAudio();$('g
  $('finishDetail').textContent=active.won?'Acertou em '+active.guesses.length+' de '+maxAttempts+' tentativas.':'Você pode tentar outra música no modo Aleatório.';
  $('playAgain').classList.toggle('hidden',active.daily);
 }
-function back(){bitsSupportCollapsed(false);$('replaceAudio').classList.add('hidden');stopAudio();if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}roundId++;active=null;$('bitsGame').classList.add('hidden');$('bitsHome').classList.remove('hidden');if(supportToggle)supportToggle.hidden=true;drawTiles();renderStats()}
+function back(){pauseCatalog();audioToken++;bitsSupportCollapsed(false);$('replaceAudio').classList.add('hidden');stopAudio();if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}roundId++;active=null;$('bitsGame').classList.add('hidden');$('bitsHome').classList.remove('hidden');if(supportToggle)supportToggle.hidden=true;drawTiles();renderStats()}
 document.addEventListener('keydown',function(e){
  if(e.key!=='Escape')return;
  if($('bitsGame').classList.contains('hidden')){
@@ -306,7 +265,7 @@ document.addEventListener('keydown',function(e){
  }
  e.preventDefault();back();
 });
-$('backGame').onclick=back;$('finishBack').onclick=back;$('playAgain').onclick=function(){if(active&&!active.daily){var cat=active.cat;start(cat,false)}};
+$('backGame').onclick=back;$('finishBack').onclick=back;$('playAgain').onclick=function(){if(active&&!active.daily){var cat=active.cat;enterCategory(cat,false)}};
 $('playAudio').onclick=play;$('skipGuess').onclick=function(){submit(true)};$('submitGuess').onclick=function(){submit(false)};
 $('guessInput').addEventListener('input',function(){selected=null;$('submitGuess').disabled=true;$('selectedText').textContent='Selecione uma música da lista.';showSuggestions()});
 // Enter: prioriza completar a pesquisa quando a lista estiver aberta.

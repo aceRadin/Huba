@@ -31,6 +31,8 @@ As categorias do catálogo compartilhado são `rock`, `metal`, `pop`, `anime`, `
 
 ## Sobre funcionamento
 
+O modo aleatório dos três jogos agora inicia com um lote pequeno e continua carregando em segundo plano. Os diários aguardam o catálogo completo para preservar o sorteio. Veja [a explicação, os testes e as medições do carregamento progressivo](docs/carregamento-musical.md).
+
 Musical e Streakal compartilham as fontes; Bits tem fontes próprias. Cada jogo consulta o Deezer ao selecionar um gênero, e o número de prévias disponíveis pode variar conforme falhas da API ou limites de acesso. Não há servidor nem chave privada no site.
 
 Se o arquivo `playlists.js` for encontrado e as músicas ainda não aparecerem, inspecione F12 → Console e Rede (Network); pode ser um problema separado de disponibilidade da API Deezer.

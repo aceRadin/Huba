@@ -16,7 +16,7 @@ window.HUBA = (function(){
 /* Preferência visual compartilhada, disponível em todas as telas. */
 (function(){
   'use strict';
-  var themes={system:'Automático',light:'Claro',dark:'Escuro',ocean:'Oceano',forest:'Floresta',sunset:'Pôr do sol',rose:'Rosa',coffee:'Café',midnight:'Meia-noite',emerald:'Esmeralda',amethyst:'Ametista',graphite:'Grafite'};
+  var themes={system:'Automático',light:'Claro',dark:'Escuro',ocean:'Oceano',forest:'Floresta',sunset:'Pôr do sol',rose:'Rosa',coffee:'Café',midnight:'Meia-noite',emerald:'Esmeralda',amethyst:'Ametista',graphite:'Grafite',gpt:'GPT',discord:'Discord'};
   var selected='system',key='huba:theme:v1';
   try{var saved=localStorage.getItem(key);if(Object.prototype.hasOwnProperty.call(themes,saved))selected=saved}catch(e){}
   function apply(theme){
