@@ -242,8 +242,12 @@ body{padding-bottom:180px}
 :root[data-theme="sunset"]{--bg:#fff0e4;--card:#fffaf6;--fg:#542d27;--muted:#856257;--accent:#ae442e;--accent-fg:#fff;--line:#e6c7b6;--seg:#efd0b9}
 :root[data-theme="rose"]{--bg:#f9eaf1;--card:#fffafd;--fg:#512c41;--muted:#805f73;--accent:#a73571;--accent-fg:#fff;--line:#e5c4d6;--seg:#edcddd}
 :root[data-theme="coffee"]{--bg:#25201d;--card:#332b26;--fg:#f5ebdf;--muted:#c4b2a0;--accent:#e9b87c;--accent-fg:#29201a;--ok:#63cc95;--bad:#ff8991;--line:#605044;--seg:#6b5542;--warn:#a67c10;--abs:#685a50}
+:root[data-theme="midnight"]{--bg:#0c1729;--card:#15243b;--fg:#e5efff;--muted:#a2b6d0;--accent:#70bdff;--accent-fg:#0c1729;--ok:#4ed6a2;--bad:#ff7c97;--line:#344c6b;--seg:#3c5578;--warn:#9c7618;--abs:#475971}
+:root[data-theme="emerald"]{--bg:#0e211b;--card:#19352b;--fg:#e4f6eb;--muted:#a1c3b1;--accent:#70dfac;--accent-fg:#0e211b;--ok:#42c986;--bad:#ff8894;--line:#355c4b;--seg:#406653;--warn:#987619;--abs:#4c6358}
+:root[data-theme="amethyst"]{--bg:#21132e;--card:#322041;--fg:#f4e8ff;--muted:#c2a7d4;--accent:#d3a0ff;--accent-fg:#21132e;--ok:#68d7a5;--bad:#ff81a3;--line:#614175;--seg:#6a4b80;--warn:#a07924;--abs:#6b537a}
+:root[data-theme="graphite"]{--bg:#181a1d;--card:#24272c;--fg:#f0f1f3;--muted:#b0b5bf;--accent:#b9c9e0;--accent-fg:#181a1d;--ok:#69ce9a;--bad:#ff858e;--line:#494e58;--seg:#535965;--warn:#96761f;--abs:#5b606b}
 :root[data-theme="light"],:root[data-theme="ocean"],:root[data-theme="forest"],:root[data-theme="sunset"],:root[data-theme="rose"]{color-scheme:light}
-:root[data-theme="dark"],:root[data-theme="coffee"]{color-scheme:dark}
+:root[data-theme="dark"],:root[data-theme="coffee"],:root[data-theme="midnight"],:root[data-theme="emerald"],:root[data-theme="amethyst"],:root[data-theme="graphite"]{color-scheme:dark}
 @media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark}}
 .daily-streak{display:flex;align-items:center;justify-content:center;gap:8px;justify-self:center;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:8px 12px;text-align:center}
 .daily-streak strong{font-size:1.25rem;line-height:1}
