@@ -106,11 +106,12 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
     page.setDefaultTimeout(8000);
     page.on('pageerror', e => errors.push(e.message));
     await page.goto(base + `/jogos/${game}/`);
-    await page.waitForSelector(game === 'bits' ? '#randomTiles button' : '#tilesRandom button');
+    await page.waitForSelector(game === 'bits' ? '#dailyTiles button' : '#tilesDaily button');
     return { context, page, requests, errors, max: () => maxInflight };
   }
   async function choose(f, game, daily = false, genre = 'Rock') {
-    const container = game === 'bits' ? (daily ? '#dailyTiles' : '#randomTiles') : (daily ? '#tilesDaily' : '#tilesRandom');
+    await f.page.evaluate(daily => HUBA.setMode(daily ? 'daily' : 'training'), daily);
+    const container = game === 'bits' ? '#dailyTiles' : '#tilesDaily';
     const before = Date.now();
     await f.page.locator(container + ' button').filter({ hasText: genre }).click();
     try { await f.page.locator(game === 'bits' ? '#bitsGame' : '#play').waitFor({ state: 'visible' }); }
@@ -185,15 +186,16 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
   });
 
   await t.test('Musical: cinco perguntas e cinco alternativas no Desafiador', async () => {
-    const f = await fixture(); await f.page.locator('#clipHard').click(); await choose(f, 'musicle');
+    const f = await fixture(); await f.page.locator('.huba-difficulty>summary').click();await f.page.locator('#clipHard').click(); await choose(f, 'musicle');
     for (let i = 0; i < 5; i++) { assert.equal(await f.page.locator('#opts button').count(), 5); await f.page.locator('#opts button').first().click(); await f.page.locator('#nextBtn').click(); }
     assert.equal(await f.page.locator('#result').isVisible(), true); assert.equal(f.errors.length, 0); await f.context.close();
   });
 
   await t.test('troca rápida descarta o gênero anterior ainda em carregamento', async () => {
     const f = await fixture({ latency: 450 });
-    await f.page.locator('#tilesRandom button').filter({ hasText: 'Rock' }).click();
-    assert.equal(await f.page.locator('#tilesRandom button').filter({ hasText: 'Pop' }).isEnabled(), true);
+    await f.page.evaluate(() => HUBA.setMode('training'));
+    await f.page.locator('#tilesDaily button').filter({ hasText: 'Rock' }).click();
+    assert.equal(await f.page.locator('#tilesDaily button').filter({ hasText: 'Pop' }).isEnabled(), true);
     await choose(f, 'musicle', false, 'Pop'); await done(f);
     assert.match(await f.page.locator('#playTitle').textContent(), /Pop/);
     for (const label of await f.page.locator('#opts button').allTextContents()) assert.match(label, /10\d\d/);

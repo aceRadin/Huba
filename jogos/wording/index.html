@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
 <title>HUBA — Wording</title>
-<link rel="stylesheet" href="../../css/style.css">
+<link rel="stylesheet" href="../../css/style.css?v=3">
 <link rel="stylesheet" href="../../css/palavras.css?v=2">
-<link rel="stylesheet" href="../../css/cabecalhos.css?v=1">
+<link rel="stylesheet" href="../../css/cabecalhos.css?v=3">
 </head>
 <body data-support-collapse="wording">
 <main>
@@ -21,16 +21,11 @@
     <input type="file" id="wJsonInput" accept=".json,application/json" multiple hidden>
   </p>
   <div class="hub-grid">
-    <div class="games-grid">
+    <div class="games-grid single-game-modes">
       <div class="game-column">
-        <h2>Diário</h2>
-        <p class="note">A mesma palavra para todos no dia.</p>
+        <h2 data-mode-title>Diário</h2>
+        <p class="note" data-mode-description data-daily-description="A mesma palavra para todos no dia.">A mesma palavra para todos no dia.</p>
         <div class="tiles" id="wTilesDaily"></div>
-      </div>
-      <div class="game-column">
-        <h2>Aleatório</h2>
-        <p class="note">Palavras novas sempre que quiser.</p>
-        <div class="tiles" id="wTilesRandom"></div>
       </div>
     </div>
   </div>
@@ -59,9 +54,9 @@
   <div id="wStatsBody"></div>
 </dialog>
 </main>
-<script src="../../js/comum.js?v=2" defer></script>
-<script src="../../js/idioma.js?v=3" defer></script>
-<script src="wording.js?v=4" defer></script>
+<script src="../../js/comum.js?v=3" defer></script>
+<script src="../../js/idioma.js?v=5" defer></script>
+<script src="wording.js?v=5" defer></script>
 <script src="../../js/apoio-config.js" defer></script>
 <script src="../../js/apoio.js" defer></script>
 </body>

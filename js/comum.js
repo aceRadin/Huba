@@ -21,10 +21,27 @@ window.HUBA = (function(){
   return {dayKey:dayKey,hash:hash,mulberry:mulberry,shuffle:shuffle,norm:norm,currentStreak:currentStreak,recordDailyStreak:recordDailyStreak,recordPlayedGame:recordPlayedGame};
 })();
 
+/* Preferência de modo compartilhada; o Diário é o padrão. */
+(function(){
+ var HUBA=window.HUBA,mode='daily';try{if(localStorage.getItem('huba:mode:v1')==='training')mode='training'}catch(e){}
+ Object.defineProperty(HUBA,'mode',{get:function(){return mode}});
+ Object.defineProperty(HUBA,'isDaily',{get:function(){return mode==='daily'}});
+ HUBA.syncMode=function(){
+  document.querySelectorAll('[data-mode-title]').forEach(function(el){el.textContent=HUBA.isDaily?'Diário':'Treino'});
+  document.querySelectorAll('[data-mode-description]').forEach(function(el){el.textContent=HUBA.isDaily?el.dataset.dailyDescription:'Jogue quantas vezes quiser.'});
+ };
+ HUBA.setMode=function(value){
+  var next=value==='training'?'training':'daily';if(next===mode)return;
+  mode=next;try{localStorage.setItem('huba:mode:v1',mode)}catch(e){}
+  HUBA.syncMode();document.dispatchEvent(new CustomEvent('huba:mode',{detail:mode}));
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',HUBA.syncMode);else HUBA.syncMode();
+})();
+
 /* Preferência visual compartilhada, disponível em todas as telas. */
 (function(){
   'use strict';
-  var themes={system:'Automático',light:'Claro',dark:'Escuro',ocean:'Oceano',forest:'Floresta',sunset:'Pôr do sol',rose:'Rosa',coffee:'Café',midnight:'Meia-noite',emerald:'Esmeralda',amethyst:'Ametista',graphite:'Grafite',gpt:'GPT',discord:'Discord'};
+  var themes={system:'Automático',light:'Claro',dark:'Escuro',ocean:'Oceano',forest:'Floresta',sunset:'Pôr do sol',rose:'Rosa',coffee:'Café',midnight:'Meia-noite',emerald:'Esmeralda',amethyst:'Ametista',graphite:'Grafite',gpt:'Carvão',discord:'Discord'};
   var selected='system',key='huba:theme:v1';
   try{var saved=localStorage.getItem(key);if(Object.prototype.hasOwnProperty.call(themes,saved))selected=saved}catch(e){}
   function apply(theme){

@@ -47,6 +47,9 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  async function audit(){return page.evaluate(()=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),out=[];let n;while(n=w.nextNode()){const el=n.parentElement;if(!el||!el.getClientRects().length||el.closest('script,style,.huba-language,#wLang,.w-tile,.musical-option-title,.musical-option-artist,.bits-choice,.bits-history-line,#finishSong'))continue;const text=n.nodeValue.trim();if(/[ãçõ]|Diário|Aleatório|tentativas|Carregando|Próxima/.test(text))out.push(text)}return out})}
  await page.goto(base);await language('en');assert.equal(await page.locator('#globalStreak').textContent(),'0');
  assert.equal(await page.locator('.landing-top .huba-language').count(),1);
+ assert.equal(await page.locator('.huba-language .huba-settings').count(),1);
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="training"]').click();assert.equal(await page.evaluate(()=>HUBA.mode),'training');
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="daily"]').click();assert.equal(await page.evaluate(()=>HUBA.mode),'daily');
  assert.equal(await page.locator('[data-site-lang] svg').count(),2);
  assert.equal(await page.locator('[data-site-lang="pt"]').getAttribute('aria-label'),'Português');
  await page.setViewportSize({width:1280,height:900});
@@ -60,6 +63,11 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  for(const game of ['bits','musicle','streakal','wording']){
   await page.goto(base+'/jogos/'+game+'/');assert.equal(await page.locator('html').getAttribute('lang'),'en');
   await checkHeader();
+  assert.equal(await page.locator('.single-game-modes>*').count(),1);assert.equal(await page.locator('#randomTiles,#tilesRandom,#wTilesRandom').count(),0);
+  const offset=await page.locator('.single-game-modes').evaluate(el=>{const r=el.getBoundingClientRect();return Math.abs(r.x+r.width/2-innerWidth/2)});assert.ok(offset<1,'coluna centralizada');
+  await page.locator('.huba-settings>details>summary').click();await page.waitForFunction(()=>document.querySelector('.huba-settings>details').open&&document.querySelector('.huba-settings-content').style.position==='fixed');
+  const menu=await page.locator('.huba-settings-content').boundingBox();assert.ok(menu.x>=0&&menu.x+menu.width<=390,JSON.stringify({game,menu}));
+  await page.locator('.huba-settings>details>summary').click();
   assert.equal(await page.locator('h2').filter({hasText:/^Daily$/}).count(),1);
   await language('pt');assert.equal(await page.locator('h2').filter({hasText:/^Diário$/}).count(),1);await language('en');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -69,7 +77,8 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  assert.equal(await page.locator('#wLang').count(),0);assert.equal(await page.locator('#wSrc').textContent(),'');
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});const delta=await page.locator('#word').evaluate(el=>{const a=el.querySelector('.daily-streak').getBoundingClientRect(),b=el.querySelector('.hub-grid').getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)});assert.ok(delta<1,'streak centralizado com cartões em '+width+'px')}
  await language('pt');assert.equal(await page.locator('#wSrc').textContent(),'');await language('en');
- await page.locator('#wTilesRandom button').first().click();
+ await page.evaluate(() => HUBA.setMode('training'));
+ await page.locator('#wTilesDaily button').first().click();
  await checkHeader();
  await page.locator('#wTitle').click();await page.keyboard.type('ab');await page.keyboard.press('Space');
  const input=await page.locator('#wBoards .w-row').first().textContent();await language('pt');assert.doesNotMatch(await page.locator('#wTitle').textContent(),/English/);await language('en');assert.match(await page.locator('#wTitle').textContent(),/English/);assert.equal(await page.locator('#wBoards .w-row').first().textContent(),input);
@@ -79,17 +88,32 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  for(let i=0;i<6&&!(await page.locator('#wResult').isVisible());i++){await page.keyboard.type(word);await page.keyboard.press('Enter')}
  assert.equal(await page.locator('#wResult').isVisible(),true);assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
  assert.deepEqual(await audit(),[],'Wording: resultado em inglês');
- await page.goto(base+'/jogos/bits/');await page.locator('#randomTiles button').filter({hasText:'Pop'}).click();await page.waitForSelector('#guessInput:visible');
+ await page.goto(base+'/jogos/bits/');await page.locator('#dailyTiles button').filter({hasText:'Pop'}).click();await page.waitForSelector('#guessInput:visible');
  await checkHeader();
  for(let i=0;i<6;i++)await page.locator('#skipGuess').click();assert.equal(await page.locator('#finishTitle').textContent(),'No guesses left');assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
- assert.deepEqual(await audit(),[],'Bits: resultado em inglês');
- await page.goto(base+'/jogos/streakal/');await page.locator('#tilesRandom button').first().click();await page.waitForFunction(()=>testAudio[0].src);
+ await page.locator('#playAgain').click();assert.equal(await page.locator('#guessArea').isVisible(),true);assert.equal(await page.evaluate(()=>HUBA.mode),'training');
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="daily"]').click();assert.equal(await page.locator('#bitsHome').isVisible(),true);assert.equal(await page.locator('[data-mode-title]').textContent(),'Daily');
+ await page.locator('#dailyTiles button').filter({hasText:'Pop'}).click();await page.waitForSelector('#guessInput:visible');
+ for(let i=0;i<6;i++)await page.locator('#skipGuess').click();await page.locator('#finishBack').click();
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="training"]').click();await page.locator('#dailyTiles button').filter({hasText:'Pop'}).click();assert.equal(await page.locator('#guessArea').isVisible(),true);
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="daily"]').click();await page.locator('#dailyTiles button').filter({hasText:'Pop'}).click();assert.equal(await page.locator('#finish').isVisible(),true,'retoma diário concluído após treino');
+ await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="training"]').click();
+ assert.deepEqual(await audit(),[],'Bits: seleção em inglês');
+ await page.goto(base+'/jogos/streakal/');await page.locator('#tilesDaily button').first().click();await page.waitForFunction(()=>testAudio[0].src);
  const id=await page.evaluate(()=>/\/(\d+)$/.exec(testAudio[0].src)[1]);await page.locator('#opts button').filter({hasNot:page.locator('[unused]')}).evaluateAll((buttons,id)=>buttons.find(b=>!b.getAttribute('aria-label').startsWith('Artista '+id+' - ')).click(),id);
  await page.waitForSelector('#result:visible');assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);
  await checkHeader();
  for(const mode of ['#clipHard','#clipCasual']){
-  await page.goto(base+'/jogos/musicle/');await page.locator(mode).click();await page.locator('#tilesRandom button').first().click();await page.waitForSelector('#opts button');
+  await page.goto(base+'/jogos/musicle/');
+  assert.equal(await page.locator('.huba-settings + .huba-difficulty').count(),1,'dificuldade ao lado do tema');
+  assert.equal(await page.locator('#home .top-tools').count(),0,'sem controle duplicado');
+  await page.locator('.huba-difficulty>summary').click();await page.waitForFunction(()=>document.querySelector('#difficultyTool').style.left!=='');
+  const difficultyBox=await page.locator('#difficultyTool').boundingBox();assert.ok(difficultyBox.x>=0&&difficultyBox.x+difficultyBox.width<=390);
+  await page.locator(mode).click();await page.locator('#tilesDaily button').first().click();await page.waitForSelector('#opts button');
   await checkHeader();
+  await page.locator('.huba-difficulty>summary').click();await page.locator(mode==='#clipHard'?'#clipCasual':'#clipHard').click();
+  assert.equal(await page.locator('#home').isVisible(),true,'trocar dificuldade não altera perguntas em andamento');
+  await page.locator('.huba-difficulty>summary').click();await page.locator(mode).click();await page.locator('#tilesDaily button').first().click();
   await page.locator('#playBtn').click();await page.locator('#playBtn').click();assert.equal(await page.locator('#playBtn').textContent(),'Play clip');
   for(let i=0;i<5;i++){await page.locator('#opts button').first().click();await page.locator('#nextBtn').click()}
   assert.equal(await page.evaluate(()=>HUBA.currentStreak('musicle')),1);assert.equal(await page.evaluate(()=>HUBA.currentStreak('huba')),1);

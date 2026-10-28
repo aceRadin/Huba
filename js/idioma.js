@@ -43,6 +43,9 @@ phrases['Nenhuma lista carregada. Coloque words.json e palavra.json na pasta dad
 phrases['Configurar as fontes em jogos/bits/playlists.js.']='Configure sources in jogos/bits/playlists.js.';
 phrases['Trecho 5% menor na próxima rodada']='Clip 5% shorter next round';
 phrases['Português']='Portuguese';
+phrases['Carvão']='Charcoal';
+phrases['Treino']='Training';phrases['Modo de jogo']='Game mode';phrases['Rodada de treino.']='Training round.';
+phrases['Você pode tentar outra música no modo Treino.']='You can try another song in Training mode.';
 var entries=Object.keys(phrases).sort(function(a,b){return b.length-a.length});
 var escaped=entries.map(function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')});
 var matcher=new RegExp(escaped.join('|'),'g');
@@ -105,13 +108,36 @@ function setLanguage(value){
  document.dispatchEvent(new CustomEvent('huba:language',{detail:lang}));
 }
 function build(){
- var nav=document.createElement('nav');nav.className='huba-language';nav.setAttribute('aria-label','Site language');nav.dataset.noTranslate='';
+ var nav=document.createElement('nav');nav.className='huba-language';nav.setAttribute('aria-label','Configurações do HUBA');
+ var theme=document.querySelector('.huba-settings');if(theme){nav.appendChild(theme);var themeTitle=theme.querySelector('summary');themeTitle.textContent='🎨';themeTitle.title='Tema';themeTitle.setAttribute('aria-label','Tema');theme.querySelector('.huba-settings-content>strong').textContent='Tema';theme.querySelector('.huba-settings-content>details').open=true}
+ if(theme)theme.querySelector('details').addEventListener('toggle',function(){
+   if(!this.open)return;
+   var panel=theme.querySelector('.huba-settings-content'),rect=themeTitle.getBoundingClientRect(),width=Math.min(270,innerWidth-24);
+   panel.style.position='fixed';panel.style.left=Math.max(12,Math.min(rect.left,innerWidth-width-12))+'px';panel.style.top=(rect.bottom+8)+'px';panel.style.width=width+'px';
+   panel.style.maxHeight='calc(100dvh - '+(rect.bottom+24)+'px)';
+ });
+ var difficulty=document.getElementById('difficultyTool');
+ if(difficulty){
+   var oldTools=difficulty.parentElement,picker=document.createElement('details');picker.className='huba-difficulty';
+   var difficultyTitle=document.createElement('summary');difficultyTitle.textContent='🎵';difficultyTitle.title='Dificuldade';difficultyTitle.setAttribute('aria-label','Dificuldade do Musical');picker.appendChild(difficultyTitle);
+   picker.appendChild(difficulty);nav.appendChild(picker);oldTools.remove();
+   picker.addEventListener('click',function(e){if(e.target.closest('button'))picker.open=false});
+   picker.addEventListener('toggle',function(){if(!picker.open)return;var rect=difficultyTitle.getBoundingClientRect();difficulty.style.left=Math.max(12,Math.min(rect.left,innerWidth-242))+'px';difficulty.style.top=(rect.bottom+8)+'px'});
+   picker.addEventListener('keydown',function(e){if(e.key==='Escape'){picker.open=false;difficultyTitle.focus();e.preventDefault();e.stopPropagation()}});
+ }
+ var mode=document.createElement('details');mode.className='huba-mode';
+ var modeTitle=document.createElement('summary');modeTitle.setAttribute('aria-label','Modo de jogo');mode.appendChild(modeTitle);
+ var modeOptions=document.createElement('div');modeOptions.className='huba-mode-options';
+ function updateMode(){modeTitle.textContent=HUBA.isDaily?'Diário':'Treino';modeOptions.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.gameMode===HUBA.mode))})}
+ [['daily','Diário'],['training','Treino']].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.gameMode=option[0];b.textContent=option[1];b.onclick=function(){HUBA.setMode(option[0]);mode.open=false};modeOptions.appendChild(b)});
+ mode.appendChild(modeOptions);nav.appendChild(mode);updateMode();document.addEventListener('huba:mode',updateMode);
+ mode.addEventListener('keydown',function(e){if(e.key==='Escape'){mode.open=false;modeTitle.focus();e.stopPropagation();e.preventDefault()}});
  var brazil='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" fill="#009739"/><path d="M14 2 26 10 14 18 2 10Z" fill="#ffdf00"/><circle cx="14" cy="10" r="5" fill="#012169"/><path d="M9.3 8.3Q14 7.5 18.8 11.4" fill="none" stroke="white" stroke-width="1"/><g fill="white"><circle cx="12" cy="11" r=".3"/><circle cx="15" cy="13" r=".3"/><circle cx="17" cy="10" r=".3"/></g></svg>';
  var stripes='',stars='';
  for(var row=0;row<13;row++)stripes+='<rect y="'+(row*20/13)+'" width="28" height="'+(20/13)+'" fill="'+(row%2?'#fff':'#b31942')+'"/>';
  for(var r=0;r<9;r++)for(var c=0;c<(r%2?5:6);c++)stars+='<path transform="translate('+(r%2?1.8+c*1.8:.9+c*1.8)+' '+(.65+r*1.2)+') scale(.4)" d="M0-1 .3-.3 1-.3 .45.15 .6.9 0 .45-.6.9-.45.15-1-.3-.3-.3Z" fill="white"/>';
  var usa='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 20" aria-hidden="true">'+stripes+'<rect width="11.2" height="'+(7*20/13)+'" fill="#0a3161"/>'+stars+'</svg>';
- [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.innerHTML=option[2];b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0])};nav.appendChild(b)});
+ [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.dataset.noTranslate='';b.innerHTML=option[2];b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0])};nav.appendChild(b)});
  var header=document.querySelector('.landing-top');
  if(header){header.appendChild(nav);document.body.classList.add('home-header-language')}else{
    var headers=document.querySelectorAll('.hub-top,.w-top,.bits-top,.musical-play-header,.w-gtop,.bits-game-head');

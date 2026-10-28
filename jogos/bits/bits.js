@@ -21,12 +21,12 @@ function dailyKey(cat){return 'huba:bits:daily:v3:us:'+HUBA_BITS_CATALOGO.dayKey
 function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
 function drawTiles(){
- ['daily','random'].forEach(function(mode){var parent=$(mode+'Tiles');parent.textContent='';
+ ['daily'].forEach(function(mode){var daily=HUBA.isDaily,parent=$(mode+'Tiles');parent.textContent='';
  cats.forEach(function(cat){var list=byCat[cat]||[], prev=dailyRead(cat), btn=document.createElement('button');
- btn.type='button';btn.className='bits-tile';if(mode==='daily'&&prev&&prev.finished)btn.classList.add('completed');
+ btn.type='button';btn.className='bits-tile';if(daily&&prev&&prev.finished)btn.classList.add('completed');
  var name=document.createElement('span'),small=document.createElement('small');name.textContent=labels[cat];
- small.textContent=musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(mode==='daily')?'Carregando gênero…':(mode==='daily'&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
- btn.append(name,small);btn.disabled=!!(musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(mode==='daily'));btn.onclick=function(){enterCategory(cat,mode==='daily')};parent.appendChild(btn);
+ small.textContent=musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(daily)?'Carregando gênero…':(daily&&prev&&prev.finished?(prev.won?'Concluído ✓':'Finalizado'):'');
+ btn.append(name,small);btn.disabled=!!(musicLoading&&loadingChoice&&loadingChoice.cat===cat&&loadingChoice.daily===(daily));btn.onclick=function(){enterCategory(cat,daily)};parent.appendChild(btn);
  });
  });
 }
@@ -98,7 +98,7 @@ function start(cat,daily){
  if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished}}
  roundId++;
  $('bitsHome').classList.add('hidden');$('bitsGame').classList.remove('hidden');
- $('gameTitle').textContent='Bits · '+labels[cat];$('gameSubtitle').textContent=daily?'Desafio diário':'Rodada aleatória';
+ $('gameTitle').textContent='Bits · '+labels[cat];$('gameSubtitle').textContent=daily?'Desafio diário':'Treino';
  $('playAgain').classList.toggle('hidden',daily);$('guessInput').value='';selected=null;
  $('finish').classList.toggle('hidden',!active.finished);$('guessArea').classList.toggle('hidden',active.finished);
  $('replaceAudio').classList.add('hidden');prepareAudio(song);renderRound();
@@ -263,7 +263,7 @@ function recordFinish(){if(!active||active.recorded)return;HUBA.recordPlayedGame
 function showFinish(){$('replaceAudio').classList.add('hidden');stopAudio();$('guessArea').classList.add('hidden');$('finish').classList.remove('hidden');
  $('finishTitle').textContent=active.won?'Você acertou! 🎉':'Fim das tentativas';
  $('finishSong').textContent='Música: '+active.song.label;
- $('finishDetail').textContent=active.won?'Acertou em '+active.guesses.length+' de '+maxAttempts+' tentativas.':'Você pode tentar outra música no modo Aleatório.';
+ $('finishDetail').textContent=active.won?'Acertou em '+active.guesses.length+' de '+maxAttempts+' tentativas.':'Você pode tentar outra música no modo Treino.';
  $('playAgain').classList.toggle('hidden',active.daily);
 }
 function back(){pauseCatalog();audioToken++;bitsSupportCollapsed(false);$('replaceAudio').classList.add('hidden');stopAudio();if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}roundId++;active=null;$('bitsGame').classList.add('hidden');$('bitsHome').classList.remove('hidden');if(supportToggle)supportToggle.hidden=true;drawTiles();renderStats()}
@@ -283,6 +283,7 @@ $('guessInput').addEventListener('input',function(){selected=null;$('submitGuess
 document.addEventListener('keydown',function(e){
  if(e.key!=='Enter'||e.repeat||e.isComposing||!active||active.finished||$('bitsGame').classList.contains('hidden'))return;
  var tag=e.target&&e.target.tagName;
+ if(e.target.closest&&e.target.closest('.huba-language'))return;
  // Não interfere no Enter nativo sobre outros botões e controles.
  if(tag==='BUTTON'||tag==='SELECT'||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable))return;
  var list=$('suggestions');
@@ -294,4 +295,5 @@ document.addEventListener('keydown',function(e){
  if(selected){e.preventDefault();submit(false)}
 });
 renderStats();initCatalog();
+document.addEventListener('huba:mode',function(){if(!$('bitsGame').classList.contains('hidden'))back();else{pauseCatalog();drawTiles()}});
 })();

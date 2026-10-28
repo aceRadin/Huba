@@ -22,7 +22,7 @@ function saveBest(g,n){var r=records();if(n>(r[g]||0)){r[g]=n;writeJSON(RECORD_K
 function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
 function renderHome(){
   $('#statDailyStreak').textContent=HUBA.currentStreak('streakal');
-  ['Daily','Random'].forEach(function(mode){var daily=mode==='Daily',box=$('#tiles'+mode);box.innerHTML='';
+  ['Daily'].forEach(function(mode){var daily=HUBA.isDaily,box=$('#tiles'+mode);box.innerHTML='';
     var keys=configuredGenres();
     keys.forEach(function(g){var pool=poolOf(g),b=document.createElement('button');b.type='button';b.className='tile';
       var st=daily?readJSON(dailyKey(g),null):null;
@@ -102,7 +102,7 @@ function openGame(daily,g){
   musicLoader.select(g,2,daily).catch(function(){});waitingCatalog=false;
   $('#gameCatalogCount').textContent=poolOf(g).length.toLocaleString('pt-BR')+' músicas carregadas neste gênero';
   $('#home').classList.add('hidden');$('#play').classList.remove('hidden');$('#play').classList.remove('is-result');
-  $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Rodada aleatória')+' · Acerte até errar. Cada acerto exige uma escolha de dificuldade permanente.';
+  $('#playTitle').textContent='Streakal · '+gName(g);$('#playSub').textContent=(daily?'Desafio diário':'Treino')+' · Acerte até errar. Cada acerto exige uma escolha de dificuldade permanente.';
   cur=newRun(daily,g);invalidSongs={};audioFailures=0;streakalSupportSetCollapsed(false);updateLimitDisplay();
   // Desafios diários concluídos não podem reiniciar o placar nesse dia.
   var prev=daily?readJSON(dailyKey(g),null):null;
@@ -380,4 +380,5 @@ $('#backBtn').onclick=goHome;$('#backBtn2').onclick=goHome;
 $('#again').onclick=function(){openGame(false,cur.genre)};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#play').classList.contains('hidden')){e.preventDefault();goHome()}});
 initCatalog();
+document.addEventListener('huba:mode',function(){pauseCatalog();if(!$('#play').classList.contains('hidden'))goHome();else renderHome();});
 })();

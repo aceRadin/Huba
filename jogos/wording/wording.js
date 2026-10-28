@@ -127,7 +127,7 @@ function wStatus(mode){
 function renderWordHub(){
   $('#wDailyStreak').textContent=HUBA.currentStreak('word');
   wRenderLang();
-  [['Daily',true],['Random',false]].forEach(function(x){
+  [['Daily',HUBA.isDaily]].forEach(function(x){
     var box=$('#wTiles'+x[0]); box.innerHTML='';
     Object.keys(WMODES).forEach(function(k){
       var M=WMODES[k], b=document.createElement('button'), st=x[1]?wStatus(k):null, txt=WCFG[WLANG]?'jogar':(WLOADING?'carregando':'sem lista');
@@ -176,7 +176,7 @@ function startWord(mode,daily,preserve){
 function showWordGame(){
   var M=w.M,daily=w.daily;
   $('#word').classList.add('hidden'); $('#wgame').classList.remove('hidden');
-  $('#wTitle').textContent=M.name+' · '+(daily?'Diário':'Aleatório')+(WLANG==='en'?' · English':'');
+  $('#wTitle').textContent=M.name+' · '+(daily?'Diário':'Treino')+(WLANG==='en'?' · English':'');
   $('#wMsg').textContent='';
   wBuildKb(); renderWord();
   document.dispatchEvent(new Event('huba:word-screen'));
@@ -351,4 +351,5 @@ $('#wStats').addEventListener('click',function(e){if(e.target===this)this.close(
 
 wInitWords();
 
+document.addEventListener('huba:mode',function(){suspendedWords={};if(!$('#wgame').classList.contains('hidden'))wBackToHub();else renderWordHub();});
 })();

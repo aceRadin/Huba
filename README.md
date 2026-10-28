@@ -1,5 +1,7 @@
 # HUBA — Jogos
 
+Os jogos exibem uma única coluna central, controlada por **Diário / Treino** no cabeçalho. Treino oferece partidas aleatórias ilimitadas. O botão de temas fica à esquerda desse seletor e das bandeiras de idioma. Veja [idioma e modos](docs/idioma-e-streaks.md).
+
 **Atualização do Bits:** a seleção agora vem de um catálogo estático validado nos Estados Unidos. Antes da primeira publicação, configure e execute a automação seguindo [Ativar o catálogo americano](docs/bits-estados-unidos.md). As descrições de consulta direta a rankings abaixo são históricas; o navegador consulta apenas os IDs para renovar o áudio.
 
 **Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa os rankings populares** de Pop, Rock e Rap/Hip Hop, configurados em `jogos/bits/rankings.js`. Os jogos continuam com lógica e estatísticas próprias.

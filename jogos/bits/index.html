@@ -7,14 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../css/style.css">
+<link rel="stylesheet" href="../../css/style.css?v=3">
 <link rel="stylesheet" href="bits.css">
-<script src="../../js/comum.js?v=2" defer></script>
-<script src="../../js/idioma.js?v=3" defer></script>
+<script src="../../js/comum.js?v=3" defer></script>
+<script src="../../js/idioma.js?v=5" defer></script>
 <script src="../../js/bits-catalogo.js?v=1" defer></script>
 <script src="../../js/deezer.js?v=2" defer></script>
-<script src="bits.js?v=14" defer></script>
-<link rel="stylesheet" href="../../css/cabecalhos.css?v=1">
+<script src="bits.js?v=15" defer></script>
+<link rel="stylesheet" href="../../css/cabecalhos.css?v=3">
 </head>
 <body>
 <main>
@@ -24,9 +24,8 @@
     <div class="daily-streak" aria-live="polite"><strong id="streakValue">0</strong><span>dias de streak diário</span></div>
   </header>
   <p class="bits-lead">Reconheça a música pelo começo. São até seis tentativas: cada erro revela um trecho maior.</p>
-  <div class="bits-columns">
-    <section class="bits-category-panel"><h2>Diário</h2><p class="note">Uma música por categoria a cada dia.</p><div class="bits-tiles" id="dailyTiles"></div></section>
-    <section class="bits-category-panel"><h2>Aleatório</h2><p class="note">Jogue quantas vezes quiser.</p><div class="bits-tiles" id="randomTiles"></div></section>
+  <div class="bits-columns single-game-modes">
+    <section class="bits-category-panel"><h2 data-mode-title>Diário</h2><p class="note" data-mode-description data-daily-description="Uma música por categoria a cada dia.">Uma música por categoria a cada dia.</p><div class="bits-tiles" id="dailyTiles"></div></section>
   </div>
   <p class="note" id="loadStatus" role="status" aria-live="polite">Escolha um gênero para carregar suas músicas.</p>
 </section>

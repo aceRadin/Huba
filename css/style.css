@@ -241,6 +241,15 @@ body{padding-top:52px}
 .huba-language button{font-size:.76rem;padding:5px 9px}
 .huba-language button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .huba-language svg{display:block;width:30px;height:22px}
+.huba-language{align-items:center}
+.huba-language .huba-settings{position:relative;left:auto;bottom:auto;z-index:auto}
+.huba-language .huba-settings>details>summary{width:34px;height:32px;box-shadow:none;font-size:1rem;padding:4px}
+.huba-language .huba-settings-content{box-sizing:border-box;bottom:auto;top:calc(100% + 10px);left:0;text-align:left}
+.huba-mode{position:relative;font-size:.76rem}
+.huba-mode>summary{padding:6px 8px;cursor:pointer;white-space:nowrap}
+.huba-mode-options{position:absolute;top:calc(100% + 10px);right:0;min-width:120px;padding:7px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px #0003;display:grid;gap:5px}
+.huba-mode-options button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+body .single-game-modes{grid-template-columns:minmax(0,1fr);max-width:520px;margin-inline:auto}
 .global-streak{gap:7px;line-height:1.25}
 .global-streak strong,.global-streak span{display:block;margin:0;line-height:1.25}
 .global-streak strong{font-size:1rem;font-variant-numeric:tabular-nums}
@@ -249,7 +258,7 @@ body.home-header-language{padding-top:0}
 .landing-top h1{justify-self:start}
 .landing-top .daily-streak{justify-self:center}
 .landing-top .huba-language{position:static;justify-self:end;box-shadow:none}
-@media(max-width:600px){
+@media(max-width:850px){
  .landing-top{grid-template-columns:minmax(0,1fr) auto;gap:10px}
  .landing-top .daily-streak{justify-self:end}
  .landing-top .huba-language{grid-column:1/-1;justify-self:end}

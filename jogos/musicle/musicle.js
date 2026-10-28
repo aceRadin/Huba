@@ -63,7 +63,7 @@ function gName(g){return cap(g)}
   }
   function readHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){return []}}
   function saveHistory(arr){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(arr.slice(-12)))}catch(e){}}
-  function setDifficulty(seconds){CLIP=seconds; $('#clipHard').classList.toggle('selected',CLIP===1.5); $('#clipCasual').classList.toggle('selected',CLIP===7); try{localStorage.setItem('playhub:musicle:clip',String(CLIP))}catch(e){} renderHome();}
+  function setDifficulty(seconds){if(!$('#play').classList.contains('hidden'))goHome();CLIP=seconds; $('#clipHard').classList.toggle('selected',CLIP===1.5); $('#clipCasual').classList.toggle('selected',CLIP===7); try{localStorage.setItem('playhub:musicle:clip',String(CLIP))}catch(e){} renderHome();}
   $('#clipHard').onclick=function(){setDifficulty(1.5)}; $('#clipCasual').onclick=function(){setDifficulty(7)};
 
 /* As fontes musicais são configuradas em ../../playlists.js. */
@@ -110,9 +110,9 @@ window.addEventListener('pagehide',pauseCatalog);
 /* ---------- home ---------- */
 function renderHome(){
   renderStats();
-  ['Daily','Random'].forEach(function(m){
+  ['Daily'].forEach(function(m){
     var box=$('#tiles'+m); box.innerHTML='';
-    var daily=m==='Daily';
+    var daily=HUBA.isDaily;
     var keys=configuredGenres();
     keys.forEach(function(g){
       var b=document.createElement('button'); b.className='tile';
@@ -439,4 +439,5 @@ renderHome();
 
 initCatalog();
 
+document.addEventListener('huba:mode',function(){pauseCatalog();if(!$('#play').classList.contains('hidden'))goHome();else renderHome();});
 })();
