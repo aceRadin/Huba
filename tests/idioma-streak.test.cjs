@@ -33,7 +33,7 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  await context.route('https://api.deezer.com/**',r=>{const url=new URL(r.request().url());const id=/\/track\/(\d+)/.exec(url.pathname)?.[1];return r.fulfill({contentType:'application/javascript',body:url.searchParams.get('callback')+'('+JSON.stringify(id?tracks[Number(id)-1]:{data:tracks})+');'})});
  await context.route('**/dados/bits-us/*.json',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({schema:1,country:'US',date:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),genres:Object.fromEntries(['pop','rock','rap'].map(g=>[g,tracks.map(s=>({id:s.id,title:s.title,artist:s.artist.name}))]))})}));
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- async function language(value){await page.locator('[data-site-lang="'+value+'"]').click();await page.waitForFunction(v=>document.documentElement.lang===(v==='en'?'en':'pt-BR'),value)}
+ async function language(value){await page.locator('.huba-locale>summary').click();await page.locator('[data-site-lang="'+value+'"]').click();await page.waitForFunction(v=>document.documentElement.lang===(v==='en'?'en':'pt-BR'),value)}
  async function checkHeader(){
   for(const width of [320,390,1280]){
    await page.setViewportSize({width,height:900});
@@ -51,6 +51,9 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="training"]').click();assert.equal(await page.evaluate(()=>HUBA.mode),'training');
  await page.locator('.huba-mode>summary').click();await page.locator('[data-game-mode="daily"]').click();assert.equal(await page.evaluate(()=>HUBA.mode),'daily');
  assert.equal(await page.locator('[data-site-lang] svg').count(),2);
+ assert.equal(await page.locator('.huba-locale>summary svg').count(),1);
+ assert.equal(await page.locator('[data-site-lang="pt"]').isVisible(),false,'opções de idioma ocultas quando dropdown fecha');
+ assert.equal(await page.locator('.huba-locale>summary').getAttribute('title'),'English');
  assert.equal(await page.locator('[data-site-lang="pt"]').getAttribute('aria-label'),'Português');
  await page.setViewportSize({width:1280,height:900});
  const centers=await page.locator('.landing-top').evaluate(header=>Array.from(header.children).map(el=>{const r=el.getBoundingClientRect();return r.y+r.height/2}));
@@ -62,6 +65,8 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  assert.equal(await page.locator('.gcard').filter({hasText:'Streakal'}).locator('small').count(),1);
  for(const game of ['bits','musicle','streakal','wording']){
   await page.goto(base+'/jogos/'+game+'/');assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  if(game==='musicle'||game==='streakal')assert.equal(await page.locator('#dzStatus').textContent(),'');
+  if(game==='bits'){assert.equal(await page.locator('.bits-lead').count(),0);assert.equal(await page.locator('#loadStatus').evaluate(el=>getComputedStyle(el).textAlign),'center')}
   await checkHeader();
   assert.equal(await page.locator('.single-game-modes>*').count(),1);assert.equal(await page.locator('#randomTiles,#tilesRandom,#wTilesRandom').count(),0);
   const offset=await page.locator('.single-game-modes').evaluate(el=>{const r=el.getBoundingClientRect();return Math.abs(r.x+r.width/2-innerWidth/2)});assert.ok(offset<1,'coluna centralizada');

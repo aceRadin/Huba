@@ -1,6 +1,6 @@
 # Idioma e sequências diárias
 
-As bandeiras do Brasil e dos Estados Unidos selecionam Português / English no cabeçalho. Elas têm rótulos acessíveis e dicas com os nomes dos idiomas. A escolha é salva no navegador em `huba:language:v1`.
+O dropdown de idioma no cabeçalho mostra apenas a bandeira selecionada. Ao abrir, oferece Brasil (Português) e Estados Unidos (English), com rótulos acessíveis e dicas. A escolha é salva no navegador em `huba:language:v1`. Escape fecha o menu e devolve o foco ao seletor.
 
 À esquerda das bandeiras ficam o botão de temas e o seletor Diário/Treino. O tema deixou o canto inferior esquerdo e continua com as mesmas cores e preferências salvas. O modo padrão é Diário; a escolha é salva em `huba:mode:v1` e acompanha a navegação entre jogos. Cada jogo mostra apenas uma coluna central. Treino usa a mesma lógica aleatória ilimitada que antes ficava na coluna direita; não altera nem apaga o progresso dos desafios diários. Ao trocar de modo durante a partida, o jogo volta à seleção e cancela carregamentos pendentes. Os palpites diários já enviados permanecem salvos; uma rodada de treino abandonada não é convertida em diário. Tema e idioma podem ser alterados sem sair da partida.
 

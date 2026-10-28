@@ -20,6 +20,7 @@ test('Wording funciona abrindo index.html diretamente, sem fetch nem upload',asy
   await page.waitForFunction(()=>document.querySelectorAll('#wTilesDaily button').length===3&&!document.querySelector('#wTilesDaily button').disabled);
   assert.equal(await page.locator('#wLoadJson,#wResetJson,input[type=file]').count(),0);
   for(const lang of ['pt','en']){
+   await page.locator('.huba-locale>summary').click();
    await page.locator('[data-site-lang="'+lang+'"]').click();
    for(let i=0;i<3;i++){
     await page.locator('#wTilesDaily button').nth(i).click();assert.equal(await page.locator('.w-board').count(),[1,2,4][i]);

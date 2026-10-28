@@ -85,7 +85,7 @@ var loadedGenres={},selectionToken=0,loadingChoice=null,selectedGenre=null;
 function configuredGenres(){return musicLoader.genres()}
 function initCatalog(){
   musicLoading=false;
-  $('#dzStatus').textContent=configuredGenres().length?'Escolha um gênero para carregar apenas suas playlists.':'Nenhuma fonte configurada em playlists.js.';
+  $('#dzStatus').textContent=configuredGenres().length?'':'Nenhuma fonte configurada em playlists.js.';
   $('#summary').textContent='As músicas são carregadas ao escolher o gênero.';renderHome();
 }
 function enterGenre(daily,g){

@@ -138,7 +138,14 @@ function build(){
  for(var row=0;row<13;row++)stripes+='<rect y="'+(row*20/13)+'" width="28" height="'+(20/13)+'" fill="'+(row%2?'#fff':'#b31942')+'"/>';
  for(var r=0;r<9;r++)for(var c=0;c<(r%2?5:6);c++)stars+='<path transform="translate('+(r%2?1.8+c*1.8:.9+c*1.8)+' '+(.65+r*1.2)+') scale(.4)" d="M0-1 .3-.3 1-.3 .45.15 .6.9 0 .45-.6.9-.45.15-1-.3-.3-.3Z" fill="white"/>';
  var usa='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 20" aria-hidden="true">'+stripes+'<rect width="11.2" height="'+(7*20/13)+'" fill="#0a3161"/>'+stars+'</svg>';
- [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.dataset.noTranslate='';b.innerHTML=option[2];b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0])};nav.appendChild(b)});
+ var languageMenu=document.createElement('details');languageMenu.className='huba-locale';
+ var languageTitle=document.createElement('summary');languageTitle.dataset.noTranslate='';languageMenu.appendChild(languageTitle);
+ var languageOptions=document.createElement('div');languageOptions.className='huba-locale-options';
+ function updateLanguage(){languageTitle.innerHTML=(lang==='pt'?brazil:usa)+'<span aria-hidden="true">▾</span>';languageTitle.title=lang==='pt'?'Português':'English';languageTitle.setAttribute('aria-label',lang==='pt'?'Idioma: Português':'Language: English')}
+ [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.dataset.noTranslate='';b.innerHTML=option[2]+'<span>'+option[1]+'</span>';b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0]);languageMenu.open=false};languageOptions.appendChild(b)});
+ languageMenu.appendChild(languageOptions);nav.appendChild(languageMenu);updateLanguage();document.addEventListener('huba:language',updateLanguage);
+ languageMenu.addEventListener('keydown',function(e){if(e.key==='Escape'){languageMenu.open=false;languageTitle.focus();e.stopPropagation();e.preventDefault()}});
+ document.addEventListener('click',function(e){if(!languageMenu.contains(e.target))languageMenu.open=false});
  var header=document.querySelector('.landing-top');
  if(header){header.appendChild(nav);document.body.classList.add('home-header-language')}else{
    var headers=document.querySelectorAll('.hub-top,.w-top,.bits-top,.musical-play-header,.w-gtop,.bits-game-head');

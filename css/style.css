@@ -241,6 +241,13 @@ body{padding-top:52px}
 .huba-language button{font-size:.76rem;padding:5px 9px}
 .huba-language button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .huba-language svg{display:block;width:30px;height:22px}
+.huba-locale{position:relative}
+.huba-locale>summary{display:flex;align-items:center;gap:5px;padding:5px 8px;list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:9px}
+.huba-locale>summary::-webkit-details-marker{display:none}
+.huba-locale-options{position:absolute;top:calc(100% + 10px);right:0;min-width:155px;display:grid;gap:5px;padding:7px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px #0003}
+.huba-locale-options button{display:flex;align-items:center;gap:8px;white-space:nowrap}
+#dzStatus:empty{display:none}
+#loadStatus{text-align:center;max-width:1000px;margin:12px auto 0}
 .huba-language{align-items:center}
 .huba-language .huba-settings{position:relative;left:auto;bottom:auto;z-index:auto}
 .huba-language .huba-settings>details>summary{width:34px;height:32px;box-shadow:none;font-size:1rem;padding:4px}
