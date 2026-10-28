@@ -96,6 +96,12 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
       inflight--;
       try { await route.fulfill({ contentType: 'application/javascript', body: cb + '(' + JSON.stringify(data) + ');' }); } catch { /* requisição cancelada */ }
     });
+    await context.route('**/dados/bits-us/*.json', r => {
+      const date = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const genres = {};
+      for (const [g,start] of [['pop',1],['rock',rankings?201:1],['rap',rankings?401:1]]) genres[g]=Array.from({length:rankings&&g==='rap'?299:300},(_,i)=>({id:String(start+i),title:'Faixa '+(start+i),artist:'Artista '+(start+i)}));
+      return r.fulfill({contentType:'application/json',body:JSON.stringify({schema:1,country:'US',date,genres})});
+    });
     const page = await context.newPage();
     page.setDefaultTimeout(8000);
     page.on('pageerror', e => errors.push(e.message));
@@ -127,27 +133,27 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
       assert.match(await loaderState(f), new RegExp('^' + count + ' músicas'));
       await f.page.locator('#backGame').click();
     }
-    assert.equal(f.requests.filter(r => r.chart).length, 3);
-    assert.ok(f.requests.filter(r => r.chart).every(r => r.limit === 300));
+    assert.equal(f.requests.filter(r => r.chart).length, 0);
+    assert.equal(f.requests.filter(r => r.playlist).length, 0);
     await choose(f, 'bits', true, 'Top'); await done(f);
     assert.match(await loaderState(f), /^699 músicas/);
-    assert.equal(f.requests.filter(r => r.chart).length, 3, 'Top reutiliza os rankings já recebidos');
+    assert.equal(f.requests.filter(r => r.chart).length, 0, 'Top reutiliza os rankings já recebidos');
     await f.page.locator('#guessInput').fill('Faixa 699');
     await f.page.locator('#suggestions button').filter({ hasText: 'Faixa 699' }).click();
     await f.page.locator('#submitGuess').click();
-    const saved = await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v2:rankings:'))[1]);
+    const saved = await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]);
     await f.page.locator('#backGame').click(); await choose(f, 'bits', true, 'Top');
     assert.equal(await f.page.locator('#history .bits-history-line').count(), 1);
     assert.equal(f.requests.filter(r => r.playlist).length, 0);
     const second = await fixture({ game: 'bits', rankings: true, latency: 5 });
     await choose(second, 'bits', true, 'Top'); await second.page.locator('#skipGuess').click();
-    const other = await second.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v2:rankings:'))[1]);
+    const other = await second.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]);
     assert.equal(JSON.parse(saved).id, JSON.parse(other).id);
     assert.equal(f.errors.length + second.errors.length, 0);
     await f.context.close(); await second.context.close();
   });
 
-  for (const game of ['musicle', 'bits', 'streakal']) await t.test(game + ': entra antes do fim, cresce sem duplicar e reutiliza cache', async () => {
+  for (const game of ['musicle', 'streakal']) await t.test(game + ': entra antes do fim, cresce sem duplicar e reutiliza cache', async () => {
     const f = await fixture({ game, latency: 180 });
     assert.equal(f.requests.length, 0, 'não consulta playlists ao abrir a página');
     const ms = await choose(f, game, false);
@@ -216,12 +222,14 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
   await t.test('Musical e Bits renovam a mesma faixa antes de oferecer substituição', async () => {
     for (const game of ['musicle', 'bits']) {
       const f = await fixture({ game }); await choose(f, game); await done(f);
+      if (game === 'bits') await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
+      const initialTrackRequests = f.requests.filter(r => r.track).length;
       const original = await f.page.evaluate(() => testAudio[0].src);
       const id = /\/(\d+)$/.exec(original)[1];
       await f.page.evaluate(() => { testAudio[0].dispatchEvent(new Event('error')); testAudio[0].dispatchEvent(new Event('error')); });
-      await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
+      await f.page.waitForFunction(() => (document.querySelector('#message') || document.querySelector('#qhint')).textContent.includes('Prévia atualizada'));
       assert.ok((await f.page.evaluate(() => testAudio[0].src)).endsWith('/' + id));
-      assert.equal(f.requests.filter(r => r.track).length, 1, 'falhas simultâneas não duplicam a recuperação');
+      assert.equal(f.requests.filter(r => r.track).length, initialTrackRequests + 1, 'falhas simultâneas não duplicam a recuperação');
       assert.equal(await f.page.locator(game === 'bits' ? '#replaceAudio' : '#replaceSong').isVisible(), false);
       await f.page.evaluate(() => testAudio[0].dispatchEvent(new Event('error')));
       assert.equal(await f.page.locator(game === 'bits' ? '#replaceAudio' : '#replaceSong').isVisible(), true);
@@ -249,7 +257,7 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
         const f = await fixture({ game, latency }); await choose(f, game, true); await done(f);
         if (game === 'bits') {
           await f.page.locator('#skipGuess').click();
-          signatures.push(await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v2:rankings:'))[1]));
+          signatures.push(await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]));
         } else {
           if (game === 'streakal') await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
           signatures.push(JSON.stringify(await f.page.locator('#opts button').allTextContents()) + await f.page.evaluate(() => testAudio[0].src));

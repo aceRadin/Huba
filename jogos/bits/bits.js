@@ -10,7 +10,6 @@ var audio=new Audio(), audioUrl=null, loadToken=0, musicLoading=true, loadingCho
 var unavailableSongs={};
 var audioToken=0,recoveredSong=false,recoveringSong=false;
 var statsKey='huba:bits:stats:v1', volumeKey='huba:bits:volume:v1', muteKey='huba:bits:muted:v1';
-var configs=Array.isArray(window.HUBA_BITS_MUSICAS&&window.HUBA_BITS_MUSICAS.fontes)?window.HUBA_BITS_MUSICAS.fontes.join('\n'):'';
 var norm=HUBA.norm, hash=HUBA.hash;
 function setStatus(message){$('loadStatus').textContent=message}
 function storageGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -18,7 +17,7 @@ function storageSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function getStats(){try{return JSON.parse(storageGet(statsKey))||{games:0,wins:0}}catch(e){return {games:0,wins:0}}}
 function saveStats(st){storageSet(statsKey,JSON.stringify(st))}
 function renderStats(){$('streakValue').textContent=HUBA.currentStreak('bits')}
-function dailyKey(cat){return 'huba:bits:daily:v2:rankings:'+HUBA.dayKey()+':'+cat}
+function dailyKey(cat){return 'huba:bits:daily:v3:us:'+HUBA_BITS_CATALOGO.dayKey()+':'+cat}
 function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
 function drawTiles(){
@@ -33,7 +32,7 @@ function drawTiles(){
 }
 /* Rankings exclusivos do Bits; as playlists dos demais jogos não são alteradas. */
 var selectedCat=null;
-var musicLoader=HUBADeezer.create({sources:configs.split('\n'),onUpdate:function(s){
+var musicLoader=HUBA_BITS_CATALOGO.create({onUpdate:function(s){
   byCat[s.genre]=s.songs.map(function(song){return Object.assign({},song,{deezerId:song.id,id:'dz-'+song.id})});
   if(selectedCat===s.genre){
     musicLoader.paint($('catalogCount'),s);musicLoader.paint($('gameCatalogCount'),s);
@@ -46,7 +45,7 @@ function enterCategory(cat,daily){
  musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();
  setStatus(daily?'Preparando todas as músicas para manter o desafio diário consistente…':'Carregando músicas de '+labels[cat]+'…');
  // Top aguarda os três rankings para não sortear apenas do primeiro gênero.
- musicLoader.select(cat,1,daily||cat==='top').then(function(s){
+ musicLoader.select(cat,1,daily).then(function(s){
    if(token!==loadToken)return;
    musicLoading=false;loadingChoice=null;drawTiles();
    if(!s.songs.length)throw new Error('Nenhuma música disponível nesta categoria.');
@@ -59,7 +58,7 @@ function enterCategory(cat,daily){
 }
 function initCatalog(){
  musicLoading=false;drawTiles();
- setStatus(musicLoader.genres().length?'Escolha Pop, Rock ou Rap. Top reúne os três rankings populares.':'Nenhum ranking configurado em jogos/bits/rankings.js.');
+ setStatus('Catálogo dos Estados Unidos · Top reúne Pop, Rock e Rap.');
  $('catalogCount').textContent='Músicas carregadas sob demanda';
 }
 function pauseCatalog(){loadToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedCat)musicLoader.paint($('catalogCount'),musicLoader.state(selectedCat))}
@@ -68,7 +67,7 @@ window.addEventListener('pagehide',pauseCatalog);
 function chooseSong(cat,daily){
  var list=(byCat[cat]||[]).slice();if(daily)list.sort(HUBADeezer.compare);if(!list.length)return null;
  if(daily){var stored=dailyRead(cat);if(stored){var old=list.find(function(s){return s.id===stored.id});if(old)return old;setStatus('A música do diário salvo não está disponível no catálogo. Tente carregar novamente mais tarde.');return null}
-   var random=HUBA.mulberry(hash('bits|'+cat+'|'+HUBA.dayKey()));return list[Math.floor(random()*list.length)];
+   var random=HUBA.mulberry(hash('bits|'+cat+'|'+HUBA_BITS_CATALOGO.dayKey()));return list[Math.floor(random()*list.length)];
  }
  var last=active&&active.song&&active.song.id;var options=list.filter(function(s){return s.id!==last});return (options.length?options:list)[Math.floor(Math.random()*(options.length?options:list).length)];
 }
@@ -125,6 +124,14 @@ function stopAudio(){
 }
 function prepareAudio(song,recovered){
  audioToken++;recoveredSong=!!recovered;recoveringSong=false;
+ if(!song.url&&!song.file){
+   var token=audioToken;audio.removeAttribute('src');audio.load();recoveringSong=true;
+   message('Carregando prévia da música…');
+   HUBADeezer.request('https://api.deezer.com/track/'+encodeURIComponent(song.deezerId),null,true).then(function(data){
+     if(token!==audioToken)return;if(!data||!data.preview)throw Error('Prévia indisponível');
+     song.url=data.preview;prepareAudio(song);message('Você pode ouvir o trecho antes de responder.');
+   }).catch(function(){if(token===audioToken){recoveringSong=false;showAudioFailure()}});return;
+ }
  if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null}
  audioUrl=song.file?URL.createObjectURL(song.file):null;
  audio.preload='metadata';audio.src=audioUrl||song.url;audio.load();updateTimeline();
@@ -179,6 +186,7 @@ audio.addEventListener('timeupdate',function(){
 audio.addEventListener('ended',function(){pauseAudio()});
 function play(){
  if(!active)return;
+ if(recoveringSong){message('Aguarde o carregamento da prévia…');return}
  // Ao clicar de novo, o trecho reinicia desde o começo, mesmo se já estiver tocando.
  try{audio.currentTime=0}catch(e){}
  updateTimeline();

@@ -1,5 +1,7 @@
 # HUBA — Jogos
 
+**Atualização do Bits:** a seleção agora vem de um catálogo estático validado nos Estados Unidos. Antes da primeira publicação, configure e execute a automação seguindo [Ativar o catálogo americano](docs/bits-estados-unidos.md). As descrições de consulta direta a rankings abaixo são históricas; o navegador consulta apenas os IDs para renovar o áudio.
+
 **Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa os rankings populares** de Pop, Rock e Rap/Hip Hop, configurados em `jogos/bits/rankings.js`. Os jogos continuam com lógica e estatísticas próprias.
 
 No Bits, `top` reúne os três rankings e remove músicas repetidas. Cada ranking é consultado com `limit=300`, pois esse endpoint pode omitir `next`. Top aguarda as três fontes; nenhum ranking é consultado antes de escolher uma categoria. `jogos/bits/playlists.js` foi preservado como referência, mas não é mais carregado pelo jogo. Os diários de rankings têm uma chave de salvamento própria; os dados dos antigos diários de playlists não são apagados.
