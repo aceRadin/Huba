@@ -6,7 +6,7 @@
 window.HUBA_BITS_MUSICAS = {
   fontes: [
     'top:',
-    'pop:',
+    'pop:https://www.deezer.com/br/playlist/13650203641, https://www.deezer.com/br/playlist/8326097522, https://www.deezer.com/br/playlist/8282573142, https://www.deezer.com/br/playlist/1036183001',
     'rock:',
     'rap:'
   ]
