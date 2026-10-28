@@ -36,6 +36,11 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  async function language(value){await page.locator('[data-site-lang="'+value+'"]').click();await page.waitForFunction(v=>document.documentElement.lang===(v==='en'?'en':'pt-BR'),value)}
  async function audit(){return page.evaluate(()=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),out=[];let n;while(n=w.nextNode()){const el=n.parentElement;if(!el||!el.getClientRects().length||el.closest('script,style,.huba-language,#wLang,.w-tile,.musical-option-title,.musical-option-artist,.bits-choice,.bits-history-line,#finishSong'))continue;const text=n.nodeValue.trim();if(/[ãçõ]|Diário|Aleatório|tentativas|Carregando|Próxima/.test(text))out.push(text)}return out})}
  await page.goto(base);await language('en');assert.equal(await page.locator('#globalStreak').textContent(),'0');
+ assert.equal(await page.locator('.landing-top .huba-language').count(),1);
+ await page.setViewportSize({width:1280,height:900});
+ const centers=await page.locator('.landing-top').evaluate(header=>Array.from(header.children).map(el=>{const r=el.getBoundingClientRect();return r.y+r.height/2}));
+ assert.ok(Math.max(...centers)-Math.min(...centers)<2,'nome, streak e idioma alinhados no computador');
+ for(const width of [320,390]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)}
  assert.equal(await page.locator('.gcard').filter({hasText:'Musical'}).locator('.gstreak').count(),1);
  assert.equal(await page.locator('.gcard').filter({hasText:'Streakal'}).locator('small').count(),1);
  for(const game of ['bits','musicle','streakal','wording']){

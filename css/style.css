@@ -240,7 +240,16 @@ body{padding-top:52px}
 .huba-language{position:fixed;top:max(10px,env(safe-area-inset-top));right:12px;z-index:60;display:flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px #0002}
 .huba-language button{font-size:.76rem;padding:5px 9px}
 .huba-language button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-.landing-top{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.landing-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px}
+body.home-header-language{padding-top:0}
+.landing-top h1{justify-self:start}
+.landing-top .daily-streak{justify-self:center}
+.landing-top .huba-language{position:static;justify-self:end;box-shadow:none}
+@media(max-width:600px){
+ .landing-top{grid-template-columns:minmax(0,1fr) auto;gap:10px}
+ .landing-top .daily-streak{justify-self:end}
+ .landing-top .huba-language{grid-column:1/-1;justify-self:end}
+}
 
 /* Temas: as mesmas variáveis colorem todos os jogos. */
 :root[data-theme="ocean"]{--bg:#e5f1f8;--card:#f8fcff;--fg:#123448;--muted:#526c7c;--accent:#086e9e;--accent-fg:#fff;--line:#b9d5e5;--seg:#c2ddea}

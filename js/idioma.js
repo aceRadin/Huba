@@ -107,7 +107,9 @@ function setLanguage(value){
 function build(){
  var nav=document.createElement('nav');nav.className='huba-language';nav.setAttribute('aria-label','Site language');nav.dataset.noTranslate='';
  [['pt','Português'],['en','English']].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.textContent=option[1];b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0])};nav.appendChild(b)});
- document.body.appendChild(nav);document.documentElement.lang=lang==='en'?'en':'pt-BR';apply(document);
+ var header=document.querySelector('.landing-top');
+ if(header){header.appendChild(nav);document.body.classList.add('home-header-language')}else document.body.appendChild(nav);
+ document.documentElement.lang=lang==='en'?'en':'pt-BR';apply(document);
  new MutationObserver(function(records){records.forEach(function(r){if(r.type==='childList')r.addedNodes.forEach(apply);else if(r.type==='characterData')textValue(r.target);else elementValue(r.target)})}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label','alt']});
 }
 window.HUBA_I18N={get language(){return lang},setLanguage:setLanguage,translate:translate,isText:function(el,text){return el.textContent===text||el.textContent===translate(text)}};
