@@ -30,7 +30,7 @@ function drawTiles(){
  });
  });
 }
-/* Dez faixas mais populares por artista; fontes exclusivas do Bits. */
+/* Cinco faixas por artista no Diário, quinze no Treino; fontes exclusivas do Bits. */
 var selectedCat=null;
 var musicLoader=HUBA_BITS_CATALOGO.create({onUpdate:function(s){
   byCat[s.genre]=s.songs.map(function(song){return Object.assign({},song,{deezerId:song.id,id:'dz-'+song.id})});

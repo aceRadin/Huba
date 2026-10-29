@@ -133,7 +133,7 @@ function create(options){
         check(signal);if(run!==epoch)return;
         var src=s.sources[s.index],url=src.url;
         if(src.seen.has(url))throw new Error('Paginação repetida no Deezer');
-        var data=await page(url,signal,options.pagePersistence);check(signal);if(run!==epoch)return;
+        var data=await (options.pageProvider?options.pageProvider(url,signal):page(url,signal,options.pagePersistence));check(signal);if(run!==epoch)return;
         // Valida next antes de incorporar a página; uma falha mantém o cursor retomável.
         var next=null;
         if(!src.artist&&!src.top&&data.next){var parsed=apiURL(data.next);parsed.searchParams.set('limit',String(PAGE_SIZE));next=parsed.href;if(src.seen.has(next)||next===url)throw new Error('Paginação repetida no Deezer')}

@@ -1,5 +1,7 @@
 # Bits: músicas populares por artista
 
+**Publicação atual:** o GitHub Actions prepara os arquivos dos artistas antes de publicar. Consulte [catálogo preparado: ativação e funcionamento](bits-preparado.md). A descrição de consultas diretas e cache de sessão abaixo corresponde ao uso local do código; na versão publicada, o navegador baixa os arquivos prontos por gênero.
+
 Limites atuais: **Diário = cinco faixas por artista; Treino = quinze**. Os catálogos e URLs de consulta são separados, para o Diário nunca aproveitar músicas extras já carregadas no Treino. A seleção diária usa uma chave de progresso própria dessa versão; os dados das versões anteriores continuam guardados.
 
 O Diário guarda as respostas já obtidas em `sessionStorage`, por artista, limite e data de São Paulo. Recarregar a mesma aba no mesmo dia reutiliza esse cache; no dia seguinte ele é descartado. Bloqueios de armazenamento não impedem jogar, apenas desativam essa otimização. Prévias expiradas continuam sendo renovadas por ID. Esse cache é próprio do Bits; Musical e Streakal mantêm seu carregamento.

@@ -50,6 +50,11 @@ phrases['Não foi possível carregar a lista de palavras deste idioma. Atualize 
 phrases['Até 10 músicas populares por artista · Top reúne Pop, Rock e Rap.']='Up to 10 popular songs per artist · Top combines Pop, Rock and Rap.';
 phrases['Diário: até 5 músicas por artista · Treino: até 15 · Top reúne Pop, Rock e Rap.']='Daily: up to 5 songs per artist · Training: up to 15 · Top combines Pop, Rock and Rap.';
 phrases['Tente novamente para carregar os artistas.']='Try again to load the artists.';
+phrases['O catálogo demorou para carregar. Tente novamente.']='The catalog took too long to load. Try again.';
+phrases['Catálogo inválido. Atualize a página.']='Invalid catalog. Refresh the page.';
+phrases['Não foi possível baixar o catálogo. Tente novamente.']='Could not download the catalog. Try again.';
+phrases['Artista ausente no catálogo preparado.']='Artist missing from the prepared catalog.';
+phrases['O catálogo diário está sendo atualizado. Tente novamente em alguns minutos e atualize a página.']='The daily catalog is being updated. Try again in a few minutes and refresh the page.';
 var entries=Object.keys(phrases).sort(function(a,b){return b.length-a.length});
 var escaped=entries.map(function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')});
 var matcher=new RegExp(escaped.join('|'),'g');
