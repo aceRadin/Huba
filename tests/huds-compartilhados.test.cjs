@@ -28,6 +28,10 @@ test('HUD compartilhado nos quatro jogos, Bits alinhado e Wording com letras pre
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const output=path.join(tmpdir(),'huba-shared-huds');await fs.mkdir(output,{recursive:true});
  async function select(hud){await page.locator('.bits-hud-menu>summary').click();await page.locator('[data-bits-hud-choice="'+hud+'"]').click()}
+ async function checkMusicCounter(){
+   const delta=await page.evaluate(()=>{const a=document.querySelector('#play>.panel').getBoundingClientRect(),b=document.querySelector('#gameCatalogCount').getBoundingClientRect();return Math.max(Math.abs(a.left-b.left),Math.abs(a.right-b.right))});
+   assert.ok(delta<1,'contador acompanha as duas bordas do quadro');
+ }
  await page.goto(pathToFileURL(path.join(root,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'focus','preserva seleção antiga do Bits');await select('panel');
  for(const game of ['bits','musicle','streakal','wording']){
    await page.goto(pathToFileURL(path.join(root,'jogos',game,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'panel');
@@ -46,15 +50,18 @@ test('HUD compartilhado nos quatro jogos, Bits alinhado e Wording com letras pre
        const alignment=await page.evaluate(()=>{const a=document.querySelector('.bits-play-card').getBoundingClientRect(),b=document.querySelector('#gameCatalogCount').getBoundingClientRect(),back=document.querySelector('#backGame').getBoundingClientRect();return {delta:Math.abs(a.right-b.right),back:back.width}});
        assert.ok(alignment.delta<1,'contador acompanha '+hud);assert.ok(alignment.back<130,'Voltar não estica');
      }
+     if(game==='musicle'||game==='streakal')await checkMusicCounter();
      await page.screenshot({path:path.join(output,game+'-'+hud+'-desktop.png'),fullPage:true});
      await page.setViewportSize({width:320,height:900});
      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),game+' '+hud+': sem rolagem horizontal');
      if(game==='musicle'||game==='streakal')assert.ok(await page.locator('.bar').evaluate(el=>el.getBoundingClientRect().height<=26),'barra de áudio mantém altura compacta');
+     if(game==='musicle'||game==='streakal')await checkMusicCounter();
      await page.locator('.bits-hud-menu>summary').click();const menu=await page.locator('.bits-hud-options').boundingBox();assert.ok(menu.x>=0&&menu.x+menu.width<=320);await page.keyboard.press('Escape');
      await page.screenshot({path:path.join(output,game+'-'+hud+'-mobile.png'),fullPage:true});
      await page.setViewportSize({width:1280,height:1000});
    }
    assert.equal(new Set(layouts).size,5,'estilos distintos em '+game);
+   if(game==='musicle'||game==='streakal'){await select('original');await checkMusicCounter();await select('panel')}
    if(game==='wording'){
      await page.locator('#wGameStats').click();assert.equal(await page.locator('#wStats').evaluate(el=>el.open),true);await page.locator('#wStatsClose').click();
      await page.locator('#wBack').click();

@@ -18,6 +18,8 @@
 #bitsGame .bits-play-card{max-width:var(--bits-card-width)}
 #bitsGame #gameCatalogCount{max-width:var(--bits-card-width);margin:8px auto 0;text-align:right}
 /* Musical e Streakal mantêm os mesmos elementos de pergunta, áudio e resultado. */
+#play>#gameCatalogCount{margin:8px auto 0;text-align:right}
+[data-hud="focus"] #play>#gameCatalogCount{max-width:860px}
 [data-hud="focus"] #play>.panel{max-width:860px;margin-inline:auto;padding:30px;border:0;border-radius:28px;box-shadow:0 12px 44px #0001}
 [data-hud="focus"] #play .musical-audio-row{flex-direction:column-reverse;gap:18px}
 [data-hud="focus"] #play .musical-audio-row .clip{width:100%;flex-direction:column}
