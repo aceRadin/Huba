@@ -1,0 +1,79 @@
+/* HUDs exclusivos do Bits. As cores continuam vindo do tema selecionado. */
+.bits-hud-menu{font-size:.76rem;flex:none}
+.bits-hud-menu>summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:6px 8px;white-space:nowrap}
+.bits-hud-menu>summary::-webkit-details-marker{display:none}
+.bits-hud-menu>summary:focus-visible,.bits-hud-options button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.bits-hud-options{position:fixed;z-index:70;box-sizing:border-box;width:200px;padding:8px;display:grid;gap:5px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:0 8px 26px #0003;overflow:auto}
+.bits-hud-options button{text-align:left}
+html[data-bits-hud]:not([data-bits-hud="original"]) .bits-play-card{box-sizing:border-box}
+/* 1. Foco: uma coluna estreita, comando de áudio grande e controles centrados. */
+[data-bits-hud="focus"] .bits-play-card{max-width:620px;border:0;border-radius:28px;padding:32px;box-shadow:0 12px 44px #0001}
+[data-bits-hud="focus"] .bits-instruction{font-size:1.7rem;margin-bottom:24px}
+[data-bits-hud="focus"] .bits-player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px}
+[data-bits-hud="focus"] #playAudio{grid-column:1/-1;justify-self:center;min-height:100px;width:min(100%,290px);border-radius:60px;font-size:1.15rem}
+[data-bits-hud="focus"] #replaceAudio{grid-column:1/-1}
+[data-bits-hud="focus"] .bits-timeline{height:8px;width:100%}
+[data-bits-hud="focus"] .bits-volume{justify-content:center;margin-top:20px}
+[data-bits-hud="focus"] #guessArea{margin-top:28px}
+[data-bits-hud="focus"] .bits-actions{justify-content:center;gap:12px}
+[data-bits-hud="focus"] .bits-history-line{border-width:0 0 1px;border-radius:0;padding:12px 0}
+/* 2. Estúdio: reprodutor à esquerda e pesquisa à direita. */
+[data-bits-hud="studio"] .bits-play-card{max-width:1000px;display:grid;grid-template-columns:minmax(230px,.9fr) minmax(0,1.3fr);grid-template-areas:"intro guess" "player guess" "volume guess" "status guess" "history history" "finish finish";column-gap:32px;border-radius:22px}
+[data-bits-hud="studio"] .bits-instruction{grid-area:intro;text-align:left;font-size:1.5rem}
+[data-bits-hud="studio"] .bits-player{grid-area:player;display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start}
+[data-bits-hud="studio"] .bits-player button{grid-column:1/-1;min-height:62px}
+[data-bits-hud="studio"] .bits-timeline{width:100%;height:24px}
+[data-bits-hud="studio"] .bits-volume{grid-area:volume;flex-wrap:wrap}
+[data-bits-hud="studio"] .bits-volume input{width:130px;flex:1;min-width:60px}
+[data-bits-hud="studio"] .bits-status{grid-area:status;text-align:left}
+[data-bits-hud="studio"] #guessArea{grid-area:guess;border-left:1px solid var(--line);padding-left:30px;min-width:0}
+[data-bits-hud="studio"] .bits-history{grid-area:history;grid-template-columns:repeat(2,minmax(0,1fr))}
+[data-bits-hud="studio"] .bits-finish{grid-area:finish}
+/* 3. Arcade: botões de fliperama e placar destacado. */
+[data-bits-hud="arcade"] .bits-play-card{border:3px solid var(--accent);border-radius:8px;box-shadow:8px 8px 0 color-mix(in srgb,var(--accent) 30%,var(--bg));background:radial-gradient(ellipse at top,color-mix(in srgb,var(--accent) 12%,var(--card)),var(--card) 70%)}
+[data-bits-hud="arcade"] .bits-instruction{font-size:1.75rem;text-transform:uppercase;letter-spacing:.06em;padding:10px 0 20px}
+[data-bits-hud="arcade"] .bits-play-card button{border-radius:5px;border-bottom-width:4px;min-height:46px}
+[data-bits-hud="arcade"] .bits-play-card button:active{transform:translateY(2px)}
+[data-bits-hud="arcade"] .bits-player{gap:16px}
+[data-bits-hud="arcade"] .bits-timeline{height:26px;gap:6px}
+[data-bits-hud="arcade"] .bits-segment{border-radius:2px}
+[data-bits-hud="arcade"] .bits-counter{padding:8px 20px;border:2px solid var(--accent);border-radius:4px;color:var(--fg);font-size:1.1rem}
+[data-bits-hud="arcade"] .bits-history{grid-template-columns:repeat(2,minmax(0,1fr))}
+[data-bits-hud="arcade"] .bits-history-line{border-radius:4px;border-left:4px solid var(--accent)}
+/* 4. Terminal: tipografia monoespaçada, linhas retas e espaço compacto. */
+[data-bits-hud="terminal"] .bits-play-card{max-width:850px;border-radius:0;border-top:4px solid var(--accent);padding:20px;font-family:ui-monospace,Consolas,monospace}
+[data-bits-hud="terminal"] .bits-instruction{font:700 1rem ui-monospace,Consolas,monospace;text-align:left;border-bottom:1px dashed var(--line);padding-bottom:14px}
+[data-bits-hud="terminal"] .bits-instruction::before{content:"> ";color:var(--accent)}
+[data-bits-hud="terminal"] .bits-play-card button,[data-bits-hud="terminal"] .bits-play-card input[type=search],[data-bits-hud="terminal"] .bits-suggestions,[data-bits-hud="terminal"] .bits-history-line{border-radius:0}
+[data-bits-hud="terminal"] .bits-timeline{height:12px;gap:3px}
+[data-bits-hud="terminal"] .bits-segment{border-radius:0}
+[data-bits-hud="terminal"] .bits-status{text-align:left;border-left:2px solid var(--accent);padding-left:12px;font-size:.85rem;margin:20px 0}
+[data-bits-hud="terminal"] .bits-history{gap:0}
+[data-bits-hud="terminal"] .bits-history-line{border:0;border-top:1px dashed var(--line);padding:8px 0;font-size:.85rem}
+[data-bits-hud="terminal"] .bits-actions{justify-content:flex-start;gap:10px}
+/* 5. Painel: resposta em destaque à esquerda e módulo de áudio à direita. */
+[data-bits-hud="panel"] .bits-play-card{max-width:1080px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.8fr);grid-template-areas:"intro intro" "status status" "guess player" "guess volume" "history history" "finish finish";gap:0 24px;background:transparent;border:0;padding:0}
+[data-bits-hud="panel"] .bits-instruction{grid-area:intro;text-align:left;font-size:1.8rem;margin-bottom:0}
+[data-bits-hud="panel"] .bits-status{grid-area:status;text-align:left;margin:8px 0 20px}
+[data-bits-hud="panel"] #guessArea{grid-area:guess;min-width:0;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+[data-bits-hud="panel"] .bits-player{grid-area:player;align-self:start;display:flex;flex-direction:column;padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+[data-bits-hud="panel"] .bits-player button{width:100%;min-height:56px}
+[data-bits-hud="panel"] .bits-timeline{flex:none;width:100%;height:22px}
+[data-bits-hud="panel"] #clipLength{font-size:2rem;text-align:center}
+[data-bits-hud="panel"] .bits-volume{grid-area:volume;align-self:start;flex-wrap:wrap;justify-content:center;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+[data-bits-hud="panel"] .bits-volume input{width:100px;flex:1;min-width:40px}
+[data-bits-hud="panel"] .bits-history{grid-area:history;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+[data-bits-hud="panel"] .bits-history-line{background:var(--card);padding:14px}
+[data-bits-hud="panel"] .bits-finish{grid-area:finish;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+/* As duas colunas viram uma pilha em telas pequenas; nenhum controle é removido. */
+@media(max-width:720px){
+ [data-bits-hud="studio"] .bits-play-card,[data-bits-hud="panel"] .bits-play-card{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "player" "volume" "status" "guess" "history" "finish";gap:14px}
+ [data-bits-hud="studio"] #guessArea{border-left:0;border-top:1px solid var(--line);padding:20px 0 0}
+ [data-bits-hud="studio"] .bits-status,[data-bits-hud="panel"] .bits-status{margin:0}
+ [data-bits-hud="panel"] #guessArea{padding:18px}
+ [data-bits-hud="panel"] .bits-player{padding:18px}
+ [data-bits-hud="focus"] .bits-play-card{padding:22px 18px}
+ [data-bits-hud="arcade"] .bits-instruction{font-size:1.3rem}
+ [data-bits-hud="studio"] .bits-history,[data-bits-hud="arcade"] .bits-history,[data-bits-hud="panel"] .bits-history{grid-template-columns:minmax(0,1fr)}
+}
+.bits-history-line,.bits-choice{overflow-wrap:anywhere}
