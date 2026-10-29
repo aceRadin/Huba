@@ -62,12 +62,19 @@ async function request(url,signal,priority){
     }
   }
 }
-async function page(url,signal){
+async function page(url,signal,persistence){
   url=apiURL(url).href;
-  if(pageCache.has(url))return pageCache.get(url);
+  var key=persistence?persistence+'|'+url:url,storageKey='huba:bits:artist-page:'+key;
+  if(pageCache.has(key))return pageCache.get(key);
+  if(persistence)try{
+    var stored=JSON.parse(sessionStorage.getItem(storageKey));
+    if(stored&&Array.isArray(stored.data)){pageCache.set(key,stored);return stored}
+  }catch(e){}
   var data=await request(url,signal,false);
   if(!data||!Array.isArray(data.data))throw new Error('Resposta de músicas inválida');
-  pageCache.set(url,data);return data;
+  pageCache.set(key,data);
+  if(persistence)try{sessionStorage.setItem(storageKey,JSON.stringify(data))}catch(e){}
+  return data;
 }
 function parse(lines){
   var result=[];
@@ -78,6 +85,8 @@ function parse(lines){
   });return result;
 }
 function source(item,initial){
+  var artistTop=/^artist-top:\s*(\d+)(?::(5|10|15))?$/i.exec(item);
+  if(artistTop){var limit=Number(artistTop[2]||10);return {artist:null,top:true,topLimit:limit,artistId:artistTop[1],url:'https://api.deezer.com/artist/'+artistTop[1]+'/top?limit='+limit,seen:new Set(),done:false}}
   var chart=/^chart:\s*(\d+)$/i.exec(item);
   // Rankings não fornecem next de forma confiável; peça a seleção completa de 300.
   if(chart)return {artist:null,url:'https://api.deezer.com/chart/'+chart[1]+'/tracks?limit=300',seen:new Set(),done:false};
@@ -109,6 +118,7 @@ function create(options){
     tracks.forEach(function(t){
       if(src.artist&&options.artistLimit&&accepted>=options.artistLimit)return;
       if(!t||!t.id||typeof t.title!=='string'||!t.title.trim()||!t.artist||typeof t.artist.name!=='string'||!t.artist.name.trim()||!/^https:\/\/[^\s]+$/i.test(t.preview||''))return;
+      if(src.top&&String(t.artist.id)!==src.artistId)return;
       if(src.artist){var a=HUBA.norm(t.artist.name),n=HUBA.norm(src.artist);if(a!==n&&a.indexOf(n)<0&&n.indexOf(a)<0)return}
       var title=t.title.replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').trim()||t.title;
       var label=t.artist.name+' - '+title,id=String(t.id),key=HUBA.norm(label);
@@ -123,11 +133,11 @@ function create(options){
         check(signal);if(run!==epoch)return;
         var src=s.sources[s.index],url=src.url;
         if(src.seen.has(url))throw new Error('Paginação repetida no Deezer');
-        var data=await page(url,signal);check(signal);if(run!==epoch)return;
+        var data=await page(url,signal,options.pagePersistence);check(signal);if(run!==epoch)return;
         // Valida next antes de incorporar a página; uma falha mantém o cursor retomável.
         var next=null;
-        if(!src.artist&&data.next){var parsed=apiURL(data.next);parsed.searchParams.set('limit',String(PAGE_SIZE));next=parsed.href;if(src.seen.has(next)||next===url)throw new Error('Paginação repetida no Deezer')}
-        add(s,data.data,src);src.seen.add(url);
+        if(!src.artist&&!src.top&&data.next){var parsed=apiURL(data.next);parsed.searchParams.set('limit',String(PAGE_SIZE));next=parsed.href;if(src.seen.has(next)||next===url)throw new Error('Paginação repetida no Deezer')}
+        add(s,src.top?data.data.slice(0,src.topLimit):data.data,src);src.seen.add(url);
         if(next)src.url=next;else{src.done=true;s.index++}
         notify(s);
       }

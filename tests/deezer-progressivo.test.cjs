@@ -69,10 +69,11 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
       const url = new URL(route.request().url());
       const playlist = /\/playlist\/(\d+)/.exec(url.pathname)?.[1];
       const track = /\/track\/(\d+)/.exec(url.pathname)?.[1];
+      const artistTop = /\/artist\/(\d+)\/top/.exec(url.pathname)?.[1];
       const chart = /\/chart\/(\d+)/.exec(url.pathname)?.[1];
       const cb = /[?&]callback=([^&]+)/.exec(url.href)?.[1];
       const index = Number(url.searchParams.get('index') || 0), limit = Number(url.searchParams.get('limit') || 100);
-      const request = { playlist, track, chart, index, limit, time: Date.now(), url: url.href };
+      const request = { playlist, track, chart, artistTop, index, limit, time: Date.now(), url: url.href };
       requests.push(request); inflight++; maxInflight = Math.max(maxInflight, inflight);
       await sleep(track ? 5 : latency);
       function song(id) { return { id, title: 'Faixa ' + id, artist: { name: 'Artista ' + id }, preview: 'https://audio.huba.test/audio/' + id, album: {} }; }
@@ -80,6 +81,10 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
       const failure = fail(request, requests);
       if (failure) data = { error: { code: failure === true ? 700 : failure, message: 'Falha simulada' } };
       else if (track) data = { ...song(Number(track)), preview: 'https://audio.huba.test/fresh/' + track };
+      else if (artistTop) {
+        const start=artistTop==='10'?1:artistTop==='11'?101:artistTop==='20'?201:301;
+        data={data:Array.from({length:limit},(_,i)=>{const t=song(start+i);t.artist.id=Number(artistTop);return t})};
+      }
       else if (chart) {
         const start = chart === '132' ? 1 : chart === '152' ? 201 : 401;
         const records = Array.from({ length: 300 }, (_, i) => song(start + i));
@@ -102,6 +107,7 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
       for (const [g,start] of [['pop',1],['rock',rankings?201:1],['rap',rankings?401:1]]) genres[g]=Array.from({length:rankings&&g==='rap'?299:300},(_,i)=>({id:String(start+i),title:'Faixa '+(start+i),artist:'Artista '+(start+i)}));
       return r.fulfill({contentType:'application/json',body:JSON.stringify({schema:1,country:'US',date,genres})});
     });
+    await context.route('**/jogos/bits/artistas.js*',r=>r.fulfill({contentType:'application/javascript',body:"window.HUBA_BITS_ARTISTAS={rock:[{id:10,name:'A'},{id:11,name:'B'}],pop:[{id:20,name:'C'}],rap:[{id:40,name:'D'},{id:20,name:'C'}]};"}));
     const page = await context.newPage();
     page.setDefaultTimeout(8000);
     page.on('pageerror', e => errors.push(e.message));
@@ -126,32 +132,23 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
     return f.page.locator('#gameCatalogCount').textContent();
   }
 
-  await t.test('Bits usa rankings de Pop/Rock/Rap; Top reúne os três sem duplicatas', async () => {
-    const f = await fixture({ game: 'bits', rankings: true });
-    assert.equal(f.requests.length, 0);
-    for (const [genre, count] of [['Pop', 300], ['Rock', 300], ['Rap', 299]]) {
-      await choose(f, 'bits', false, genre); await done(f);
-      assert.match(await loaderState(f), new RegExp('^' + count + ' músicas'));
-      await f.page.locator('#backGame').click();
+  await t.test('Bits: limites separados por modo, união sem repetidos e cache entre gêneros',async()=>{
+    const f=await fixture({game:'bits'});
+    assert.equal(f.requests.length,0);
+    for(const [genre,count] of [['Pop',15],['Rock',30],['Rap',30]]){
+      await choose(f,'bits',false,genre);await done(f);assert.match(await loaderState(f),new RegExp('^'+count+' músicas'));await f.page.locator('#backGame').click();
     }
-    assert.equal(f.requests.filter(r => r.chart).length, 0);
-    assert.equal(f.requests.filter(r => r.playlist).length, 0);
-    await choose(f, 'bits', true, 'Top'); await done(f);
-    assert.match(await loaderState(f), /^699 músicas/);
-    assert.equal(f.requests.filter(r => r.chart).length, 0, 'Top reutiliza os rankings já recebidos');
-    await f.page.locator('#guessInput').fill('Faixa 699');
-    await f.page.locator('#suggestions button').filter({ hasText: 'Faixa 699' }).click();
-    await f.page.locator('#submitGuess').click();
-    const saved = await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]);
-    await f.page.locator('#backGame').click(); await choose(f, 'bits', true, 'Top');
-    assert.equal(await f.page.locator('#history .bits-history-line').count(), 1);
-    assert.equal(f.requests.filter(r => r.playlist).length, 0);
-    const second = await fixture({ game: 'bits', rankings: true, latency: 5 });
-    await choose(second, 'bits', true, 'Top'); await second.page.locator('#skipGuess').click();
-    const other = await second.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]);
-    assert.equal(JSON.parse(saved).id, JSON.parse(other).id);
-    assert.equal(f.errors.length + second.errors.length, 0);
-    await f.context.close(); await second.context.close();
+    assert.equal(f.requests.filter(r=>r.artistTop).length,4);
+    assert.ok(f.requests.filter(r=>r.artistTop).every(r=>r.limit===15));
+    await choose(f,'bits',true,'Top');await done(f);assert.match(await loaderState(f),/^20 músicas/);
+    assert.equal(f.requests.filter(r=>r.artistTop).length,8);
+    assert.equal(f.requests.filter(r=>r.chart||r.playlist).length,0);
+    await f.page.locator('#guessInput').fill('Faixa 204');await f.page.locator('#suggestions button').first().click();await f.page.locator('#submitGuess').click();
+    const saved=await f.page.evaluate(()=>Object.entries(localStorage).find(([k])=>k.startsWith('huba:bits:daily:v5:artists5:'))[1]);
+    await f.page.locator('#backGame').click();await choose(f,'bits',true,'Top');assert.equal(await f.page.locator('#history .bits-history-line').count(),1);
+    const second=await fixture({game:'bits',latency:5});await choose(second,'bits',true,'Top');await second.page.locator('#skipGuess').click();
+    const other=await second.page.evaluate(()=>Object.entries(localStorage).find(([k])=>k.startsWith('huba:bits:daily:v5:artists5:'))[1]);assert.equal(JSON.parse(saved).id,JSON.parse(other).id);
+    assert.equal(f.errors.length+second.errors.length,0);await f.context.close();await second.context.close();
   });
 
   for (const game of ['musicle', 'streakal']) await t.test(game + ': entra antes do fim, cresce sem duplicar e reutiliza cache', async () => {
@@ -224,7 +221,6 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
   await t.test('Musical e Bits renovam a mesma faixa antes de oferecer substituição', async () => {
     for (const game of ['musicle', 'bits']) {
       const f = await fixture({ game }); await choose(f, game); await done(f);
-      if (game === 'bits') await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
       const initialTrackRequests = f.requests.filter(r => r.track).length;
       const original = await f.page.evaluate(() => testAudio[0].src);
       const id = /\/(\d+)$/.exec(original)[1];
@@ -259,7 +255,7 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
         const f = await fixture({ game, latency }); await choose(f, game, true); await done(f);
         if (game === 'bits') {
           await f.page.locator('#skipGuess').click();
-          signatures.push(await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v3:us:'))[1]));
+          signatures.push(await f.page.evaluate(() => Object.entries(localStorage).find(([k]) => k.startsWith('huba:bits:daily:v5:artists5:'))[1]));
         } else {
           if (game === 'streakal') await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
           signatures.push(JSON.stringify(await f.page.locator('#opts button').allTextContents()) + await f.page.evaluate(() => testAudio[0].src));

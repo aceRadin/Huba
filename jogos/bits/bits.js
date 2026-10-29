@@ -17,7 +17,7 @@ function storageSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function getStats(){try{return JSON.parse(storageGet(statsKey))||{games:0,wins:0}}catch(e){return {games:0,wins:0}}}
 function saveStats(st){storageSet(statsKey,JSON.stringify(st))}
 function renderStats(){$('streakValue').textContent=HUBA.currentStreak('bits')}
-function dailyKey(cat){return 'huba:bits:daily:v3:us:'+HUBA_BITS_CATALOGO.dayKey()+':'+cat}
+function dailyKey(cat){return 'huba:bits:daily:v5:artists5:'+HUBA_BITS_CATALOGO.dayKey()+':'+cat}
 function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
 function drawTiles(){
@@ -30,7 +30,7 @@ function drawTiles(){
  });
  });
 }
-/* Rankings exclusivos do Bits; as playlists dos demais jogos não são alteradas. */
+/* Dez faixas mais populares por artista; fontes exclusivas do Bits. */
 var selectedCat=null;
 var musicLoader=HUBA_BITS_CATALOGO.create({onUpdate:function(s){
   byCat[s.genre]=s.songs.map(function(song){return Object.assign({},song,{deezerId:song.id,id:'dz-'+song.id})});
@@ -44,8 +44,8 @@ function enterCategory(cat,daily){
  var token=++loadToken;selectedCat=cat;
  musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();
  setStatus(daily?'Preparando todas as músicas para manter o desafio diário consistente…':'Carregando músicas de '+labels[cat]+'…');
- // Top aguarda os três rankings para não sortear apenas do primeiro gênero.
- musicLoader.select(cat,1,daily).then(function(s){
+ // No Treino, o Top inicia após passar por pelo menos três artistas intercalados.
+ musicLoader.select(cat,cat==='top'?31:15,daily).then(function(s){
    if(token!==loadToken)return;
    musicLoading=false;loadingChoice=null;drawTiles();
    if(!s.songs.length)throw new Error('Nenhuma música disponível nesta categoria.');
@@ -53,12 +53,12 @@ function enterCategory(cat,daily){
  }).catch(function(err){
    if(token!==loadToken||err.name==='AbortError')return;
    musicLoading=false;loadingChoice=null;drawTiles();
-   setStatus((daily?'O diário precisa de todas as fontes. ':'')+err.message+' · Tente novamente para carregar o ranking.');
+   setStatus((daily?'O diário precisa de todas as fontes. ':'')+err.message+' · Tente novamente para carregar os artistas.');
  });
 }
 function initCatalog(){
  musicLoading=false;drawTiles();
- setStatus('Catálogo dos Estados Unidos · Top reúne Pop, Rock e Rap.');
+ setStatus('Diário: até 5 músicas por artista · Treino: até 15 · Top reúne Pop, Rock e Rap.');
  $('catalogCount').textContent='Músicas carregadas sob demanda';
 }
 function pauseCatalog(){loadToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedCat)musicLoader.paint($('catalogCount'),musicLoader.state(selectedCat))}

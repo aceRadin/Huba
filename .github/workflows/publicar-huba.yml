@@ -1,0 +1,36 @@
+name: Publicar HUBA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: huba-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/configure-pages@v5
+      - name: Preparar site
+        run: |
+          node scripts/gerar-palavras.mjs
+          mkdir -p "$RUNNER_TEMP/site"
+          cp -R css dados jogos js index.html playlists.js "$RUNNER_TEMP/site/"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/site
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

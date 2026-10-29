@@ -1,5 +1,7 @@
 # HUBA — Jogos
 
+**Bits usa as músicas mais populares de cada artista: cinco no Diário e quinze no Treino**, da lista em `jogos/bits/artistas.js`, separado em Rock, Pop e Rap. Top reúne os três. O Diário reutiliza as consultas na mesma aba e data, inclusive após atualizar a página. Não depende mais do catálogo americano nem de arquivos JSON baixados pelo jogador. Veja [Bits por artistas](docs/bits-artistas.md). As seções antigas sobre rankings/catalogação americana abaixo são históricas; o workflow ativo agora é **Publicar HUBA**, com publicação em push na `main`.
+
 Os jogos exibem uma única coluna central, controlada por **Diário / Treino** no cabeçalho. Treino oferece partidas aleatórias ilimitadas. O botão de temas fica à esquerda desse seletor e das bandeiras de idioma. Veja [idioma e modos](docs/idioma-e-streaks.md).
 
 **Atualização do Bits:** a seleção agora vem de um catálogo estático validado nos Estados Unidos. Antes da primeira publicação, configure e execute a automação seguindo [Ativar o catálogo americano](docs/bits-estados-unidos.md). As descrições de consulta direta a rankings abaixo são históricas; o navegador consulta apenas os IDs para renovar o áudio.
