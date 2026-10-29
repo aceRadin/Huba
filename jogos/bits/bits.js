@@ -87,7 +87,7 @@ function bitsSupportCollapsed(collapse){
  supportToggle.hidden=!collapse && (!active || active.guesses.length<3);
  supportToggle.textContent=collapse?'⌃':'⌄';
  supportToggle.setAttribute('aria-expanded',String(!collapse));
- supportToggle.setAttribute('aria-label',collapse?'Mostrar apoio ao HUBA':'Recolher apoio ao HUBA');
+ supportToggle.setAttribute('aria-label',collapse?'Mostrar apoio ao Hubdle':'Recolher apoio ao Hubdle');
 }
 function start(cat,daily){
  var list=byCat[cat]||[];if(!list.length){setStatus('Carregue músicas antes de jogar.');return}

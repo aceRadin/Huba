@@ -4,11 +4,11 @@
 var config=window.HUBA_APOIO||{};
 var panel=document.createElement('footer');
 panel.className='huba-support';
-panel.setAttribute('aria-label','Apoie o desenvolvimento do HUBA');
+panel.setAttribute('aria-label','Apoie o desenvolvimento do Hubdle');
 
 var heading=document.createElement('div');heading.className='huba-support-title';
 var heart=document.createElement('span');heart.className='huba-support-heart';heart.textContent='♡';heart.setAttribute('aria-hidden','true');
-var title=document.createElement('strong');title.textContent='Gostou do HUBA?';
+var title=document.createElement('strong');title.textContent='Gostou do Hubdle?';
 heading.appendChild(heart);heading.appendChild(title);panel.appendChild(heading);
 
 var description=document.createElement('p');description.className='huba-support-description';
@@ -34,7 +34,7 @@ var note=document.createElement('small');note.className='huba-support-note';
 note.textContent='Apoio opcional · Todos os jogos continuam gratuitos.';panel.appendChild(note);
 if(document.body.dataset.supportCollapse==='wording'){
   var dropdown=document.createElement('details');dropdown.className='huba-support-dropdown';dropdown.open=true;
-  var toggle=document.createElement('summary');toggle.textContent='♡ Apoiar HUBA';
+  var toggle=document.createElement('summary');toggle.textContent='♡ Apoiar Hubdle';
   dropdown.appendChild(toggle);dropdown.appendChild(panel);document.body.appendChild(dropdown);
   document.body.classList.add('wording-support-ready');
   var collapseTimer;

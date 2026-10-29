@@ -283,14 +283,14 @@ test('Deezer: carregamento, partidas, falhas e diários', { timeout: 180000 }, a
     await d.context.close();
   });
 
-  await t.test('Streakal: 40 acertos, até 15 alternativas e recuperação sem perder placar', async () => {
+  await t.test('Streakal: 40 acertos, até 10 alternativas e recuperação sem perder placar', async () => {
     const f = await fixture({ game: 'streakal', latency: 20 }); await choose(f, 'streakal'); await done(f);
     for (let n = 0; n < 40; n++) {
       await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));
       const id = await f.page.evaluate(() => /\/(\d+)$/.exec(testAudio[0].src)[1]);
       await f.page.locator('#opts button[aria-label="Artista ' + id + ' - Faixa ' + id + '"]').click();
-      if (await f.page.locator('#upgradePanel').isVisible()) await f.page.locator(n < 13 ? '#extraOption' : '#shorterClip').click();
-      assert.ok(await f.page.locator('#opts button').count() <= 15);
+      if (await f.page.locator('#upgradePanel').isVisible()) await f.page.locator(n < 8 ? '#extraOption' : '#shorterClip').click();
+      assert.ok(await f.page.locator('#opts button').count() <= 10);
     }
     assert.match(await f.page.locator('#qcount').textContent(), /Sequência: 40/);
     await f.page.waitForFunction(() => testAudio[0].src.includes('/fresh/'));

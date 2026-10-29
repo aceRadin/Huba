@@ -51,7 +51,7 @@ window.HUBA = (function(){
   }
   apply(selected);
   function buildSettings(){
-    var nav=document.createElement('nav');nav.className='huba-settings';nav.setAttribute('aria-label','Configurações do HUBA');
+    var nav=document.createElement('nav');nav.className='huba-settings';nav.setAttribute('aria-label','Configurações do Hubdle');
     var menu=document.createElement('details'),summary=document.createElement('summary');
     summary.textContent='⚙';summary.title='Configurações';summary.setAttribute('aria-label','Configurações');menu.appendChild(summary);
     var content=document.createElement('div');content.className='huba-settings-content';

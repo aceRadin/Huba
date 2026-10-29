@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var MAX_CLIP=30, MIN_CLIP=1.5, MAX_OPTIONS=15, BASE_REDUCTION=.05, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
+var MAX_CLIP=30, MIN_CLIP=1.5, MAX_OPTIONS=10, BASE_REDUCTION=.05, RECORD_KEY='huba:streakal:records:v1', GAMES_KEY='huba:streakal:games:v1';
 var $=function(s){return document.querySelector(s)};
 var dayKey=HUBA.dayKey,hash=HUBA.hash,mulberry=HUBA.mulberry,shuffle=HUBA.shuffle,norm=HUBA.norm;
 var byGenre={},musicLoading=true;
@@ -95,7 +95,7 @@ function streakalSupportSetCollapsed(collapsed){
   streakalSupportToggle.hidden=!eligible;
   streakalSupportToggle.textContent=collapsed?'⌃':'⌄';
   streakalSupportToggle.setAttribute('aria-expanded',String(!collapsed));
-  streakalSupportToggle.setAttribute('aria-label',collapsed?'Mostrar apoio ao HUBA':'Recolher apoio ao HUBA');
+  streakalSupportToggle.setAttribute('aria-label',collapsed?'Mostrar apoio ao Hubdle':'Recolher apoio ao Hubdle');
   streakalSupportToggle.title=collapsed?'Mostrar doações':'Recolher doações';
 }
 function openGame(daily,g){
@@ -284,7 +284,7 @@ function waitForCatalog(replacement,min){
     $('#replaceSong').textContent='Tentar carregar novamente';$('#replaceSong').classList.remove('hidden');
   });
 }
-// A duração nunca fica menor do que 1,5 segundo, e não há mais que 15 opções.
+// A duração nunca fica menor do que 1,5 segundo, e não há mais que 10 opções.
 function maxOptions(){return !cur.daily&&!musicLoader.state(cur.genre).complete?MAX_OPTIONS:Math.min(MAX_OPTIONS,cur.pool.length)}
 function minTimeReached(){return cur.clip<=MIN_CLIP+1e-8}
 function maxOptionsReached(){return cur.optionCount>=maxOptions()}
@@ -292,7 +292,7 @@ function updateLimitDisplay(){
   var timeMin=!!cur&&minTimeReached(), optionsMax=!!cur&&maxOptionsReached();
   var tags=[];
   if(timeMin)tags.push('Tempo mínimo: 1,5 s');
-  if(optionsMax)tags.push(cur.optionCount>=MAX_OPTIONS?'Máximo de 15 alternativas':'Máximo de músicas disponíveis: '+maxOptions());
+  if(optionsMax)tags.push(cur.optionCount>=MAX_OPTIONS?'Máximo de 10 alternativas':'Máximo de músicas disponíveis: '+maxOptions());
   $('#limitStatus').textContent=tags.join(' · ');
   $('#limitStatus').classList.toggle('hidden',!tags.length);
   $('#play').classList.toggle('streakal-maxed',timeMin&&optionsMax);
@@ -310,6 +310,7 @@ function applyShorter(reduction,applyPenalty){
     var chance=extraOptionChance(cur.consecutiveShorter);
     if(chance>0&&cur.rng()<chance&&!maxOptionsReached()){
       cur.optionCount++;
+      // A alternativa automática mantém consecutiveShorter e o risco acumulado.
       cur.penaltyNotice='Punição ativada! Chance de '+formatPercent(chance)+': +1 alternativa adicionada. Qual música tocou?';
     }else cur.penaltyNotice='';
   }else cur.penaltyNotice='';

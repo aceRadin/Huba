@@ -1,6 +1,6 @@
 # Catálogo do Bits preparado pelo GitHub Actions
 
-O workflow **Publicar HUBA** agora busca as 15 músicas mais populares de cada ID em `jogos/bits/artistas.js`, uma vez por artista distinto. Não usa rankings de gênero nem exige país americano. Musical, Streakal e `playlists.js` continuam iguais.
+O workflow **Publicar Hubdle** agora busca as 15 músicas mais populares de cada ID em `jogos/bits/artistas.js`, uma vez por artista distinto. Não usa rankings de gênero nem exige país americano. Musical, Streakal e `playlists.js` continuam iguais.
 
 O Diário utiliza somente as primeiras 5 posições; o Treino utiliza até 15. Faixas repetidas, sem prévia ou com outro artista principal continuam sendo filtradas. Uma faixa inválida no Top 5 não é substituída pela sexta posição. Portanto, o total válido pode ser menor que esses limites.
 
@@ -8,7 +8,7 @@ O Diário utiliza somente as primeiras 5 posições; o Treino utiliza até 15. F
 
 1. No GitHub Desktop, faça **Commit** das alterações e **Push origin** para `main`.
 2. Em **Settings → Pages → Build and deployment → Source**, selecione **GitHub Actions** se ainda não estiver selecionado.
-3. Em **Actions → Publicar HUBA**, acompanhe a publicação. O push já dispara o workflow; também é possível usar **Run workflow** na branch `main`.
+3. Em **Actions → Publicar Hubdle**, acompanhe a publicação. O push já dispara o workflow; também é possível usar **Run workflow** na branch `main`.
 4. Quando terminar com sucesso, atualize o site com **Ctrl+Shift+R**.
 
 Não precisa criar token, fornecer chave ou executar scripts no computador. A primeira execução consulta os 125 artistas e pode levar alguns minutos, mas essa espera fica no Actions. Os jogadores recebem os arquivos prontos.

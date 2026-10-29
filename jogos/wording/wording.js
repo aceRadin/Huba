@@ -281,7 +281,7 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     if($('#wStats').open){e.preventDefault();$('#wStats').close();return}
     if(!$('#wgame').classList.contains('hidden')){e.preventDefault();wBackToHub();return}
-    // Na seleção de modos não sai automaticamente para a página principal do HUBA.
+    // Na seleção de modos não sai automaticamente para a página principal do Hubdle.
     return;
   }
   if(!w||$('#wgame').classList.contains('hidden')||$('#wStats').open)return;

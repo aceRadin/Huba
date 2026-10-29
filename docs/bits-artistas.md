@@ -24,7 +24,7 @@ As sugestões, volume, trechos, tentativas, doações, idiomas, treino ilimitado
 
 Não é mais necessário publicar `dados/bits-us/latest.json`, esperar a geração diária nem ter conexão americana. Os artistas são carregados como JavaScript e as músicas por JSONP, inclusive abrindo `index.html` diretamente no computador, com internet. Ainda é necessário acesso à API do Deezer e ao servidor das prévias.
 
-O workflow ativo é `.github/workflows/publicar-huba.yml`, **Publicar HUBA**: publica em push na branch `main` ou execução manual. A geração americana agendada foi retirada do fluxo. Os arquivos e ferramentas antigos foram preservados para referência, mas o Bits não os carrega. Musical e Streakal mantêm suas playlists compartilhadas sem alterações.
+O workflow ativo é `.github/workflows/publicar-huba.yml`, **Publicar Hubdle**: publica em push na branch `main` ou execução manual. A geração americana agendada foi retirada do fluxo. Os arquivos e ferramentas antigos foram preservados para referência, mas o Bits não os carrega. Musical e Streakal mantêm suas playlists compartilhadas sem alterações.
 
 ## Alterar artistas
 

@@ -104,7 +104,7 @@ test('Musical e Streakal usam só o arquivo escolhido, com alternativas, diário
        await a.page.waitForFunction(()=>testAudio[0].src.includes('/fresh/'));
        const id=await target(a.page);await a.page.locator('#opts button[aria-label="Artista '+id+' - Faixa '+id+'"]').click();
        if(await a.page.locator('#upgradePanel').isVisible())await a.page.locator(i<13?'#extraOption':'#shorterClip').click();
-       assert.ok(await a.page.locator('#opts button').count()<=15);
+       assert.ok(await a.page.locator('#opts button').count()<=10);
      }
      assert.match(await a.page.locator('#qcount').textContent(),/Sequência: 40/);
      await a.page.waitForFunction(()=>testAudio[0].src.includes('/fresh/'));

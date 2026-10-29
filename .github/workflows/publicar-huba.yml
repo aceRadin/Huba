@@ -1,4 +1,4 @@
-name: Publicar HUBA
+name: Publicar Hubdle
 on:
   workflow_dispatch:
   schedule:

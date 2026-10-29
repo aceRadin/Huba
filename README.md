@@ -1,10 +1,14 @@
-# HUBA — Jogos
+# Hubdle — Jogos
+
+O projeto agora se chama **Hubdle**, incluindo cabeçalhos, títulos das páginas, apoio, traduções e o nome da publicação no Actions. As chaves de armazenamento, eventos e identificadores internos antigos permanecem compatíveis para conservar streaks, preferências e recordes.
+
+**Streakal:** máximo de **10 alternativas**. A alternativa extra recebida como penalidade mantém a sequência de reduções de tempo e seu risco acumulado; essa contagem só reinicia quando o jogador escolhe voluntariamente **+1 alternativa**.
 
 **HUDs nos quatro jogos:** use **▦ HUD** no cabeçalho para escolher Original, Foco, Estúdio, Arcade, Terminal ou Painel. A escolha fica salva e acompanha a navegação; as cores continuam sendo escolhidas pelo tema. Veja [HUDs compartilhados](docs/huds.md).
 
 **Musical e Streakal também usam catálogos preparados pelo GitHub Actions.** Continuam lendo as fontes de `playlists.js`, mas a versão publicada baixa apenas um arquivo pronto por gênero escolhido. Veja [como publicar e como funciona](docs/playlists-preparadas.md). As consultas progressivas descritas nas seções antigas continuam disponíveis no uso local do código.
 
-**Bits usa as músicas mais populares de cada artista: cinco no Diário e quinze no Treino**, da lista em `jogos/bits/artistas.js`, separado em Rock, Pop e Rap. Top reúne os três. O **GitHub Actions prepara o catálogo antes da publicação**: o jogador baixa um arquivo por gênero, sem esperar consultas por artista. Veja [como ativar e publicar](docs/bits-preparado.md). O workflow **Publicar HUBA** executa em push na `main`, manualmente e diariamente às 00h de São Paulo. As seções antigas sobre rankings/catalogação americana abaixo são históricas. Abrindo o código local, o carregamento direto e o cache de sessão continuam disponíveis.
+**Bits usa as músicas mais populares de cada artista: cinco no Diário e quinze no Treino**, da lista em `jogos/bits/artistas.js`, separado em Rock, Pop e Rap. Top reúne os três. O **GitHub Actions prepara o catálogo antes da publicação**: o jogador baixa um arquivo por gênero, sem esperar consultas por artista. Veja [como ativar e publicar](docs/bits-preparado.md). O workflow **Publicar Hubdle** executa em push na `main`, manualmente e diariamente às 00h de São Paulo. As seções antigas sobre rankings/catalogação americana abaixo são históricas. Abrindo o código local, o carregamento direto e o cache de sessão continuam disponíveis.
 
 Os jogos exibem uma única coluna central, controlada por **Diário / Treino** no cabeçalho. Treino oferece partidas aleatórias ilimitadas. O botão de temas fica à esquerda desse seletor e das bandeiras de idioma. Veja [idioma e modos](docs/idioma-e-streaks.md).
 
@@ -16,9 +20,9 @@ No Bits, `top` reúne os três rankings e remove músicas repetidas. Cada rankin
 
 O botão ⚙ no canto inferior esquerdo abre Configurações → Tema em qualquer página ou partida. Há Claro, Escuro, Oceano, Floresta, Pôr do sol, Rosa e Café, além de Automático (acompanha o sistema). A escolha fica salva neste navegador.
 
-O Musical tem um único streak para Casual e Desafiador. Na página inicial, o streak geral do HUBA conta qualquer partida concluída, mesmo com derrota, uma vez por dia. O seletor Português/English no canto superior direito funciona em todas as páginas e preserva partidas em andamento. Veja [idioma e streaks](docs/idioma-e-streaks.md).
+O Musical tem um único streak para Casual e Desafiador. Na página inicial, o streak geral do Hubdle conta qualquer partida concluída, mesmo com derrota, uma vez por dia. O seletor Português/English no canto superior direito funciona em todas as páginas e preserva partidas em andamento. Veja [idioma e streaks](docs/idioma-e-streaks.md).
 
-Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar HUBA” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
+Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar Hubdle” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
 
 ## Configurar
 
@@ -32,7 +36,7 @@ As categorias do catálogo compartilhado são `rock`, `metal`, `pop`, `anime`, `
 
 ## Publicar no GitHub Pages
 
-1. Descompacte e copie **o conteúdo interno** desta pasta para a **raiz** do repositório (não aninhe outra pasta HUBA).
+1. Descompacte e copie **o conteúdo interno** desta pasta para a **raiz** do repositório (não aninhe outra pasta Hubdle).
 2. Confira se existem `index.html` e `playlists.js` **lado a lado** na raiz.
 3. No GitHub Desktop, clique **Commit** e **Push origin**.
 4. Em GitHub → Actions, confira se o Pages publicou o último commit.
@@ -68,7 +72,7 @@ Musical e Bits mostram `Loading…` nos cartões enquanto carregam as fontes, se
 
 ## Painel de apoio
 
-O rodapé compacto aparece no HUBA e nos três jogos, com botões Buy Me a Coffee e Patreon. Configure os links em `js/apoio-config.js`. Botões ficam desabilitados enquanto não forem configurados. O botão Sugestões foi removido.
+O rodapé compacto aparece no Hubdle e nos três jogos, com botões Buy Me a Coffee e Patreon. Configure os links em `js/apoio-config.js`. Botões ficam desabilitados enquanto não forem configurados. O botão Sugestões foi removido.
 
 O catálogo atualizado de 16 playlists está em `playlists.js`.
 

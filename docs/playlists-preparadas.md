@@ -1,6 +1,6 @@
 # Musical e Streakal: playlists preparadas antes da publicação
 
-Os dois jogos continuam usando **o mesmo `playlists.js`**, com todos os gêneros atuais. O arquivo não foi modificado. No GitHub Pages, o workflow **Publicar HUBA** agora percorre as playlists antes de publicar e grava um catálogo completo por gênero. Não limita a quantidade de músicas das playlists.
+Os dois jogos continuam usando **o mesmo `playlists.js`**, com todos os gêneros atuais. O arquivo não foi modificado. No GitHub Pages, o workflow **Publicar Hubdle** agora percorre as playlists antes de publicar e grava um catálogo completo por gênero. Não limita a quantidade de músicas das playlists.
 
 ## Antes e agora
 
@@ -22,7 +22,7 @@ O cache do Actions guarda a lista por data e configuração para que republicaç
 
 1. Faça **Commit** e **Push origin** das alterações para `main` pelo GitHub Desktop.
 2. Em **Settings → Pages**, mantenha **Source: GitHub Actions**.
-3. Aguarde **Actions → Publicar HUBA** terminar com sucesso. O passo novo é **Preparar playlists do Musical e Streakal**.
+3. Aguarde **Actions → Publicar Hubdle** terminar com sucesso. O passo novo é **Preparar playlists do Musical e Streakal**.
 4. Atualize o site com **Ctrl+Shift+R**.
 
 O mesmo workflow publica Bits, Musical e Streakal, em push, execução manual ou diariamente às **00h de São Paulo (03h UTC)**. Gerar playlists grandes pode levar vários minutos no Actions; essa espera não fica com cada jogador. Não há chave secreta nem backend obrigatório.
@@ -35,6 +35,6 @@ O agendamento do GitHub pode atrasar. Se o catálogo for de outra data, o Diári
 
 O `dados/playlists/config.js` do repositório tem `enabled:false`; o Actions o substitui só ao preparar a publicação. Ao abrir o código diretamente no computador, continua valendo o carregamento progressivo anterior. Isso também preserva o uso via `file://` com internet.
 
-Testes de navegador verificam um catálogo simulado de 300 músicas, cinco perguntas com cinco alternativas no Musical, 40 acertos com até 15 alternativas no Streakal, recuperação do áudio, diários com latências diferentes, cancelamento, falhas e troca de gênero. A melhoria confirmada é estrutural: **um arquivo por gênero, com zero consultas de playlists pelo navegador**. Os tempos de testes usam respostas simuladas; não medem a velocidade real do GitHub Pages ou do Deezer.
+Testes de navegador verificam um catálogo simulado de 300 músicas, cinco perguntas com cinco alternativas no Musical, 40 acertos com até 10 alternativas no Streakal, recuperação do áudio, diários com latências diferentes, cancelamento, falhas e troca de gênero. A melhoria confirmada é estrutural: **um arquivo por gênero, com zero consultas de playlists pelo navegador**. Os tempos de testes usam respostas simuladas; não medem a velocidade real do GitHub Pages ou do Deezer.
 
 Catálogos muito grandes ainda precisam ser transferidos e lidos pelo navegador. O tamanho do arquivo, a conexão e a disponibilidade do áudio continuam influenciando o tempo de entrada. A primeira medição real depende da publicação no GitHub; o workflow remoto não foi executado nesta alteração local.
