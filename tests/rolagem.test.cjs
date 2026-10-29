@@ -14,7 +14,7 @@ test('rolagem natural sem reservas duplicadas e sem esconder conteúdo',{timeout
  await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('https://fonts.gstatic.com/**',r=>r.abort());
  for(const game of ['streakal','wording']){
   await page.goto(base+'/jogos/'+game+'/');
-  if(game==='wording')await page.waitForFunction(()=>!document.querySelector('#wTilesDaily button').disabled);
+  if(game==='wording')await page.waitForFunction(()=>{const button=document.querySelector('#wTilesDaily button');return button&&!button.disabled});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight),900,game+': seleção sem rolagem desnecessária');
   await page.setViewportSize({width:390,height:500});
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));

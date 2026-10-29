@@ -1,10 +1,4 @@
 /* HUDs exclusivos do Bits. As cores continuam vindo do tema selecionado. */
-.bits-hud-menu{font-size:.76rem;flex:none}
-.bits-hud-menu>summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:6px 8px;white-space:nowrap}
-.bits-hud-menu>summary::-webkit-details-marker{display:none}
-.bits-hud-menu>summary:focus-visible,.bits-hud-options button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.bits-hud-options{position:fixed;z-index:70;box-sizing:border-box;width:200px;padding:8px;display:grid;gap:5px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:0 8px 26px #0003;overflow:auto}
-.bits-hud-options button{text-align:left}
 html[data-bits-hud]:not([data-bits-hud="original"]) .bits-play-card{box-sizing:border-box}
 /* 1. Foco: uma coluna estreita, comando de áudio grande e controles centrados. */
 [data-bits-hud="focus"] .bits-play-card{max-width:620px;border:0;border-radius:28px;padding:32px;box-shadow:0 12px 44px #0001}

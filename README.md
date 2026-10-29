@@ -1,5 +1,7 @@
 # HUBA — Jogos
 
+**HUDs nos quatro jogos:** use **▦ HUD** no cabeçalho para escolher Original, Foco, Estúdio, Arcade, Terminal ou Painel. A escolha fica salva e acompanha a navegação; as cores continuam sendo escolhidas pelo tema. Veja [HUDs compartilhados](docs/huds.md).
+
 **Musical e Streakal também usam catálogos preparados pelo GitHub Actions.** Continuam lendo as fontes de `playlists.js`, mas a versão publicada baixa apenas um arquivo pronto por gênero escolhido. Veja [como publicar e como funciona](docs/playlists-preparadas.md). As consultas progressivas descritas nas seções antigas continuam disponíveis no uso local do código.
 
 **Bits usa as músicas mais populares de cada artista: cinco no Diário e quinze no Treino**, da lista em `jogos/bits/artistas.js`, separado em Rock, Pop e Rap. Top reúne os três. O **GitHub Actions prepara o catálogo antes da publicação**: o jogador baixa um arquivo por gênero, sem esperar consultas por artista. Veja [como ativar e publicar](docs/bits-preparado.md). O workflow **Publicar HUBA** executa em push na `main`, manualmente e diariamente às 00h de São Paulo. As seções antigas sobre rankings/catalogação americana abaixo são históricas. Abrindo o código local, o carregamento direto e o cache de sessão continuam disponíveis.

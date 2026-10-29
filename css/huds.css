@@ -1,0 +1,99 @@
+/* Seletor compartilhado. Os layouts usam as cores do tema, sem alterar regras. */
+.bits-hud-menu{font-size:.76rem;flex:none}
+.bits-hud-menu>summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:6px 8px;white-space:nowrap}
+.bits-hud-menu>summary::-webkit-details-marker{display:none}
+.bits-hud-menu>summary:focus-visible,.bits-hud-options button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.bits-hud-options{position:fixed;z-index:70;box-sizing:border-box;width:200px;padding:8px;display:grid;gap:5px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:0 8px 26px #0003;overflow:auto}
+.bits-hud-options button{text-align:left}
+@media(min-width:851px){
+ body.has-game-header #play .musical-play-header.huba-game-header{grid-template-columns:minmax(300px,1fr) minmax(0,2fr) minmax(300px,1fr)}
+}
+/* Bits: botão com largura natural e um único contador alinhado ao cartão. */
+#bitsGame #backGame{justify-self:start;align-self:center;width:auto;flex:none;padding:8px 12px}
+#bitsGame{--bits-card-width:780px}
+[data-hud="focus"] #bitsGame{--bits-card-width:620px}
+[data-hud="studio"] #bitsGame{--bits-card-width:1000px}
+[data-hud="terminal"] #bitsGame{--bits-card-width:850px}
+[data-hud="panel"] #bitsGame{--bits-card-width:1080px}
+#bitsGame .bits-play-card{max-width:var(--bits-card-width)}
+#bitsGame #gameCatalogCount{max-width:var(--bits-card-width);margin:8px auto 0;text-align:right}
+/* Musical e Streakal mantêm os mesmos elementos de pergunta, áudio e resultado. */
+[data-hud="focus"] #play>.panel{max-width:860px;margin-inline:auto;padding:30px;border:0;border-radius:28px;box-shadow:0 12px 44px #0001}
+[data-hud="focus"] #play .musical-audio-row{flex-direction:column-reverse;gap:18px}
+[data-hud="focus"] #play .musical-audio-row .clip{width:100%;flex-direction:column}
+[data-hud="focus"] #play #playBtn{min-height:80px;min-width:220px;border-radius:50px}
+[data-hud="focus"] #play .musical-audio-row .clip .bar{flex:0 0 8px;width:100%;height:8px}
+[data-hud="focus"] #play .qhead{justify-content:center;gap:24px;margin-bottom:22px}
+[data-hud="focus"] #play #qhint{text-align:center}
+[data-hud="studio"] #play>.panel{border-radius:22px;padding:28px}
+[data-hud="studio"] #play #quiz,[data-hud="panel"] #play #quiz{display:grid;grid-template-columns:minmax(230px,.8fr) minmax(0,1.6fr);grid-template-areas:"limit limit" "progress progress" "audio choices" "hint choices" "next next" "upgrade upgrade";gap:14px 28px}
+:is([data-hud="studio"],[data-hud="panel"]) #play .qhead{grid-area:progress}
+:is([data-hud="studio"],[data-hud="panel"]) #play #limitStatus{grid-area:limit}
+:is([data-hud="studio"],[data-hud="panel"]) #play .musical-audio-row{grid-area:audio;flex-direction:column-reverse;justify-content:flex-end;align-self:start;min-width:0;margin:0;gap:16px}
+:is([data-hud="studio"],[data-hud="panel"]) #play .musical-audio-row .vol{max-width:100%;flex-wrap:wrap;justify-content:center}
+:is([data-hud="studio"],[data-hud="panel"]) #play .musical-audio-row .clip{flex:none;flex-direction:column;width:100%}
+:is([data-hud="studio"],[data-hud="panel"]) #play .clip button{width:100%;min-height:56px}
+:is([data-hud="studio"],[data-hud="panel"]) #play .musical-audio-row .clip .bar{flex:0 0 20px;width:100%;height:20px}
+:is([data-hud="studio"],[data-hud="panel"]) #play #qhint{grid-area:hint}
+:is([data-hud="studio"],[data-hud="panel"]) #play #opts{grid-area:choices;align-self:start;width:100%;min-width:0}
+:is([data-hud="studio"],[data-hud="panel"]) #play #nextRow{grid-area:next}
+:is([data-hud="studio"],[data-hud="panel"]) #play #upgradePanel{grid-area:upgrade;width:100%}
+[data-hud="studio"] #play #opts{border-left:1px solid var(--line);padding-left:24px}
+[data-hud="arcade"] #play>.panel{border:3px solid var(--accent);border-radius:8px;box-shadow:7px 7px 0 color-mix(in srgb,var(--accent) 30%,var(--bg))}
+[data-hud="arcade"] #play .qhead{padding:12px;border-bottom:2px solid var(--accent);font-size:1.05rem;color:var(--fg)}
+[data-hud="arcade"] #play .panel button{border-radius:4px;border-bottom-width:4px}
+[data-hud="arcade"] #play .bar{height:24px;border-radius:3px}
+[data-hud="arcade"] #play .musical-cover{border-radius:3px}
+[data-hud="terminal"] #play>.panel{border-radius:0;border-top:4px solid var(--accent);font-family:ui-monospace,Consolas,monospace}
+[data-hud="terminal"] #play .qhead{border-bottom:1px dashed var(--line);padding-bottom:14px}
+[data-hud="terminal"] #play .panel button,[data-hud="terminal"] #play .musical-cover,[data-hud="terminal"] #play .bar{border-radius:0}
+[data-hud="terminal"] #play .musical-option-info{font-family:ui-monospace,Consolas,monospace}
+[data-hud="terminal"] #play .musical-option{flex-direction:row;align-items:center;text-align:left;gap:12px}
+[data-hud="terminal"] #play .musical-cover{width:56px;flex:none}
+[data-hud="terminal"] #play .recap{gap:6px}
+[data-hud="panel"] #play>.panel{background:transparent;border:0;padding:0}
+[data-hud="panel"] #play #quiz{grid-template-columns:minmax(0,1.6fr) minmax(230px,.8fr);grid-template-areas:"limit limit" "progress progress" "choices audio" "choices hint" "next next" "upgrade upgrade"}
+[data-hud="panel"] #play .qhead,[data-hud="panel"] #play .musical-audio-row,[data-hud="panel"] #play #opts,[data-hud="panel"] #play #result{background:var(--card);padding:20px;border:1px solid var(--line);border-radius:18px}
+/* Wording: o tabuleiro, as letras e o teclado continuam sendo os mesmos nós. */
+[data-hud="focus"] #wgame .w-boards{gap:24px}
+[data-hud="focus"] #wgame .w-board{padding:14px;border-radius:24px;background:var(--card)}
+[data-hud="focus"] #wgame .w-tile{border-radius:12px}
+[data-hud="focus"] #wgame .w-kb{padding:18px;border-radius:24px;background:var(--card)}
+[data-hud="focus"] #wgame .w-key{border-radius:14px}
+[data-hud="studio"] #wgame .w-board{padding:16px;background:var(--card);border:1px solid var(--line);border-radius:20px}
+[data-hud="studio"] #wgame .w-kb{padding:22px;background:var(--card);border-left:3px solid var(--accent);border-radius:18px}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame:has(.w-boards[data-n="1"]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);grid-template-areas:"header header" "boards message" "boards keyboard" "boards result" "note note";gap:10px 30px;max-width:1100px;margin:auto;align-items:start}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-gtop{grid-area:header;width:100%}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-msg{grid-area:message}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-boards{grid-area:boards;width:100%}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-kb{grid-area:keyboard;width:100%;min-width:0}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-result{grid-area:result}
+:is([data-hud="studio"],[data-hud="panel"]) #wgame>.w-kbnote{grid-area:note}
+[data-hud="arcade"] #wgame .w-board{padding:10px;border:3px solid var(--accent);border-radius:5px;box-shadow:5px 5px 0 color-mix(in srgb,var(--accent) 30%,var(--bg))}
+[data-hud="arcade"] #wgame .w-tile{border-radius:2px}
+[data-hud="arcade"] #wgame .w-key{border-radius:4px;border-bottom-width:4px}
+[data-hud="arcade"] #wgame .w-msg{font-weight:800;letter-spacing:.04em}
+[data-hud="terminal"] #wgame .w-board{padding:12px;border:1px dashed var(--line);border-top:4px solid var(--accent)}
+[data-hud="terminal"] #wgame .w-tile{font-family:ui-monospace,Consolas,monospace;border-radius:0}
+[data-hud="terminal"] #wgame .w-key{font-family:ui-monospace,Consolas,monospace;border-radius:0}
+[data-hud="terminal"] #wgame .w-msg{font-family:ui-monospace,Consolas,monospace;font-size:.9rem}
+[data-hud="panel"] #wgame:has(.w-boards[data-n="1"]){grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:"header header" "message boards" "keyboard boards" "result boards" "note note"}
+[data-hud="panel"] #wgame .w-board,[data-hud="panel"] #wgame .w-kb{background:var(--card);padding:18px;border:1px solid var(--line);border-radius:18px}
+@media(max-width:900px){
+ :is([data-hud="studio"],[data-hud="panel"]) #play #quiz{grid-template-columns:minmax(0,1fr);grid-template-areas:"limit" "progress" "audio" "hint" "choices" "next" "upgrade";gap:14px}
+ [data-hud="studio"] #play #opts{border-left:0;padding-left:0}
+ :is([data-hud="studio"],[data-hud="panel"]) #wgame:has(.w-boards[data-n="1"]){display:block}
+}
+@media(max-width:620px){
+ [data-hud="focus"] #play>.panel{padding:18px}
+ [data-hud="panel"] #play #opts{padding:10px}
+ [data-hud="terminal"] #play .musical-option{flex-direction:column;text-align:center;gap:6px}
+ [data-hud="terminal"] #play .musical-cover{width:100%;max-width:80px}
+ :is([data-hud="focus"],[data-hud="studio"],[data-hud="arcade"],[data-hud="terminal"],[data-hud="panel"]) #wgame .w-board{padding:5px}
+ :is([data-hud="focus"],[data-hud="studio"],[data-hud="panel"]) #wgame .w-kb{padding:8px}
+}
+@media(max-width:420px){
+ .huba-language{max-width:100%;flex-wrap:wrap;justify-content:flex-end;row-gap:6px}
+ .bits-hud-menu>summary{padding-inline:5px}
+ .huba-language .huba-mode>summary{padding-inline:5px}
+}

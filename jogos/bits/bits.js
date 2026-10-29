@@ -35,7 +35,7 @@ var selectedCat=null;
 var musicLoader=HUBA_BITS_CATALOGO.create({onUpdate:function(s){
   byCat[s.genre]=s.songs.map(function(song){return Object.assign({},song,{deezerId:song.id,id:'dz-'+song.id})});
   if(selectedCat===s.genre){
-    musicLoader.paint($('catalogCount'),s);musicLoader.paint($('gameCatalogCount'),s);
+    musicLoader.paint($('gameCatalogCount'),s);
     if(active&&!active.finished&&active.cat===s.genre&&!selected&&$('guessInput').value)showSuggestions();
     drawTiles();
   }
@@ -59,9 +59,8 @@ function enterCategory(cat,daily){
 function initCatalog(){
  musicLoading=false;drawTiles();
  setStatus('Diário: até 5 músicas por artista · Treino: até 15 · Top reúne Pop, Rock e Rap.');
- $('catalogCount').textContent='Músicas carregadas sob demanda';
 }
-function pauseCatalog(){loadToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedCat)musicLoader.paint($('catalogCount'),musicLoader.state(selectedCat))}
+function pauseCatalog(){loadToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedCat)musicLoader.paint($('gameCatalogCount'),musicLoader.state(selectedCat))}
 window.addEventListener('pagehide',pauseCatalog);
 
 function chooseSong(cat,daily){
