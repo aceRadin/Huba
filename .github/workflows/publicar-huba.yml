@@ -46,6 +46,20 @@ jobs:
           path: .cache/bits-artistas
           key: ${{ steps.catalog-cache.outputs.cache-primary-key }}
       - uses: actions/configure-pages@v5
+      - uses: actions/cache/restore@v4
+        id: playlists-cache
+        with:
+          path: .cache/playlists
+          key: playlists-v1-${{ steps.catalog-date.outputs.date }}-${{ hashFiles('playlists.js', 'scripts/gerar-playlists.mjs', 'js/deezer.js') }}
+      - name: Preparar playlists do Musical e Streakal
+        env:
+          HUBA_PLAYLISTS_DATE: ${{ steps.catalog-date.outputs.date }}
+        run: node scripts/gerar-playlists.mjs
+      - uses: actions/cache/save@v4
+        if: steps.playlists-cache.outputs.cache-hit != 'true'
+        with:
+          path: .cache/playlists
+          key: ${{ steps.playlists-cache.outputs.cache-primary-key }}
       - name: Preparar site
         run: |
           node scripts/gerar-palavras.mjs

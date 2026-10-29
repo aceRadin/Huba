@@ -69,7 +69,7 @@ function gName(g){return cap(g)}
 /* As fontes musicais são configuradas em ../../playlists.js. */
 
 /* Catálogo incremental: índices já usados pela partida nunca são reordenados. */
-var musicLoader=HUBADeezer.create({
+var musicLoader=HUBAPlaylists.create({
   sources:window.HUBA_MUSICAS&&window.HUBA_MUSICAS.fontes||[],artistLimit:8,
   onUpdate:function(s){
     byGenre[s.genre]=s.songs;loadedGenres[s.genre]=s.complete;

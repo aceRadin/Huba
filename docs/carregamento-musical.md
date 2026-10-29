@@ -1,5 +1,7 @@
 # Carregamento progressivo de músicas
 
+**Atualização da publicação:** Musical e Streakal agora recebem catálogos prontos por gênero, gerados pelo Actions. Veja [playlists preparadas: funcionamento e publicação](playlists-preparadas.md). O carregamento progressivo descrito abaixo continua sendo usado ao abrir o código local, com a configuração preparada desativada. Bits usa seu próprio [catálogo por artistas](bits-preparado.md).
+
 Atualização do Bits: o jogo agora usa `jogos/bits/rankings.js`, com os rankings de Pop (132), Rock (152) e Rap/Hip Hop (116). Top combina os três, sem duplicatas. Cada ranking pede até 300 faixas de uma vez, pois o endpoint pode omitir `next` mesmo com mais resultados disponíveis. As fontes abaixo que descrevem playlists próprias do Bits e seu primeiro lote de uma faixa documentam a implementação anterior; Musical e Streakal mantêm o carregamento progressivo descrito. O arquivo antigo de playlists do Bits permanece preservado, sem ser carregado.
 
 ## Antes e depois

@@ -129,6 +129,10 @@ function create(options){
   }
   async function pump(s,signal,run){
     try{
+      if(options.catalogProvider){
+        var tracks=await options.catalogProvider(s.genre,signal);check(signal);if(run!==epoch)return;
+        add(s,tracks,{});s.complete=true;s.running=false;notify(s);return;
+      }
       while(s.index<s.sources.length){
         check(signal);if(run!==epoch)return;
         var src=s.sources[s.index],url=src.url;

@@ -2,3 +2,4 @@
 dados/bits-artistas/rock-*.js
 dados/bits-artistas/pop-*.js
 dados/bits-artistas/rap-*.js
+dados/playlists/*-*.js
