@@ -118,7 +118,7 @@ function setLanguage(value){
 }
 function build(){
  var nav=document.createElement('nav');nav.className='huba-language';nav.setAttribute('aria-label','Configurações do Hubdle');
- var theme=document.querySelector('.huba-settings');if(theme){nav.appendChild(theme);var themeTitle=theme.querySelector('summary');themeTitle.textContent='🎨';themeTitle.title='Tema';themeTitle.setAttribute('aria-label','Tema');theme.querySelector('.huba-settings-content>strong').textContent='Tema';theme.querySelector('.huba-settings-content>details').open=true}
+ var theme=document.querySelector('.huba-settings');if(theme){nav.appendChild(theme);var themeTitle=theme.querySelector('summary');themeTitle.textContent='🎨';themeTitle.title='Tema';themeTitle.setAttribute('aria-label','Tema')}
  if(theme)theme.querySelector('details').addEventListener('toggle',function(){
    if(!this.open)return;
    var panel=theme.querySelector('.huba-settings-content'),rect=themeTitle.getBoundingClientRect(),width=Math.min(270,innerWidth-24);

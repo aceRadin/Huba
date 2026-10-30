@@ -48,7 +48,8 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  async function audit(){return page.evaluate(()=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),out=[];let n;while(n=w.nextNode()){const el=n.parentElement;if(!el||!el.getClientRects().length||el.closest('script,style,.huba-language,#wLang,.w-tile,.musical-option-title,.musical-option-artist,.bits-choice,.bits-history-line,#finishSong'))continue;const text=n.nodeValue.trim();if(/[ãçõ]|Diário|Aleatório|tentativas|Carregando|Próxima/.test(text))out.push(text)}return out})}
  await page.goto(base);await language('en');assert.equal(await page.locator('#globalStreak').textContent(),'0');
  assert.equal(await page.locator('.bits-hud-menu>summary').textContent(),'🖥️');
- assert.equal(await page.locator('.bits-hud-menu>summary').getAttribute('aria-label'),'Game layout');
+ assert.equal(await page.locator('.bits-hud-menu>summary').getAttribute('aria-label'),'In game hud');
+ assert.equal(await page.locator('.bits-hud-description').textContent(),'In game hud');
  assert.equal(await page.locator('.huba-mode>summary').textContent(),'📅');
  assert.equal(await page.locator('[data-game-mode="daily"]').isVisible(),false,'nomes de modo ficam no dropdown fechado');
  assert.equal(await page.locator('.landing-top .huba-language').count(),1);
@@ -82,10 +83,13 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
   assert.equal(await page.locator('.single-game-modes>*').count(),1);assert.equal(await page.locator('#randomTiles,#tilesRandom,#wTilesRandom').count(),0);
   const offset=await page.locator('.single-game-modes').evaluate(el=>{const r=el.getBoundingClientRect();return Math.abs(r.x+r.width/2-innerWidth/2)});assert.ok(offset<1,'coluna centralizada');
   await page.locator('.huba-settings>details>summary').click();await page.waitForFunction(()=>document.querySelector('.huba-settings>details').open&&document.querySelector('.huba-settings-content').style.position==='fixed');
+  assert.equal(await page.locator('.huba-settings-content details,.huba-settings-content summary,.huba-settings-content>strong').count(),0,'temas sem título duplicado ou dropdown interno');
+  assert.equal(await page.locator('.huba-theme-options button').count(),14);
+  await page.locator('button[data-theme="ocean"]').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'ocean');
   const menu=await page.locator('.huba-settings-content').boundingBox();assert.ok(menu.x>=0&&menu.x+menu.width<=390,JSON.stringify({game,menu}));
   await page.locator('.huba-settings>details>summary').click();
   assert.equal(await page.locator('h2').filter({hasText:/^Daily$/}).count(),1);
-  await language('pt');assert.equal(await page.locator('h2').filter({hasText:/^Diário$/}).count(),1);await language('en');
+  await language('pt');assert.equal(await page.locator('h2').filter({hasText:/^Diário$/}).count(),1);assert.equal(await page.locator('.bits-hud-description').textContent(),'Hud do jogo');await language('en');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   assert.deepEqual(await audit(),[],game+': texto não traduzido');
  }

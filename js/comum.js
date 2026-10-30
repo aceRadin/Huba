@@ -55,8 +55,6 @@ window.HUBA = (function(){
     var menu=document.createElement('details'),summary=document.createElement('summary');
     summary.textContent='⚙';summary.title='Configurações';summary.setAttribute('aria-label','Configurações');menu.appendChild(summary);
     var content=document.createElement('div');content.className='huba-settings-content';
-    var heading=document.createElement('strong');heading.textContent='Configurações';content.appendChild(heading);
-    var dropdown=document.createElement('details'),label=document.createElement('summary');label.textContent='Tema';dropdown.appendChild(label);
     var options=document.createElement('div');options.className='huba-theme-options';options.setAttribute('role','group');options.setAttribute('aria-label','Tema do site');
     Object.keys(themes).forEach(function(theme){
       var button=document.createElement('button');button.type='button';button.textContent=themes[theme];button.dataset.theme=theme;
@@ -67,7 +65,7 @@ window.HUBA = (function(){
       };
       options.appendChild(button);
     });
-    dropdown.appendChild(options);content.appendChild(dropdown);menu.appendChild(content);nav.appendChild(menu);document.body.appendChild(nav);
+    content.appendChild(options);menu.appendChild(content);nav.appendChild(menu);document.body.appendChild(nav);
     nav.addEventListener('keydown',function(e){if(e.key==='Escape'){menu.open=false;summary.focus();e.preventDefault();e.stopPropagation()}});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',buildSettings);else buildSettings();
