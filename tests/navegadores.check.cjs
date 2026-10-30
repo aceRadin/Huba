@@ -4,16 +4,19 @@ const fs=require('node:fs/promises'),path=require('node:path'),http=require('nod
 const playwright=require(process.env.HUBA_PLAYWRIGHT_MODULE||'playwright');
 for(const engine of ['chromium','firefox','webkit'])test('fluxos essenciais em '+engine,{timeout:90000},async t=>{
  const root=path.resolve(__dirname,'..');
- const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.css')?'text/css':p.endsWith('.json')?'application/json':'text/html');res.end(await fs.readFile(path.join(root,p)))}catch{res.statusCode=404;res.end()}});
+ const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;if(p.startsWith('/audio/')){res.setHeader('Content-Type','audio/wav');res.end(wav);return}res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.css')?'text/css':p.endsWith('.json')?'application/json':'text/html');res.end(await fs.readFile(path.join(root,p)))}catch{res.statusCode=404;res.end()}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  t.after(()=>{server.closeAllConnections();server.close()});
  const browser=await playwright[engine].launch({headless:true,...(engine==='chromium'&&process.env.HUBA_CHROME?{executablePath:process.env.HUBA_CHROME}:{})});t.after(()=>browser.close());
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await context.route('https://fonts.googleapis.com/**',r=>r.abort());await context.route('https://fonts.gstatic.com/**',r=>r.abort());
- await context.addInitScript(()=>{const Native=Audio;window.testAudio=[];window.Audio=function(){const a=new Native();testAudio.push(a);return a}});
+ // WebKit on Windows does not route native media through Playwright's HTTPS mock.
+ const audioBase='http://127.0.0.1:'+server.address().port+'/audio/';
+ await context.addInitScript(base=>{const Native=Audio,src=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'src');window.testAudio=[];window.Audio=function(){const a=new Native();Object.defineProperty(a,'src',{get(){return src.get.call(a)},set(v){src.set.call(a,v.replace('https://audio.test/',base))}});testAudio.push(a);return a}},audioBase);
  await context.route('**/playlists.js*',r=>r.fulfill({contentType:'application/javascript',body:"window.HUBA_MUSICAS={fontes:['rock: playlist:1']}"}));
  await context.route('**/artistas.js*',r=>r.fulfill({contentType:'application/javascript',body:"window.HUBA_BITS_ARTISTAS={rock:[{id:1,name:'Artist'}],pop:[{id:1,name:'Artist'}],rap:[{id:1,name:'Artist'}]}"}));
+ const base='http://127.0.0.1:'+server.address().port;
  const song=id=>({id,title:'Song '+id,artist:{id:1,name:'Artist'},preview:'https://audio.test/'+id});
  await context.route('https://api.deezer.com/**',r=>{const u=new URL(r.request().url()),id=/\/track\/(\d+)/.exec(u.pathname)?.[1];return r.fulfill({contentType:'application/javascript',body:u.searchParams.get('callback')+'('+JSON.stringify(id?song(Number(id)):{data:Array.from({length:25},(_,i)=>song(i+1))})+')'})});
  const wav=Buffer.alloc(44+30*8000*2);wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
@@ -23,7 +26,6 @@ for(const engine of ['chromium','firefox','webkit'])test('fluxos essenciais em '
    const start=Number(range[1]),end=range[2]?Math.min(Number(range[2]),wav.length-1):wav.length-1;
    return r.fulfill({status:206,contentType:'audio/wav',headers:{'Content-Range':'bytes '+start+'-'+end+'/'+wav.length,'Accept-Ranges':'bytes'},body:wav.subarray(start,end+1)});
  });
- const base='http://127.0.0.1:'+server.address().port;
  page.setDefaultTimeout(12000);
  for(const game of ['musicle','streakal','bits','wording']){
    console.log(engine+': '+game);
