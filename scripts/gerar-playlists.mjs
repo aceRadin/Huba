@@ -54,7 +54,7 @@ export async function generate({root=process.cwd(),date=dayKey(),fetcher=fetch,s
    files[genre]=hash(genre).slice(0,12)+'-'+version+'.js';counts[genre]=tracks.length;
    await writeFile(resolve(folder,files[genre]),'window.HUBA_PLAYLISTS_PAGES=window.HUBA_PLAYLISTS_PAGES||{};window.HUBA_PLAYLISTS_PAGES['+JSON.stringify(genre)+']='+JSON.stringify({version,tracks})+';\n');
  }
- await writeFile(resolve(folder,'config.js'),'window.HUBA_PLAYLISTS_PREPARADO='+JSON.stringify({enabled:true,schema:1,date,version,files})+';\n');
+ await writeFile(resolve(folder,'config.js'),'window.HUBA_PLAYLISTS_PREPARADO='+JSON.stringify({enabled:true,schema:1,date,version,files,sources})+';\n');
  await mkdir(cache,{recursive:true});await writeFile(resolve(cache,'snapshot.json'),JSON.stringify(catalog));
  return {date,version,counts,files};
 }

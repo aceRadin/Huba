@@ -74,3 +74,6 @@ dialog#wStats::backdrop{background:rgba(10,8,30,.55)}
 .w-tile.cur{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent)}
 .w-key.w-space{flex:0 1 55%;font-size:.85rem;font-weight:700;text-transform:none}
 .w-tile.ph{border-style:dashed;border-color:var(--muted);color:var(--muted);font-weight:800}
+
+/* Respeita a preferência do sistema sem esconder o resultado. */
+@media(prefers-reduced-motion:reduce){.w-row.flip .w-tile,.w-boards.shake{animation:none}}

@@ -17,8 +17,8 @@ function storageSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function getStats(){try{return JSON.parse(storageGet(statsKey))||{games:0,wins:0}}catch(e){return {games:0,wins:0}}}
 function saveStats(st){storageSet(statsKey,JSON.stringify(st))}
 function renderStats(){$('streakValue').textContent=HUBA.currentStreak('bits')}
-function dailyKey(cat){return 'huba:bits:daily:v5:artists5:'+HUBA_BITS_CATALOGO.dayKey()+':'+cat}
-function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won}))}
+function dailyKey(cat,date){return 'huba:bits:daily:v5:artists5:'+(date||HUBA.dayKey())+':'+cat}
+function dailySave(){if(!active||!active.daily)return;storageSet(dailyKey(active.cat,active.date),JSON.stringify({id:active.song.id,guessIds:active.guesses,finished:active.finished,won:active.won,replacements:active.replacements,unavailableSongs:unavailableSongs}))}
 function dailyRead(cat){try{return JSON.parse(storageGet(dailyKey(cat)))}catch(e){return null}}
 function drawTiles(){
  ['daily'].forEach(function(mode){var daily=HUBA.isDaily,parent=$(mode+'Tiles');parent.textContent='';
@@ -41,13 +41,14 @@ var musicLoader=HUBA_BITS_CATALOGO.create({onUpdate:function(s){
   }
 }});
 function enterCategory(cat,daily){
- var token=++loadToken;selectedCat=cat;
+ var token=++loadToken,date=HUBA.dayKey();selectedCat=cat;
  musicLoading=true;loadingChoice={cat:cat,daily:daily};drawTiles();
  setStatus(daily?'Preparando todas as músicas para manter o desafio diário consistente…':'Carregando músicas de '+labels[cat]+'…');
  // No Treino, o Top inicia após passar por pelo menos três artistas intercalados.
  musicLoader.select(cat,cat==='top'?31:15,daily).then(function(s){
    if(token!==loadToken)return;
    musicLoading=false;loadingChoice=null;drawTiles();
+   if(daily&&date!==HUBA.dayKey())throw Error('O dia mudou. Escolha o gênero novamente.');
    if(!s.songs.length)throw new Error('Nenhuma música disponível nesta categoria.');
    setStatus('');start(cat,daily);musicLoader.paint($('gameCatalogCount'),s);
  }).catch(function(err){
@@ -93,8 +94,8 @@ function start(cat,daily){
  var list=byCat[cat]||[];if(!list.length){setStatus('Carregue músicas antes de jogar.');return}
  stopAudio();unavailableSongs={};var song=chooseSong(cat,daily);if(!song)return;
  $('gameCatalogCount').textContent=list.length.toLocaleString('pt-BR')+' músicas carregadas neste gênero';
- active={cat:cat,daily:daily,pool:daily?(byCat[cat]||[]).slice().sort(HUBADeezer.compare):null,song:song,guesses:[],finished:false,won:false,recorded:false};
- if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished}}
+ active={cat:cat,daily:daily,date:HUBA.dayKey(),replacements:0,pool:daily?(byCat[cat]||[]).slice().sort(HUBADeezer.compare):null,song:song,guesses:[],finished:false,won:false,recorded:false};
+ if(daily){var old=dailyRead(cat);if(old&&old.id===song.id){active.guesses=Array.isArray(old.guessIds)?old.guessIds.slice(0,maxAttempts):[];active.finished=!!old.finished;active.won=!!old.won;active.recorded=active.finished;active.replacements=old.replacements||0;unavailableSongs=old.unavailableSongs||{}}}
  roundId++;
  $('bitsHome').classList.add('hidden');$('bitsGame').classList.remove('hidden');
  $('gameTitle').textContent='Bits · '+labels[cat];$('gameSubtitle').textContent=daily?'Desafio diário':'Treino';
@@ -102,6 +103,7 @@ function start(cat,daily){
  $('finish').classList.toggle('hidden',!active.finished);$('guessArea').classList.toggle('hidden',active.finished);
  $('replaceAudio').classList.add('hidden');prepareAudio(song);renderRound();
  bitsSupportCollapsed(active.guesses.length>=3);
+ dailySave();
  if(active.finished)showFinish();else $('guessInput').focus();
 }
 function durationLimit(){return active?clipDuration():0}
@@ -157,9 +159,10 @@ function showAudioFailure(){
 function replaceAudio(){
  if(!active||active.finished||$('replaceAudio').classList.contains('hidden'))return;
  unavailableSongs[active.song.id]=true;
- var options=(byCat[active.cat]||[]).filter(function(s){return !unavailableSongs[s.id]});
+ var options=(active.daily?active.pool:(byCat[active.cat]||[])).filter(function(s){return !unavailableSongs[s.id]});
  if(!options.length){message('Não há outra música disponível nesta categoria. Carregue mais músicas.');$('replaceAudio').classList.add('hidden');return}
- var song=options[Math.floor(Math.random()*options.length)];
+ var rng=active.daily?HUBA.mulberry(hash(active.date+'|bits-reserva|'+active.cat+'|'+(++active.replacements))):Math.random;
+ var song=options[Math.floor(rng()*options.length)];
  stopAudio();active.song=song;
  // Uma música nova exige palpites novos; não contam tentativas ou derrota.
  active.guesses=[];active.finished=false;active.won=false;
@@ -258,10 +261,11 @@ function submit(skip){
 }
 function recordFinish(){if(!active||active.recorded)return;HUBA.recordPlayedGame('bits');var st=getStats();st.games=(st.games||0)+1;if(active.won)st.wins=(st.wins||0)+1;saveStats(st);active.recorded=true;
  // Streak somente para conclusão de desafio diário, uma vez por data, independentemente da categoria.
- if(active.daily)HUBA.recordDailyStreak('bits');renderStats();}
+ if(active.daily)HUBA.recordDailyStreak('bits',active.date);renderStats();}
 function showFinish(){$('replaceAudio').classList.add('hidden');stopAudio();$('guessArea').classList.add('hidden');$('finish').classList.remove('hidden');
  $('finishTitle').textContent=active.won?'Você acertou! 🎉':'Fim das tentativas';
  $('finishSong').textContent='Música: '+active.song.label;
+ $('finishTitle').textContent+=active.daily&&active.replacements?' · Com música reserva':'';
  $('finishDetail').textContent=active.won?'Acertou em '+active.guesses.length+' de '+maxAttempts+' tentativas.':'Você pode tentar outra música no modo Treino.';
  $('playAgain').classList.toggle('hidden',active.daily);
 }

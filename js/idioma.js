@@ -55,6 +55,13 @@ phrases['Catálogo inválido. Atualize a página.']='Invalid catalog. Refresh th
 phrases['Não foi possível baixar o catálogo. Tente novamente.']='Could not download the catalog. Try again.';
 phrases['Artista ausente no catálogo preparado.']='Artist missing from the prepared catalog.';
 phrases['O catálogo diário está sendo atualizado. Tente novamente em alguns minutos e atualize a página.']='The daily catalog is being updated. Try again in a few minutes and refresh the page.';
+Object.assign(phrases,{
+ 'Com música reserva':'With a replacement song',
+ 'O dia mudou. Escolha o gênero novamente.':'The day changed. Choose the genre again.',
+ 'Não foi possível retomar a partida salva. Atualize a página para tentar novamente.':'Could not resume the saved game. Refresh the page to try again.',
+ 'Palavra':'Word','Tentativa':'Guess','Posição':'Position','Posição correta':'Correct position',
+ 'Presente em outra posição':'Present in another position','Ausente desta palavra':'Absent from this word','Letra digitada':'Entered letter','Casa vazia':'Empty cell'
+});
 var entries=Object.keys(phrases).sort(function(a,b){return b.length-a.length});
 var escaped=entries.map(function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')});
 var matcher=new RegExp(escaped.join('|'),'g');

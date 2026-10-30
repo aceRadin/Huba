@@ -52,7 +52,7 @@ export async function generate({root=process.cwd(),date=dayKey(),fetcher=fetch,s
    const artists=Object.fromEntries(groups[genre].map(a=>[a.id,catalog.artists[a.id]]));
    await writeFile(resolve(folder,files[genre]),'window.HUBA_BITS_PAGES=window.HUBA_BITS_PAGES||{};window.HUBA_BITS_PAGES['+JSON.stringify(genre)+']='+JSON.stringify({version,artists})+';\n');
  }
- await writeFile(resolve(folder,'config.js'),'window.HUBA_BITS_PREPARADO='+JSON.stringify({enabled:true,schema:1,date,version,files})+';\n');
+ await writeFile(resolve(folder,'config.js'),'window.HUBA_BITS_PREPARADO='+JSON.stringify({enabled:true,schema:1,date,version,files,groups})+';\n');
  await mkdir(cache,{recursive:true});
  await writeFile(resolve(cache,'snapshot.json'),JSON.stringify(catalog));
  return {date,version,artists:Object.keys(catalog.artists).length,files};

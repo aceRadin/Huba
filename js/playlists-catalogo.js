@@ -7,6 +7,9 @@ function abortError(){var e=Error('Carregamento cancelado');e.name='AbortError';
 function create(options){
  var config=window.HUBA_PLAYLISTS_PREPARADO;
  if(config&&!config.enabled)return HUBADeezer.create(options);
+ var manifest=config,loaders={},active=null;
+ function loaderFor(config){
+ if(loaders[config.version])return loaders[config.version];
  var cache={};
  function download(genre,signal){return new Promise(function(resolve,reject){
    if(signal.aborted){reject(abortError());return}
@@ -28,14 +31,22 @@ function create(options){
    script.onerror=function(){finish(Error('Não foi possível baixar o catálogo. Tente novamente.'))};
    script.src=new URL(config.files[genre],base).href;document.head.appendChild(script);
  })}
- var loader=HUBADeezer.create(Object.assign({},options,{catalogProvider:download}));
+ var loader=HUBADeezer.create(Object.assign({},options,{sources:config.sources||options.sources,catalogProvider:download}));
+ return loaders[config.version]=loader;
+ }
  function select(g,min,full){
-   var today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-   if(full&&config&&config.date!==today)return Promise.reject(Error('O catálogo diário está sendo atualizado. Tente novamente em alguns minutos e atualize a página.'));
+   var today=HUBA.dayKey(),config=manifest&&manifest.days?manifest.days[today]:manifest;
+   if(!full&&!config)config=manifest;
+   if(!config||full&&config.date!==today)return Promise.reject(Error('O catálogo diário está sendo atualizado. Tente novamente em alguns minutos e atualize a página.'));
+   var loader=loaderFor(config);if(active&&active!==loader)active.pause();active=loader;
    return loader.select(g,min,full);
  }
  // paint() mantém seu botão Retomar ligado ao mesmo carregador e ao mesmo arquivo.
- return Object.assign({},loader,{select:select,ensure:select});
+ // O catálogo escolhido fica preso à sua versão; mudar de dia não altera partidas abertas.
+ var initial=HUBADeezer.create(options);
+ return {select:select,ensure:select,pause:function(){if(active)active.pause()},
+   state:function(g){return (active||initial).state(g)},snapshot:function(g){return (active||initial).snapshot(g)},
+   paint:function(el,s){return (active||initial).paint(el,s)},genres:function(){return initial.genres()}};
 }
 window.HUBAPlaylists={create:create};
 })();

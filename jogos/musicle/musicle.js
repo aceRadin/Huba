@@ -37,8 +37,8 @@ applyVol();
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function poolOf(g){return byGenre[g]||[]}
 function gName(g){return cap(g)}
-  function storeKey(g){return 'musicle3:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP}
-  function readState(g){try{var r=localStorage.getItem(storeKey(g)); return r?JSON.parse(r):null}catch(e){return null}}
+  function storeKey(g,date){return 'musicle4:'+(date||dayKey())+':'+g+':'+CLIP}
+  function readState(g){try{var r=localStorage.getItem(storeKey(g))||localStorage.getItem('musicle3:'+dayKey()+':'+g+':'+poolOf(g).length+':'+CLIP); return r?JSON.parse(r):null}catch(e){return null}}
   function nq(pool){return Math.min(NQ,pool.length)}
   function optionCount(){return CLIP===1.5?5:4}
   function modeOf(){return CLIP===1.5?'hard':'casual'}
@@ -89,12 +89,13 @@ function initCatalog(){
   $('#summary').textContent='As músicas são carregadas ao escolher o gênero.';renderHome();
 }
 function enterGenre(daily,g){
-  var token=++selectionToken;selectedGenre=g;
+  var token=++selectionToken,date=dayKey();selectedGenre=g;
   musicLoading=true;loadingChoice={genre:g,daily:daily};renderHome();
   $('#dzStatus').textContent=daily?'Preparando o catálogo completo para manter o desafio diário igual para todos…':'Carregando músicas de '+gName(g)+'…';
   musicLoader.select(g,Math.max(NQ,optionCount()),daily).then(function(s){
     if(token!==selectionToken)return;
     musicLoading=false;loadingChoice=null;
+    if(daily&&date!==dayKey())throw Error('O dia mudou. Escolha o gênero novamente.');
     if(s.songs.length<optionCount())throw new Error('Poucas músicas disponíveis nesta categoria.');
     $('#dzStatus').textContent=s.error?'Algumas páginas falharam. Você pode retomar o carregamento.':'';
     renderHome();openGame(daily,g);musicLoader.paint($('#gameCatalogCount'),s);
@@ -155,7 +156,7 @@ function openGame(daily,g){
   $('#play').classList.toggle('musical-hard',CLIP===1.5);
   $('#playTitle').textContent='Musical · '+gName(g)+' · '+modeName();
   $('#playSub').textContent=(daily?'Rodada do dia. ':'Rodada aleatória. ')+'Ouça o trecho de '+fmtSec(CLIP)+' segundos e escolha qual música tocou. São '+nq(pool)+' perguntas.';
-  cur={pool:pool,genre:g,daily:daily,statsRecorded:false};
+  cur={pool:pool,genre:g,daily:daily,date:dayKey(),replacements:0,statsRecorded:false};
   failedAnswers={};
   newRound();
 }
@@ -164,17 +165,31 @@ function newRound(){
   stop();
   failedAnswers={};
   var pool=cur.pool;
-  var rng=cur.daily?mulberry(hash(dayKey()+'|'+modeOf()+'|'+cur.genre+'|'+pool.length)):Math.random;
+  var rng=cur.daily?mulberry(hash(cur.date+'|'+modeOf()+'|'+cur.genre+'|'+pool.length)):Math.random;
   cur.statsRecorded=false;
   cur.qs=buildQuestions(pool,rng,cur.daily?[]:readHistory());
   cur.picks=[]; cur.qi=0; cur.score=0;
   if(cur.daily){
     var st=readState(cur.genre);
-    if(st&&st.p){cur.picks=st.p.slice(); cur.qi=cur.picks.length; cur.score=st.s||0}
+    if(st&&st.p){
+      if(st.questions){
+        function index(song){var i=pool.findIndex(function(t){return t.id===song.id});if(i<0){i=pool.length;pool.push(song)}return i}
+        cur.qs=st.questions.map(function(q){return {a:index(q.answer),opts:q.options.map(index),start:q.start}});
+        cur.picks=st.p.map(function(id){return pool.findIndex(function(t){return t.id===id})});
+      }else cur.picks=st.p.slice();
+      cur.qi=cur.picks.length;cur.score=st.s||0;cur.replacements=st.replacements||0;failedAnswers=st.failedAnswers||{};
+    }
+    saveDaily();
   }
   if(cur.qi>=cur.qs.length) showResult(); else showQuestion();
 }
 $('#again').onclick=newRound;
+function saveDaily(){
+  if(!cur||!cur.daily)return;
+  var saved={p:cur.picks.map(function(i){return cur.pool[i]&&cur.pool[i].id}),s:cur.score,replacements:cur.replacements,failedAnswers:failedAnswers,
+    questions:cur.qs.map(function(q){return {answer:cur.pool[q.a],options:q.opts.map(function(i){return cur.pool[i]}),start:q.start}})};
+  try{localStorage.setItem(storeKey(cur.genre,cur.date),JSON.stringify(saved))}catch(e){}
+}
 function goHome(){
   pauseCatalog();
   audioToken++;
@@ -212,6 +227,7 @@ function setSong(song,frac,recovered){
 }
 function failedAudio(){
   if(!cur||$('#play').classList.contains('hidden')||$('#quiz').classList.contains('hidden'))return;
+  if(cur.picks.length>cur.qi)return;
   if(recoveringSong)return;
   stop();
   var q=cur.qs[cur.qi],song=q&&cur.pool[q.a],token=audioToken;
@@ -232,6 +248,7 @@ function showAudioFailure(){
 audio.addEventListener('error',failedAudio);
 function replaceFailedSong(){
   if(!cur||$('#replaceSong').classList.contains('hidden'))return;
+  if(cur.picks.length>cur.qi)return;
   var q=cur.qs[cur.qi], excluded={};
   cur.qs.forEach(function(item,i){if(i!==cur.qi)excluded[item.a]=true});
   Object.keys(failedAnswers).forEach(function(i){excluded[Number(i)]=true});
@@ -240,11 +257,13 @@ function replaceFailedSong(){
   var choices=cur.pool.map(function(_,i){return i}).filter(function(i){return !excluded[i]});
   if(!choices.length){$('#qhint').textContent='Nenhuma outra música disponível nesta categoria. Você pode voltar e carregar outras fontes.';$('#replaceSong').classList.add('hidden');return}
   stop();
-  q.a=choices[Math.floor(Math.random()*choices.length)];
+  var rng=cur.daily?mulberry(hash(cur.date+'|musical-reserva|'+cur.genre+'|'+cur.qi+'|'+(++cur.replacements))):Math.random;
+  q.a=choices[Math.floor(rng()*choices.length)];
   var options=cur.pool.map(function(_,i){return i}).filter(function(i){return i!==q.a});
-  q.opts=shuffle(options,Math.random).slice(0,optionCount()-1);
-  q.opts=shuffle([q.a].concat(q.opts),Math.random);
-  q.start=Math.random();
+  q.opts=shuffle(options,rng).slice(0,optionCount()-1);
+  q.opts=shuffle([q.a].concat(q.opts),rng);
+  q.start=rng();
+  saveDaily();
   showQuestion();
 }
 $('#replaceSong').onclick=replaceFailedSong;
@@ -346,7 +365,7 @@ function showQuestion(){
 }
 function finishRound(){
   recordStats();
-  HUBA.recordPlayedGame('musicle');
+  HUBA.recordPlayedGame('musicle',cur.daily?cur.date:undefined);
   renderStats();
   if(!cur.daily){
     var labels=cur.qs.map(function(q){return norm(cur.pool[q.a].label)});
@@ -354,10 +373,12 @@ function finishRound(){
   }
 }
 function answer(i){
+  if(!cur||cur.picks.length>cur.qi)return;
+  stop();
   var q=cur.qs[cur.qi];
   var ok=i===q.a;
   cur.picks.push(i); if(ok)cur.score++;
-  if(cur.daily){try{localStorage.setItem(storeKey(cur.genre),JSON.stringify({p:cur.picks,s:cur.score}))}catch(e){}}
+  saveDaily();
   var btns=document.querySelectorAll('.opt');
   q.opts.forEach(function(oi,k){
     btns[k].disabled=true;
@@ -382,7 +403,7 @@ function showResult(){
   $('#quiz').classList.add('hidden'); $('#result').classList.remove('hidden');
   $('#replaceSong').classList.add('hidden');
   var total=cur.qs.length;
-  $('#resultTitle').textContent='Você acertou '+cur.score+' de '+total;
+  $('#resultTitle').textContent='Você acertou '+cur.score+' de '+total+(cur.daily&&cur.replacements?' · Com música reserva':'');
   var ul=$('#recap'); ul.innerHTML='';
   cur.qs.forEach(function(q,i){
     var song=cur.pool[q.a], ok=cur.picks[i]===q.a;

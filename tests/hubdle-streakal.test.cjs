@@ -9,7 +9,7 @@ test('Hubdle em PT/EN mantém dados antigos; Streakal limita a dez e só reseta 
  const context=await browser.newContext();t.after(()=>context.close());
  await context.addInitScript(()=>{
    localStorage.setItem('huba:mode:v1','training');
-   const d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
    localStorage.setItem('playhub:huba:streak:v1',JSON.stringify({count:7,last:today}));
    localStorage.setItem('huba:streakal:records:v1',JSON.stringify({rock:50}));
    Math.random=()=>0;

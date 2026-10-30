@@ -73,10 +73,11 @@ var WMODES={
 var WKEY='playhub:word:stats:v1', w=null, wMsgT=null;
 function wRead(){try{var o=JSON.parse(localStorage.getItem(WKEY)); if(o&&o.modes)return o}catch(e){} return {games:0,modes:{}}}
 function wSave(st){try{localStorage.setItem(WKEY,JSON.stringify(st))}catch(e){}}
-function wDayKey(mode,lang){lang=lang||WLANG; var c=WCFG[lang]; return 'word2:'+dayKey()+':'+lang+':'+mode+':'+(c?c.words.length:0)}
+function wDayKey(mode,lang,date){lang=lang||WLANG; var c=WCFG[lang]; return 'word2:'+(date||dayKey())+':'+lang+':'+mode+':'+(c?c.words.length:0)}
 function wStatKey(lang,mode){return lang==='pt'?mode:mode+'.'+lang}
 function wLoad(mode){try{var o=JSON.parse(localStorage.getItem(wDayKey(mode))); return (o&&o.g)||null}catch(e){return null}}
 function wTargets(mode,daily){
+  if(daily)try{var saved=JSON.parse(localStorage.getItem(wDayKey(mode)));if(saved&&Array.isArray(saved.targets)&&saved.targets.length===WMODES[mode].n)return saved.targets}catch(e){}
   var M=WMODES[mode], cfg=WCFG[WLANG], rng=daily?mulberry(hash(dayKey()+'|word|'+WLANG+'|'+mode)):Math.random;
   var idx=cfg.words.map(function(_,i){return i});
   return shuffle(idx,rng).slice(0,M.n).map(function(i){return {n:cfg.n[i],d:cfg.words[i]}});
@@ -122,7 +123,7 @@ function wBuildKb(){
   ['qwertyuiop','asdfghjkl','>zxcvbnm<'].forEach(function(row,ri){
     var r=document.createElement('div'); r.className='w-krow'+(ri===1?' indent':'');
     row.split('').forEach(function(ch){
-      var b=document.createElement('button'); b.type='button'; b.tabIndex=-1;
+      var b=document.createElement('button'); b.type='button'; b.tabIndex=0;
       b.className='w-key'+(ch==='>'||ch==='<'?' wide':'');
       b.textContent=ch==='>'?'Enter':ch==='<'?'⌫':ch;
       b.dataset.k=ch==='>'?'enter':ch==='<'?'back':ch;
@@ -133,7 +134,7 @@ function wBuildKb(){
     kb.appendChild(r);
   });
   var rs=document.createElement('div'); rs.className='w-krow';
-  var sb=document.createElement('button'); sb.type='button'; sb.tabIndex=-1; sb.className='w-key wide w-space'; sb.textContent='espaço'; sb.dataset.k='space';
+  var sb=document.createElement('button'); sb.type='button'; sb.tabIndex=0; sb.className='w-key wide w-space'; sb.textContent='espaço'; sb.dataset.k='space';
   sb.title='Pula uma posição, deixando um espaço em branco'; sb.addEventListener('mousedown',function(e){e.preventDefault()}); sb.onclick=function(){wKey('space')};
   rs.appendChild(sb); kb.appendChild(rs);
 }
@@ -141,7 +142,7 @@ function startWord(mode,daily,preserve){
   if(!WCFG[WLANG])return;
   if(!preserve)suspendedWords={};
   var M=WMODES[mode];
-  w={mode:mode,lang:WLANG,M:M,daily:daily,targets:wTargets(mode,daily),guesses:[],slots:['','','','',''],pos:0,done:false,won:false,flip:-1};
+  w={mode:mode,lang:WLANG,date:dayKey(),M:M,daily:daily,targets:wTargets(mode,daily),guesses:[],slots:['','','','',''],pos:0,done:false,won:false,flip:-1};
   if(daily){var g=wLoad(mode); if(g)w.guesses=g.slice()}
   wEval();
   showWordGame();
@@ -202,7 +203,7 @@ function wSubmit(){
   clearTimeout(wMsgT); $('#wMsg').textContent='';
   w.guesses.push(cur); w.slots=['','','','','']; w.pos=0; w.flip=w.guesses.length-1;
   wEval();
-  if(w.daily){try{localStorage.setItem(wDayKey(w.mode,w.lang),JSON.stringify({g:w.guesses}))}catch(e){}}
+  if(w.daily){try{localStorage.setItem(wDayKey(w.mode,w.lang,w.date),JSON.stringify({g:w.guesses,targets:w.targets}))}catch(e){}}
   if(w.done)wFinish();
   renderWord();
 }
@@ -214,7 +215,7 @@ function wFinish(){
     m.p++;
     if(w.won){m.w++; m.s++; m.b=Math.max(m.b,m.s); var n=w.guesses.length; m.d[n-1]=(m.d[n-1]||0)+1}
     else m.s=0;
-    recordDailyStreak('word');
+    recordDailyStreak('word',w.date);
   }
   wSave(st);
 }
@@ -223,7 +224,7 @@ function renderWord(){
   var rank={a:1,p:2,c:3};
   w.targets.forEach(function(t,b){
     var solvedAt=w.guesses.indexOf(t.n), shown=solvedAt>=0?solvedAt+1:w.guesses.length;
-    var bd=document.createElement('div'); bd.className='w-board'+(solvedAt>=0?' solved':'');
+    var bd=document.createElement('div'); bd.className='w-board'+(solvedAt>=0?' solved':'');bd.setAttribute('role','group');bd.setAttribute('aria-label',HUBA_I18N.translate('Palavra')+' '+(b+1));
     for(var r=0;r<w.M.tries;r++){
       var row=document.createElement('div'); row.className='w-row'+((r===w.flip&&r<shown)?' flip':'');
       var g=null, sc=null, disp=null, act=false;
@@ -233,6 +234,10 @@ function renderWord(){
       for(var i=0;i<5;i++){
         var tile=document.createElement('div'), ch=(g&&g[i])?(disp?disp[i]:g[i]):'';
         tile.className='w-tile'; tile.textContent=ch;
+        var meaning=sc?{c:'Posição correta',p:'Presente em outra posição',a:'Ausente desta palavra'}[sc[i]]:ch&&ch!==' '?'Letra digitada':'Casa vazia';
+        tile.setAttribute('role',act?'button':'img');
+        tile.setAttribute('aria-label',HUBA_I18N.translate('Tentativa')+' '+(r+1)+', '+HUBA_I18N.translate('Posição')+' '+(i+1)+': '+(ch&&ch!==' '?ch.toUpperCase()+', ':'')+HUBA_I18N.translate(meaning));
+        if(act)tile.tabIndex=0;
         if(sc){tile.classList.add(sc[i]); tile.style.animationDelay=(i*0.2)+'s'}
         else if(ch)tile.classList.add('f');
         if(act&&g[i]===' '){tile.textContent='·'; tile.classList.remove('f'); tile.classList.add('ph')}
@@ -268,7 +273,7 @@ function renderWord(){
     $('#wResText').textContent=w.won?('Em '+n2+(n2===1?' tentativa.':' tentativas.')):('A palavra era: '+w.targets.map(function(t){return t.d.toUpperCase()}).join(', ')).replace('A palavra era','A'+(w.M.n>1?'s palavras eram':' palavra era'));
   }
 }
-function wTileClick(tile,i){tile.onclick=function(){if(!w||w.done)return; w.pos=i; w.flip=-1; renderWord()}}
+function wTileClick(tile,i){tile.onclick=function(){if(!w||w.done)return; w.pos=i; w.flip=-1; renderWord();document.querySelector('.w-tile.act.cur').focus()};tile.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();tile.click()}}}
 function wBackToHub(){
   $('#wgame').classList.add('hidden'); $('#word').classList.remove('hidden'); renderWordHub();
 }
@@ -287,6 +292,7 @@ document.addEventListener('keydown',function(e){
   if(!w||$('#wgame').classList.contains('hidden')||$('#wStats').open)return;
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.target.closest&&e.target.closest('.huba-settings, .huba-support-dropdown, .huba-language'))return;
+  if(e.target.closest&&e.target.closest('.w-key')&&(e.key==='Enter'||e.key===' '))return;
   var k=e.key;
   var ae=document.activeElement; if(ae&&ae!==document.body&&ae.tagName==='BUTTON')ae.blur();
   if(k==='Enter'){e.preventDefault(); wKey('enter')}

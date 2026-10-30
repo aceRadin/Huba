@@ -2,7 +2,7 @@ name: Publicar Hubdle
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '17 15,21 * * *'
   push:
     branches: [main]
 permissions:
@@ -11,8 +11,22 @@ concurrency:
   group: huba-pages
   cancel-in-progress: false
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm test
+      - run: npm run test:browsers
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: write
@@ -27,47 +41,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Data do catálogo em São Paulo
-        id: catalog-date
-        run: |
-          node --input-type=module -e "import {appendFileSync} from 'node:fs'; import {dayKey} from './scripts/gerar-bits-artistas.mjs'; appendFileSync(process.env.GITHUB_OUTPUT, 'date='+dayKey()+'\n')"
       - uses: actions/cache/restore@v4
         id: catalog-cache
         with:
-          path: .cache/bits-artistas
-          key: bits-artistas-v1-${{ steps.catalog-date.outputs.date }}-${{ hashFiles('jogos/bits/artistas.js', 'scripts/gerar-bits-artistas.mjs') }}
-      - name: Preparar músicas do Bits
-        env:
-          HUBA_BITS_DATE: ${{ steps.catalog-date.outputs.date }}
-        run: node scripts/gerar-bits-artistas.mjs
-      - uses: actions/cache/save@v4
-        if: steps.catalog-cache.outputs.cache-hit != 'true'
-        with:
-          path: .cache/bits-artistas
-          key: ${{ steps.catalog-cache.outputs.cache-primary-key }}
+          path: .cache
+          key: hubdle-agenda-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: hubdle-agenda-v1-
       - uses: actions/configure-pages@v5
-      - uses: actions/cache/restore@v4
-        id: playlists-cache
-        with:
-          path: .cache/playlists
-          key: playlists-v1-${{ steps.catalog-date.outputs.date }}-${{ hashFiles('playlists.js', 'scripts/gerar-playlists.mjs', 'js/deezer.js') }}
-      - name: Preparar playlists do Musical e Streakal
+      - name: Preparar agenda de hoje e dos próximos dois dias
         env:
-          HUBA_PLAYLISTS_DATE: ${{ steps.catalog-date.outputs.date }}
-        run: node scripts/gerar-playlists.mjs
+          HUBA_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: node scripts/preparar-catalogos.mjs
       - uses: actions/cache/save@v4
-        if: steps.playlists-cache.outputs.cache-hit != 'true'
         with:
-          path: .cache/playlists
-          key: ${{ steps.playlists-cache.outputs.cache-primary-key }}
+          path: .cache
+          key: ${{ steps.catalog-cache.outputs.cache-primary-key }}
       - name: Preparar site
         run: |
           node scripts/gerar-palavras.mjs
           mkdir -p "$RUNNER_TEMP/site"
-          cp -R css dados jogos js index.html playlists.js "$RUNNER_TEMP/site/"
+          cp -R css dados jogos js index.html playlists.js favicon.svg social-card.png "$RUNNER_TEMP/site/"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ runner.temp }}/site
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verificar site publicado
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node scripts/verificar-publicacao.mjs "$SITE_URL"

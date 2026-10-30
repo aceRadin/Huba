@@ -1,101 +1,59 @@
-# Hubdle — Jogos
+# Hubdle
 
-O projeto agora se chama **Hubdle**, incluindo cabeçalhos, títulos das páginas, apoio, traduções e o nome da publicação no Actions. As chaves de armazenamento, eventos e identificadores internos antigos permanecem compatíveis para conservar streaks, preferências e recordes.
+Quatro jogos gratuitos em HTML, CSS e JavaScript: Musical, Bits, Streakal e Wording. A página publicada é https://aceradin.github.io/Hubdle/.
 
-**Streakal:** máximo de **10 alternativas**. A alternativa extra recebida como penalidade mantém a sequência de reduções de tempo e seu risco acumulado; essa contagem só reinicia quando o jogador escolhe voluntariamente **+1 alternativa**.
+## Jogos
 
-**HUDs nos quatro jogos:** use **▦ HUD** no cabeçalho para escolher Original, Foco, Estúdio, Arcade, Terminal ou Painel. A escolha fica salva e acompanha a navegação; as cores continuam sendo escolhidas pelo tema. Veja [HUDs compartilhados](docs/huds.md).
+- **Musical:** cinco perguntas, quatro alternativas no Casual e cinco no Desafiador. O trecho é de sete segundos ou 1,5 segundo. As dificuldades compartilham o streak.
+- **Bits:** seis tentativas para reconhecer a música. Diário usa até cinco faixas por artista; Treino usa até quinze. Pop, Rock e Rap têm listas próprias; Top reúne os três.
+- **Streakal:** começa com duas alternativas e até 30 segundos. Cada acerto aumenta a dificuldade, até dez opções e 1,5 segundo. A penalidade automática de alternativa extra não reinicia o debuff; apenas a escolha voluntária de +1 alternativa o reinicia.
+- **Wording:** uma, duas ou quatro palavras, com seis, sete ou nove tentativas. O idioma acompanha o site. Espaço deixa uma posição vazia; Backspace pode apagar até voltar ao início.
 
-**Musical e Streakal também usam catálogos preparados pelo GitHub Actions.** Continuam lendo as fontes de `playlists.js`, mas a versão publicada baixa apenas um arquivo pronto por gênero escolhido. Veja [como publicar e como funciona](docs/playlists-preparadas.md). As consultas progressivas descritas nas seções antigas continuam disponíveis no uso local do código.
+O cabeçalho permite escolher HUD, tema, Diário/Treino e idioma. O Musical também tem dificuldade; o Wording tem estatísticas durante a partida. O streak geral conta qualquer partida concluída, independentemente de vitória. Preferências e históricos ficam neste navegador.
 
-**Bits usa as músicas mais populares de cada artista: cinco no Diário e quinze no Treino**, da lista em `jogos/bits/artistas.js`, separado em Rock, Pop e Rap. Top reúne os três. O **GitHub Actions prepara o catálogo antes da publicação**: o jogador baixa um arquivo por gênero, sem esperar consultas por artista. Veja [como ativar e publicar](docs/bits-preparado.md). O workflow **Publicar Hubdle** executa em push na `main`, manualmente e diariamente às 00h de São Paulo. As seções antigas sobre rankings/catalogação americana abaixo são históricas. Abrindo o código local, o carregamento direto e o cache de sessão continuam disponíveis.
+## Diários e salvamento
 
-Os jogos exibem uma única coluna central, controlada por **Diário / Treino** no cabeçalho. Treino oferece partidas aleatórias ilimitadas. O botão de temas fica à esquerda desse seletor e das bandeiras de idioma. Veja [idioma e modos](docs/idioma-e-streaks.md).
+Todos os jogos usam o dia de **São Paulo**. Uma partida guarda sua data de início: passar da meia-noite não grava os palpites no desafio seguinte. O streak geral conta o dia em que se concluiu uma partida; o streak específico diário pertence à data do desafio. Um resultado antigo não apaga um streak mais recente.
 
-**Atualização do Bits:** a seleção agora vem de um catálogo estático validado nos Estados Unidos. Antes da primeira publicação, configure e execute a automação seguindo [Ativar o catálogo americano](docs/bits-estados-unidos.md). As descrições de consulta direta a rankings abaixo são históricas; o navegador consulta apenas os IDs para renovar o áudio.
+Musical salva as perguntas por ID, alternativas, trechos e palpites. Streakal salva rodada, opções, dificuldade, debuff e estado do sorteio, inclusive na escolha de dificuldade. Bits conserva música, tentativas e reservas; Wording conserva palpites e alvos. Voltar ou recarregar retoma o Diário; Treino continua sendo uma nova partida.
 
-**Musical e Streakal usam a lista compartilhada** em `playlists.js`, na raiz (`window.HUBA_MUSICAS.fontes`). O **Bits usa os rankings populares** de Pop, Rock e Rap/Hip Hop, configurados em `jogos/bits/rankings.js`. Os jogos continuam com lógica e estatísticas próprias.
+Uma falha de áudio primeiro tenta renovar a mesma faixa pelo ID. Se necessário, o jogo usa uma reserva sem derrota técnica. Reservas no Diário seguem sorteio determinístico e o resultado informa **Com música reserva**. Jogadores que tiveram falhas diferentes podem usar reservas diferentes; esses resultados não devem ser tratados como desafios estritamente idênticos.
 
-No Bits, `top` reúne os três rankings e remove músicas repetidas. Cada ranking é consultado com `limit=300`, pois esse endpoint pode omitir `next`. Top aguarda as três fontes; nenhum ranking é consultado antes de escolher uma categoria. `jogos/bits/playlists.js` foi preservado como referência, mas não é mais carregado pelo jogo. Os diários de rankings têm uma chave de salvamento própria; os dados dos antigos diários de playlists não são apagados.
+## Fontes e publicação
 
-O botão ⚙ no canto inferior esquerdo abre Configurações → Tema em qualquer página ou partida. Há Claro, Escuro, Oceano, Floresta, Pôr do sol, Rosa e Café, além de Automático (acompanha o sistema). A escolha fica salva neste navegador.
+- Musical e Streakal: catálogo compartilhado em [playlists.js](playlists.js).
+- Bits: artistas em [jogos/bits/artistas.js](jogos/bits/artistas.js).
+- Wording: [dados/palavra.json](dados/palavra.json) e [dados/words.json](dados/words.json). A cópia JavaScript para abrir por file:// é gerada por scripts/gerar-palavras.mjs.
 
-O Musical tem um único streak para Casual e Desafiador. Na página inicial, o streak geral do Hubdle conta qualquer partida concluída, mesmo com derrota, uma vez por dia. O seletor Português/English no canto superior direito funciona em todas as páginas e preserva partidas em andamento. Veja [idioma e streaks](docs/idioma-e-streaks.md).
+No GitHub Pages, selecione **Settings → Pages → Source → GitHub Actions**. Depois de Commit e Push na main, acompanhe **Actions → Publicar Hubdle**. Não use uma segunda publicação por branch: ela sobrescreveria os catálogos preparados.
 
-Os históricos e recordes existentes continuam salvos. No Wording, as estatísticas detalhadas continuam acessíveis durante a partida. O apoio vira um dropdown após três segundos ou ao enviar um palpite; clique em “Apoiar Hubdle” para reabrir. Ao entrar em outra partida do Wording, o painel aparece por mais três segundos.
+O workflow testa o site, prepara os catálogos, publica e verifica o resultado. Executa também às **12h17 e 18h17 de São Paulo**, sujeito à fila do GitHub. Hoje e os próximos dois dias ficam preparados; uma data publicada não muda nas atualizações seguintes. Arquivos de sete dias anteriores permanecem disponíveis para abas antigas. A agenda é guardada no cache do Actions e pode ser recuperada do próprio site se esse cache desaparecer.
 
-## Configurar
+Na primeira publicação, o catálogo diário atual é preservado se estiver disponível no site. Alterações de artistas/playlists entram nos novos dias ainda não preparados. Não é preciso executar manualmente todos os dias. Falhas ficam visíveis no Actions; se ultrapassarem a reserva de dias preparados, o Diário avisa e não sorteia silenciosamente outro catálogo.
 
-Abra `playlists.js` e edite os IDs ou links dentro da lista `fontes`. Os IDs enviados foram preservados. Cada linha tem o formato:
+## Testar localmente
 
-```js
-'rock: playlist:1306931615, playlist:4047160366'
-```
+Com Node.js 24 instalado:
 
-As categorias do catálogo compartilhado são `rock`, `metal`, `pop`, `anime`, `games` e `power metal`. O catálogo do Bits é independente.
+~~~sh
+npm ci
+npx playwright install chromium firefox webkit
+npm test
+npm run test:browsers
+~~~
 
-## Publicar no GitHub Pages
+No Linux, use npx playwright install --with-deps chromium firefox webkit. Os testes simulam o Deezer; alguns reproduzem áudio WAV real para verificar o player. Os testes em WebKit não substituem testes em um iPhone físico.
 
-1. Descompacte e copie **o conteúdo interno** desta pasta para a **raiz** do repositório (não aninhe outra pasta Hubdle).
-2. Confira se existem `index.html` e `playlists.js` **lado a lado** na raiz.
-3. No GitHub Desktop, clique **Commit** e **Push origin**.
-4. Em GitHub → Actions, confira se o Pages publicou o último commit.
-5. Abra `https://SEU-USUARIO.github.io/SEU-REPOSITORIO/playlists.js`. Você deve ver a lista com `fontes:`. Se mostrar 404, conteúdo anterior, ou uma página HTML, o caminho/branch/publicação estão errados.
-6. Atualize as páginas do Musical e do Bits com Ctrl+Shift+R. Os scripts de configuração receberam `?v=2` para ajudar a evitar cache antigo.
+Pode abrir index.html diretamente no computador. Para testar pelo navegador com HTTP, sirva esta pasta com um servidor estático. Os configs versionados no Git ficam desativados para o uso local; o workflow gera os configs ativos para publicação.
 
-**Atenção:** se o GitHub Pages usar uma branch ou pasta diferente de `main` / `/(root)`, publique os arquivos **nesse local configurado**.
+## Diagnóstico e manutenção
 
-## Sobre funcionamento
+- dados/saude.json no site publicado informa a data e até quando há desafios preparados.
+- scripts/verificar-publicacao.mjs verifica o site após o deploy.
+- No console do navegador, HUBA_DIAGNOSTICS.report() mostra até vinte erros da aba. Não envia telemetria, não guarda palpites e é apagado ao recarregar.
+- Ative as notificações de falhas do Actions na sua conta se quiser ser avisado pelo GitHub.
+- Não há sincronização entre dispositivos nem proteção contra edição manual do localStorage.
 
-O modo aleatório dos três jogos agora inicia com um lote pequeno e continua carregando em segundo plano. Os diários aguardam o catálogo completo para preservar o sorteio. Veja [a explicação, os testes e as medições do carregamento progressivo](docs/carregamento-musical.md).
+O link de apoio permanece https://buymeacoffee.com/aceradin. A autorização comercial do Deezer e os direitos sobre as músicas precisam ser confirmados antes de monetizar; o funcionamento técnico da API não concede essa autorização. Consulte https://cdn-content.dzcdn.net/pdf/CGU-developers.pdf.
 
-Musical e Streakal compartilham as fontes; Bits tem fontes próprias. Cada jogo consulta o Deezer ao selecionar um gênero, e o número de prévias disponíveis pode variar conforme falhas da API ou limites de acesso. Não há servidor nem chave privada no site.
-
-Se o arquivo `playlists.js` for encontrado e as músicas ainda não aparecerem, inspecione F12 → Console e Rede (Network); pode ser um problema separado de disponibilidade da API Deezer.
-
-O uso público de prévias deve respeitar as condições do Deezer e os direitos musicais aplicáveis.
-
-## Atualização Bits — Enter e botões
-
-- Confirmar palpite agora fica antes de Pular (+ trecho).
-- Enter escolhe a primeira sugestão se o dropdown estiver aberto.
-- Se estiver fechado e houver uma música selecionada, Enter confirma mesmo sem foco no campo de busca.
-- Enter em outros botões mantém seu comportamento natural.
-
-
-## Rodapé de apoio e sugestões
-O rodapé discreto aparece na página inicial e em todos os jogos. Configure seus links de Patreon, Buy Me a Coffee e o e-mail para sugestões em `js/apoio-config.js`. Enquanto os URLs não forem informados, Patreon/Buy Me a Coffee ficam desativados (nenhum endereço fictício é enviado). O botão Apoio abre um formulário: o visitante pode copiar a sugestão; o envio por e-mail fica disponível quando você configurar `buymeacoffee`. Não existe banco de dados nem envio automático no GitHub Pages.
-
-## Indicador de carregamento
-Musical e Bits mostram `Loading…` nos cartões enquanto carregam as fontes, sem exibir contagens por categoria. Após o carregamento, o total de faixas aparece no canto inferior direito. Os resultados de desafios diários finalizados continuam visíveis nos cartões.
-
-
-## Painel de apoio
-
-O rodapé compacto aparece no Hubdle e nos três jogos, com botões Buy Me a Coffee e Patreon. Configure os links em `js/apoio-config.js`. Botões ficam desabilitados enquanto não forem configurados. O botão Sugestões foi removido.
-
-O catálogo atualizado de 16 playlists está em `playlists.js`.
-
-### Musical — alternativas com capa
-
-As quatro opções agora aparecem lado a lado, com a capa do Deezer e os nomes da música e do artista. Sem imagem disponível, aparece um ícone musical. Arquivos alterados: `jogos/musicle/index.html`, `jogos/musicle/musicle.js`, e novo `jogos/musicle/musical-opcoes.css`.
-
-
-## Ajuste visual do Musical
-O cabeçalho da partida está alinhado à área das quatro alternativas, com Voltar à esquerda. O volume fica à esquerda do botão Tocar trecho e da barra de progresso. As alterações de layout estão em `jogos/musicle/musical-opcoes.css`.
-
-
-### Musical — tela de resultados
-A tela final exibe as cinco respostas em cartões com capa, música, artista e indicação de acerto/erro. Em celulares, os cinco cartões permanecem lado a lado com rolagem horizontal.
-
-
-## Streakal
-Novo jogo em jogos/streakal/. Diário e aleatório, começa com duas alternativas e até 30 s da prévia Deezer. Cada acerto exige escolher uma melhoria permanente (+1 alternativa ou duração seguinte multiplicada por 0,9). Acaba no primeiro erro. Recorde independente por gênero salvo no navegador (localStorage). O desafio diário permite uma tentativa por gênero por dia neste navegador.
-
-### Streakal — penalidade por redução consecutiva
-
-Na terceira escolha consecutiva de reduzir o trecho, a redução passa de 10% para 15%. Nas seguintes, a porcentagem de redução é multiplicada por 1,5 (22,5%, 33,75% etc.), sempre aplicada à duração restante. Da terceira em diante, existe chance de adicionar automaticamente uma alternativa: 15%, 20%, 25% e assim sucessivamente, limitada a 100%. A alternativa extra aleatória não zera a sequência; somente escolher **+1 alternativa** voluntariamente a zera.
-
-
-## Carregamento sob demanda (2026-10-26)
-A tela inicial de Musical, Bits e Streakal exibe os gêneros configurados imediatamente, sem fazer requisições ao Deezer. Ao selecionar um gênero, somente suas playlists são carregadas (Geral/Todos reúne todos). Resultados já carregados são reutilizados enquanto a aba estiver aberta.
+Veja [a explicação desta revisão](docs/revisao-estabilidade.md). Os demais documentos descrevem etapas históricas do desenvolvimento; este README e a revisão de estabilidade descrevem o funcionamento atual.

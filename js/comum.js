@@ -1,15 +1,15 @@
 /* Funções compartilhadas pelos jogos e pela página inicial. */
 window.HUBA = (function(){
-  function dayKey(){var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function dayKey(date){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date||new Date())}
+  function previousDay(day){return new Date(Date.parse(day+'T12:00:00Z')-86400000).toISOString().slice(0,10)}
   function hash(s){var h=2166136261; for(var i=0;i<s.length;i++){h^=s.charCodeAt(i); h=Math.imul(h,16777619)} return h>>>0}
-  function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function mulberry(a){var rng=function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};rng.getState=function(){return a|0};return rng}
   function shuffle(arr,rng){for(var i=arr.length-1;i>0;i--){var j=Math.floor(rng()*(i+1)),t=arr[i];arr[i]=arr[j];arr[j]=t} return arr}
   function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
-  function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
   function streakKey(id){return 'playhub:'+id+':streak:v1'}
   function readStreak(id){try{return JSON.parse(localStorage.getItem(streakKey(id)))||{}}catch(e){return {}}}
-  function currentStreak(id){var st=readStreak(id),y=new Date();y.setDate(y.getDate()-1);return (st.last===dayKey()||st.last===keyOf(y))?(st.count||0):0}
-  function recordDailyStreak(id){var st=readStreak(id),today=dayKey(),y=new Date();y.setDate(y.getDate()-1);if(st.last===today)return;st.count=(st.last===keyOf(y))?(st.count||0)+1:1;st.last=today;st.best=Math.max(st.best||0,st.count);try{localStorage.setItem(streakKey(id),JSON.stringify(st))}catch(e){}}
+  function currentStreak(id){var st=readStreak(id),today=dayKey();return (st.last===today||st.last===previousDay(today))?(st.count||0):0}
+  function recordDailyStreak(id,date){var st=readStreak(id),today=date||dayKey();if(st.last>=today)return;st.count=(st.last===previousDay(today))?(st.count||0)+1:1;st.last=today;st.best=Math.max(st.best||0,st.count);try{localStorage.setItem(streakKey(id),JSON.stringify(st))}catch(e){}}
   // Conserva a maior sequência ativa anterior; não soma dias que podem coincidir.
   try{if(!localStorage.getItem('huba:musicle:unified:v1')){
     var casual=readStreak('musicle'),hard=readStreak('musicle-hard');
@@ -17,7 +17,7 @@ window.HUBA = (function(){
     merged.best=Math.max(casual.best||0,hard.best||0,merged.count||0);
     localStorage.setItem(streakKey('musicle'),JSON.stringify(merged));localStorage.setItem('huba:musicle:unified:v1','1');
   }}catch(e){}
-  function recordPlayedGame(id){recordDailyStreak('huba');if(id==='musicle')recordDailyStreak('musicle');document.dispatchEvent(new Event('huba:streak'))}
+  function recordPlayedGame(id,date){recordDailyStreak('huba');if(id==='musicle')recordDailyStreak('musicle',date);document.dispatchEvent(new Event('huba:streak'))}
   return {dayKey:dayKey,hash:hash,mulberry:mulberry,shuffle:shuffle,norm:norm,currentStreak:currentStreak,recordDailyStreak:recordDailyStreak,recordPlayedGame:recordPlayedGame};
 })();
 

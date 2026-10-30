@@ -19,7 +19,7 @@ function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}
 function records(){return readJSON(RECORD_KEY,{})}
 function best(g){return records()[g]||0}
 function saveBest(g,n){var r=records();if(n>(r[g]||0)){r[g]=n;writeJSON(RECORD_KEY,r)}}
-function dailyKey(g){return 'huba:streakal:daily:'+dayKey()+':'+g}
+function dailyKey(g,date){return 'huba:streakal:daily:'+(date||dayKey())+':'+g}
 function renderHome(){
   $('#statDailyStreak').textContent=HUBA.currentStreak('streakal');
   ['Daily'].forEach(function(mode){var daily=HUBA.isDaily,box=$('#tiles'+mode);box.innerHTML='';
@@ -57,12 +57,13 @@ function initCatalog(){
   $('#summary').textContent='As músicas são carregadas ao escolher o gênero.';renderHome();
 }
 function enterGenre(daily,g){
-  var token=++selectionToken;selectedGenre=g;
+  var token=++selectionToken,date=dayKey();selectedGenre=g;
   musicLoading=true;loadingChoice={genre:g,daily:daily};renderHome();
   $('#dzStatus').textContent=daily?'Preparando o catálogo completo para manter o desafio diário igual para todos…':'Carregando músicas de '+gName(g)+'…';
   musicLoader.select(g,2,daily).then(function(s){
     if(token!==selectionToken)return;
     musicLoading=false;loadingChoice=null;
+    if(daily&&date!==dayKey())throw Error('O dia mudou. Escolha o gênero novamente.');
     if(s.songs.length<2)throw new Error('Poucas músicas disponíveis nesta categoria.');
     $('#dzStatus').textContent=s.error?'Algumas páginas falharam. Você pode retomar o carregamento.':'';
     renderHome();openGame(daily,g);musicLoader.paint($('#gameCatalogCount'),s);
@@ -75,7 +76,7 @@ function enterGenre(daily,g){
 function pauseCatalog(){selectionToken++;musicLoader.pause();musicLoading=false;loadingChoice=null;if(selectedGenre){musicLoader.paint($('#summary'),musicLoader.state(selectedGenre))}}
 window.addEventListener('pagehide',pauseCatalog);
 
-function newRun(daily,g){return {genre:g,daily:daily,pool:daily?musicLoader.snapshot(g):poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,penaltyNotice:'',used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
+function newRun(daily,g){return {genre:g,daily:daily,date:dayKey(),replacements:0,pool:daily?musicLoader.snapshot(g):poolOf(g),score:0,optionCount:2,clip:MAX_CLIP,consecutiveShorter:0,penaltyNotice:'',used:[],round:0,pending:false,ended:false,locked:false,answer:null,options:[],rng:daily?mulberry(hash(dayKey()+'|streakal|'+g+'|'+poolOf(g).length)):Math.random}}
 /* Painel de apoio recolhível exclusivo do Streakal, a partir da 4ª rodada. */
 var streakalSupportToggle=null;
 function streakalSupportSetCollapsed(collapsed){
@@ -106,14 +107,29 @@ function openGame(daily,g){
   cur=newRun(daily,g);invalidSongs={};audioFailures=0;streakalSupportSetCollapsed(false);updateLimitDisplay();
   // Desafios diários concluídos não podem reiniciar o placar nesse dia.
   var prev=daily?readJSON(dailyKey(g),null):null;
-  if(prev&&prev.done){cur.score=prev.score;cur.ended=true;showResult(true);return}
+  if(prev&&prev.done){cur.score=prev.score;cur.replacements=prev.replacements||0;cur.ended=true;showResult(true);return}
+  if(prev&&prev.run){
+    try{
+      var saved=prev.run,byId=new Map(cur.pool.map(function(song){return [song.id,song]}));
+      var pool=saved.poolIds.map(function(id){var song=byId.get(id);if(!song)throw Error('Catálogo da partida salva indisponível.');return song});
+      Object.assign(cur,saved,{pool:pool,rng:mulberry(saved.randomState)});invalidSongs=saved.invalidSongs||{};
+      renderQuestion();if(cur.pending)renderUpgrade();streakalSupportSetCollapsed(cur.round>=4);return;
+    }catch(e){goHome();$('#dzStatus').textContent='Não foi possível retomar a partida salva. Atualize a página para tentar novamente.';return}
+  }
   nextQuestion();
 }
-function pickAnswer(){
+function saveRun(){
+  if(!cur||!cur.daily||cur.ended)return;
+  var saved={};
+  ['date','score','optionCount','clip','consecutiveShorter','penaltyNotice','used','round','pending','locked','answer','options','replacements'].forEach(function(key){saved[key]=cur[key]});
+  saved.poolIds=cur.pool.map(function(song){return song.id});saved.randomState=cur.rng.getState();saved.invalidSongs=invalidSongs;
+  writeJSON(dailyKey(cur.genre,cur.date),{done:false,run:saved});
+}
+function pickAnswer(rng){
   var available=cur.pool.map(function(_,i){return i}).filter(function(i){return cur.used.indexOf(i)<0&&!invalidSongs[i]});
   if(!available.length){cur.used=[];available=cur.pool.map(function(_,i){return i}).filter(function(i){return !invalidSongs[i]})}
   if(!available.length)return null;
-  var idx=available[Math.floor(cur.rng()*available.length)];cur.used.push(idx);return idx;
+  var idx=available[Math.floor((rng||cur.rng)()*available.length)];cur.used.push(idx);return idx;
 }
 function stop(){
   playRequest++;clearTimeout(audioFailTimer);audioFailTimer=null;audio.onplaying=null;
@@ -251,21 +267,27 @@ function nextQuestion(replacement){
   if(!cur.daily&&!s.complete&&cur.pool.length<Math.max(2,cur.optionCount)){waitForCatalog(replacement);return}
   stop();songLoadToken++;if(!replacement)audioFailures=0;cur.pending=false;cur.locked=false;$('#quiz').classList.remove('hidden');$('#result').classList.add('hidden');$('#opts').classList.remove('hidden');$('#upgradePanel').classList.add('hidden');$('#replaceSong').classList.add('hidden');
   $('#replaceSong').textContent='Sortear outra música';
-  var answer=pickAnswer();if(answer===null){
+  if(replacement)cur.replacements++;
+  var rng=replacement&&cur.daily?mulberry(hash(cur.date+'|streakal-reserva|'+cur.genre+'|'+cur.round+'|'+cur.replacements)):cur.rng;
+  var answer=pickAnswer(rng);if(answer===null){
     if(!cur.daily&&!s.complete){waitForCatalog(replacement,cur.pool.length+1);return}
     $('#qhint').textContent='Nenhuma prévia disponível. Tente novamente sem perder sua sequência.';
     $('#opts').textContent='';$('#replaceSong').classList.remove('hidden');invalidSongs={};cur.locked=true;return;
   }cur.answer=answer;
   if(!replacement)cur.round++;
   if(cur.round===4&&!replacement)streakalSupportSetCollapsed(true);
-  var others=shuffle(cur.pool.map(function(_,i){return i}).filter(function(i){return i!==answer&&!invalidSongs[i]}),cur.rng).slice(0,Math.max(1,cur.optionCount-1));
-  cur.options=shuffle([answer].concat(others),cur.rng);
+  var others=shuffle(cur.pool.map(function(_,i){return i}).filter(function(i){return i!==answer&&!invalidSongs[i]}),rng).slice(0,Math.max(1,cur.optionCount-1));
+  cur.options=shuffle([answer].concat(others),rng);
+  saveRun();renderQuestion();
+}
+function renderQuestion(){
+  $('#quiz').classList.remove('hidden');$('#result').classList.add('hidden');$('#opts').classList.remove('hidden');$('#upgradePanel').classList.add('hidden');
   $('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
   updateLimitDisplay();
   $('#runSettings').textContent=cur.options.length+' opções · '+formatSec(cur.clip)+' s';
   $('#qhint').textContent=cur.penaltyNotice||'Qual música tocou?';
   cur.penaltyNotice='';
-  setSong(cur.pool[answer]);
+  setSong(cur.pool[cur.answer]);
   var box=$('#opts');box.innerHTML='';box.style.setProperty('--option-columns',Math.min(5,cur.options.length));box.style.setProperty('--mobile-columns',Math.min(2,cur.options.length));
   cur.options.forEach(function(i){var b=makeCard(cur.pool[i]);b.onclick=function(){answerQuestion(i)};box.appendChild(b)});
 }
@@ -339,7 +361,10 @@ function answerQuestion(i){if(!cur||cur.locked||cur.pending||cur.ended)return;cu
   cur.score++;saveBest(cur.genre,cur.score);$('#qcount').textContent='Sequência: '+cur.score+' · Rodada '+cur.round;
   // Quando apenas uma dificuldade é possível, não mostra os botões.
   if(autoDifficultyIfLimited())return;
-  $('#qhint').textContent='Acertou! Escolha a dificuldade para a próxima rodada.';cur.pending=true;$('#opts').classList.add('hidden');$('#upgradePanel').classList.remove('hidden');
+  cur.pending=true;saveRun();renderUpgrade();
+}
+function renderUpgrade(){
+  $('#qhint').textContent='Acertou! Escolha a dificuldade para a próxima rodada.';$('#opts').classList.add('hidden');$('#upgradePanel').classList.remove('hidden');
   $('#extraOption').disabled=false;
   $('#extraOption').textContent='+1 alternativa na próxima rodada ('+(cur.optionCount+1)+')';
   var nextConsecutive=cur.consecutiveShorter+1;
@@ -365,14 +390,15 @@ function endRun(exhausted){if(!cur||cur.ended)return;cur.ended=true;stop();songL
   HUBA.recordPlayedGame('streakal');
   var games=readJSON(GAMES_KEY,{n:0});games.n=(games.n||0)+1;writeJSON(GAMES_KEY,games);
   if(cur.daily){
-    writeJSON(dailyKey(cur.genre),{done:true,score:cur.score});
-    HUBA.recordDailyStreak('streakal'); // Conta no máximo um dia, independente do gênero.
+    writeJSON(dailyKey(cur.genre,cur.date),{done:true,score:cur.score,replacements:cur.replacements});
+    HUBA.recordDailyStreak('streakal',cur.date); // Conta no máximo um dia, independente do gênero.
   }
   showResult(false,exhausted);
 }
 function showResult(revisit,exhausted){stop();$('#quiz').classList.add('hidden');$('#result').classList.remove('hidden');$('#play').classList.add('is-result');
   $('#resultTitle').textContent=revisit?'Desafio de hoje concluído':'Sequência encerrada: '+cur.score+' acertos';
   $('#resultInfo').textContent=(revisit?'Sua sequência diária: '+cur.score+'. ':'')+'Recorde em '+gName(cur.genre)+': '+best(cur.genre)+'.'+(exhausted?' Não há mais músicas disponíveis.':'');
+  if(cur.daily&&cur.replacements)$('#resultInfo').textContent+=' · Com música reserva';
   var box=$('#lastSong');box.innerHTML='';if(!revisit&&cur.answer!==null){var card=makeCard(cur.pool[cur.answer]);card.disabled=true;box.appendChild(card)}
   $('#again').classList.toggle('hidden',cur.daily);
 }
