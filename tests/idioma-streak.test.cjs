@@ -74,6 +74,14 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
  assert.equal(await page.locator('.gcard').filter({hasText:'Streakal'}).locator('small').count(),1);
  for(const game of ['bits','musicle','streakal','wording']){
   await page.goto(base+'/jogos/'+game+'/');assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  for(const selector of ['.huba-settings>details','.bits-hud-menu','.huba-mode']){
+   await page.locator(selector+'>summary').click();assert.equal(await page.locator(selector).evaluate(el=>el.open),true);
+   await page.locator('main').click({position:{x:2,y:2}});assert.equal(await page.locator(selector).evaluate(el=>el.open),false,'clique fora fecha '+selector+' em '+game);
+  }
+  await page.locator('.huba-settings>details>summary').click();await page.locator('.huba-mode>summary').click();
+  assert.equal(await page.locator('.huba-settings>details').evaluate(el=>el.open),false,'abrir modo fecha tema');
+  await page.locator('.bits-hud-menu>summary').click();assert.equal(await page.locator('.huba-mode').evaluate(el=>el.open),false,'abrir HUD fecha modo');
+  await page.locator('main').click({position:{x:2,y:2}});
   assert.equal(await page.locator('.bits-hud-menu>summary').textContent(),'🖥️');
   assert.equal(await page.locator('.huba-locale>summary').textContent(),'');
   assert.match(await page.locator('.huba-mode>summary').textContent(),/^(📅|🎮)$/);

@@ -155,7 +155,10 @@ function build(){
  [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.dataset.noTranslate='';b.innerHTML=option[2]+'<span>'+option[1]+'</span>';b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0]);languageMenu.open=false};languageOptions.appendChild(b)});
  languageMenu.appendChild(languageOptions);nav.appendChild(languageMenu);updateLanguage();document.addEventListener('huba:language',updateLanguage);
  languageMenu.addEventListener('keydown',function(e){if(e.key==='Escape'){languageMenu.open=false;languageTitle.focus();e.stopPropagation();e.preventDefault()}});
- document.addEventListener('click',function(e){if(!languageMenu.contains(e.target))languageMenu.open=false});
+ document.addEventListener('click',function(e){
+   // Inclui o HUD, inserido depois: só o menu que contém o clique fica aberto.
+   nav.querySelectorAll('details[open]').forEach(function(menu){if(!menu.contains(e.target))menu.open=false});
+ });
  var header=document.querySelector('.landing-top');
  if(header){header.appendChild(nav);document.body.classList.add('home-header-language')}else{
    var headers=document.querySelectorAll('.hub-top,.w-top,.bits-top,.musical-play-header,.w-gtop,.bits-game-head');
