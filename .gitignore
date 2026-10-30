@@ -1,5 +1,27 @@
 .cache/
 node_modules/
+
+# Segredos e configurações locais (exemplos sem credenciais podem ser versionados).
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+
+# Saídas locais das ferramentas e dos testes.
+*.log
+playwright-report/
+test-results/
+coverage/
 dados/saude.json
 dados/bits-artistas/rock-*.js
 dados/bits-artistas/pop-*.js
