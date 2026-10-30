@@ -35,9 +35,18 @@ test('HUD compartilhado nos quatro jogos, Bits alinhado e Wording com letras pre
  await page.goto(pathToFileURL(path.join(root,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'focus','preserva seleção antiga do Bits');await select('panel');
  for(const game of ['bits','musicle','streakal','wording']){
    await page.goto(pathToFileURL(path.join(root,'jogos',game,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'panel');
+   if(game==='musicle'||game==='streakal'){
+     for(const width of [1280,320]){
+       await page.setViewportSize({width,height:1000});
+       const alignment=await page.evaluate(()=>{const p=document.querySelector('#summary'),a=document.querySelector('#home .game-column').getBoundingClientRect(),b=p.getBoundingClientRect();return {position:getComputedStyle(p).position,delta:Math.max(Math.abs(a.left-b.left),Math.abs(a.right-b.right)),below:b.top>=a.bottom}});
+       assert.equal(alignment.position,'static');assert.ok(alignment.delta<1&&alignment.below,'aviso abaixo e alinhado ao quadro de seleção');
+     }
+     await page.setViewportSize({width:1280,height:1000});
+   }
    const tiles=game==='bits'?'#dailyTiles':game==='wording'?'#wTilesDaily':'#tilesDaily';await page.locator(tiles+' button').first().waitFor({state:'visible'});
    if(game==='wording')await page.waitForFunction(()=>!document.querySelector('#wTilesDaily button').disabled);
    await page.locator(tiles+' button').first().click();await page.locator(game==='bits'?'#bitsGame':game==='wording'?'#wgame':'#play').waitFor({state:'visible'});
+   if(game==='musicle'||game==='streakal')assert.equal(await page.locator('#summary').isVisible(),false,'sem aviso de seleção flutuando sobre a partida');
    if(game==='wording'){await page.locator('#wTitle').click();await page.keyboard.type('ab')}
    const layouts=[];
    for(const hud of ['focus','studio','arcade','terminal','panel']){
