@@ -9,7 +9,7 @@ document.documentElement.dataset.bitsHud=selected;
 function build(){
  var toolbar=document.querySelector('.huba-language');if(!toolbar)return;
  var menu=document.createElement('details');menu.className='bits-hud-menu';menu.dataset.noTranslate='';
- var title=document.createElement('summary'),label=document.createElement('span');title.append('▦ ',label);menu.appendChild(title);
+ var title=document.createElement('summary');title.textContent='🖥️';menu.appendChild(title);
  var list=document.createElement('div');list.className='bits-hud-options';menu.appendChild(list);
  choices.forEach(function(choice){
    var b=document.createElement('button');b.type='button';b.dataset.bitsHudChoice=choice[0];
@@ -17,7 +17,7 @@ function build(){
  });
  function update(){
    var en=window.HUBA_I18N&&HUBA_I18N.language==='en';
-   label.textContent='HUD';title.title=en?'Game layout':'Visual dos jogos';title.setAttribute('aria-label',title.title);
+   title.title=en?'Game layout':'Visual dos jogos';title.setAttribute('aria-label',title.title);
    list.querySelectorAll('button').forEach(function(b,i){b.textContent=choices[i][en?2:1];b.setAttribute('aria-pressed',String(selected===choices[i][0]))});
  }
  function position(){var rect=title.getBoundingClientRect();list.style.left=Math.max(8,Math.min(rect.left,innerWidth-208))+'px';list.style.top=(rect.bottom+8)+'px';list.style.maxHeight=Math.max(100,innerHeight-rect.bottom-24)+'px'}

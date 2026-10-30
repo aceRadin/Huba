@@ -139,7 +139,7 @@ function build(){
  var mode=document.createElement('details');mode.className='huba-mode';
  var modeTitle=document.createElement('summary');modeTitle.setAttribute('aria-label','Modo de jogo');mode.appendChild(modeTitle);
  var modeOptions=document.createElement('div');modeOptions.className='huba-mode-options';
- function updateMode(){modeTitle.textContent=HUBA.isDaily?'Diário':'Treino';modeOptions.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.gameMode===HUBA.mode))})}
+ function updateMode(){var name=HUBA.isDaily?'Diário':'Treino';modeTitle.textContent=HUBA.isDaily?'📅':'🎮';modeTitle.title=name;modeTitle.setAttribute('aria-label','Modo de jogo — '+name);modeOptions.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.gameMode===HUBA.mode))})}
  [['daily','Diário'],['training','Treino']].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.gameMode=option[0];b.textContent=option[1];b.onclick=function(){HUBA.setMode(option[0]);mode.open=false};modeOptions.appendChild(b)});
  mode.appendChild(modeOptions);nav.appendChild(mode);updateMode();document.addEventListener('huba:mode',updateMode);
  mode.addEventListener('keydown',function(e){if(e.key==='Escape'){mode.open=false;modeTitle.focus();e.stopPropagation();e.preventDefault()}});
@@ -151,7 +151,7 @@ function build(){
  var languageMenu=document.createElement('details');languageMenu.className='huba-locale';
  var languageTitle=document.createElement('summary');languageTitle.dataset.noTranslate='';languageMenu.appendChild(languageTitle);
  var languageOptions=document.createElement('div');languageOptions.className='huba-locale-options';
- function updateLanguage(){languageTitle.innerHTML=(lang==='pt'?brazil:usa)+'<span aria-hidden="true">▾</span>';languageTitle.title=lang==='pt'?'Português':'English';languageTitle.setAttribute('aria-label',lang==='pt'?'Idioma: Português':'Language: English')}
+ function updateLanguage(){languageTitle.innerHTML=lang==='pt'?brazil:usa;languageTitle.title=lang==='pt'?'Português':'English';languageTitle.setAttribute('aria-label',lang==='pt'?'Idioma: Português':'Language: English')}
  [['pt','Português',brazil],['en','English',usa]].forEach(function(option){var b=document.createElement('button');b.type='button';b.dataset.siteLang=option[0];b.dataset.noTranslate='';b.innerHTML=option[2]+'<span>'+option[1]+'</span>';b.title=option[1];b.setAttribute('aria-label',option[1]);b.setAttribute('aria-pressed',String(lang===option[0]));b.onclick=function(){setLanguage(option[0]);languageMenu.open=false};languageOptions.appendChild(b)});
  languageMenu.appendChild(languageOptions);nav.appendChild(languageMenu);updateLanguage();document.addEventListener('huba:language',updateLanguage);
  languageMenu.addEventListener('keydown',function(e){if(e.key==='Escape'){languageMenu.open=false;languageTitle.focus();e.stopPropagation();e.preventDefault()}});
