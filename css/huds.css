@@ -9,6 +9,13 @@
 .huba-settings-content>.huba-theme-options{margin-top:0}
 .bits-hud-menu>summary,.huba-mode>summary{display:grid;place-items:center;box-sizing:border-box;width:34px;height:34px;padding:4px;font-size:1.05rem;line-height:1;list-style:none;border:1px solid var(--line);border-radius:9px}
 .huba-mode>summary::-webkit-details-marker{display:none}
+/* Uma medida única para todos os ícones do cabeçalho, sem afetar os dropdowns. */
+.huba-language :is(.bits-hud-menu,.huba-mode,.huba-locale,.huba-difficulty)>summary,
+.huba-language .huba-settings>details>summary,
+.w-gtop>.huba-language #wGameStats{
+ display:grid;place-items:center;box-sizing:border-box;width:36px;height:36px;
+ padding:2px;border:1px solid var(--line);border-radius:10px;line-height:1;font-size:1.05rem;
+}
 @media(min-width:851px){
  body.has-game-header #play .musical-play-header.huba-game-header{grid-template-columns:minmax(300px,1fr) minmax(0,2fr) minmax(300px,1fr)}
 }

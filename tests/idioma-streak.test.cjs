@@ -41,6 +41,8 @@ test('PT/EN em todas as telas, sem reiniciar partidas e streak por derrota',{tim
    const metrics=await page.locator('.huba-language').evaluate(nav=>{const header=nav.parentElement,a=nav.getBoundingClientRect(),b=header.getBoundingClientRect(),s=header.querySelector('.daily-streak')?.getBoundingClientRect(),title=header.querySelector('.musical-play-heading,.bits-game-head>div,.w-gtop>h2')?.getBoundingClientRect();return {inHeader:header.classList.contains('huba-game-header'),visible:!header.closest('.hidden'),right:a.right<=b.right+1,left:a.left>=b.left-1,center:s?Math.abs(s.x+s.width/2-b.x-b.width/2):0,overlap:title&&Math.min(a.right,title.right)-Math.max(a.left,title.left)>1&&Math.min(a.bottom,title.bottom)-Math.max(a.top,title.top)>1}});
    assert.ok(metrics.inHeader&&metrics.visible&&metrics.right&&metrics.left,'idioma no cabeçalho visível em '+width+'px');assert.ok(metrics.center<1,'streak centralizado em '+width+'px');
    assert.ok(!metrics.overlap,'idioma não sobrepõe título em '+width+'px');
+   const sizes=await page.locator('.huba-language').evaluate(nav=>Array.from(nav.querySelectorAll('summary,#wGameStats')).map(el=>el.getBoundingClientRect()).filter(r=>r.width&&r.height).map(r=>[r.width,r.height]));
+   assert.ok(sizes.every(([w,h])=>w===36&&h===36),'ícones do cabeçalho com quadrados iguais em '+width+'px');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   }
   await page.setViewportSize({width:390,height:844});
