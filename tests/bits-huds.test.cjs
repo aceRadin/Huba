@@ -40,7 +40,8 @@ test('cinco HUDs do Bits preservam partida, controles, idioma e escolha salva em
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem horizontal no '+hud);
    const guessBox=await page.locator('#guessArea').boundingBox(),player=await page.locator('.bits-player').boundingBox();
    assert.ok(guessBox.x>=0&&guessBox.x+guessBox.width<=376);assert.ok(player.x>=0&&player.x+player.width<=376);
-   await page.locator('.bits-hud-menu>summary').click();const dropdown=await page.locator('.bits-hud-options').boundingBox();assert.ok(dropdown.x>=0&&dropdown.x+dropdown.width<=375);
+   // Mede no mesmo turno do clique, antes do evento toggle assíncrono.
+   const dropdown=await page.locator('.bits-hud-menu').evaluate(menu=>{menu.querySelector('summary').focus();menu.querySelector('summary').click();const r=menu.querySelector('.bits-hud-options').getBoundingClientRect();return {x:r.x,width:r.width}});assert.ok(dropdown.x>=0&&dropdown.x+dropdown.width<=375);
    await page.keyboard.press('Escape');assert.equal(await page.locator('.bits-hud-menu').getAttribute('open'),null);
    await page.screenshot({path:path.join(output,hud+'-mobile.png'),fullPage:true});
    await page.setViewportSize({width:1280,height:1000});

@@ -22,6 +22,9 @@ function build(){
    list.querySelectorAll('button').forEach(function(b,i){b.textContent=choices[i][en?2:1];b.setAttribute('aria-pressed',String(selected===choices[i][0]))});
  }
  function position(){var rect=title.getBoundingClientRect();list.style.left=Math.max(8,Math.min(rect.left,innerWidth-208))+'px';list.style.top=(rect.bottom+8)+'px';list.style.maxHeight=Math.max(100,innerHeight-rect.bottom-24)+'px'}
+ // toggle é assíncrono: posicione antes da abertura nativa para o menu não
+ // aparecer no lugar antigo nem se mover entre pressionar e soltar o mouse.
+ title.addEventListener('click',function(){if(!menu.open)position()});
  menu.addEventListener('toggle',function(){if(menu.open)position()});window.addEventListener('resize',function(){if(menu.open)position()});
  window.addEventListener('scroll',function(){if(menu.open)position()},true);
  menu.addEventListener('keydown',function(e){if(e.key==='Escape'){menu.open=false;title.focus();e.preventDefault();e.stopPropagation()}});

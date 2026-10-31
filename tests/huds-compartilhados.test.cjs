@@ -2,11 +2,22 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs/promises');
+const http=require('node:http');
 const {tmpdir}=require('node:os');
-const {pathToFileURL}=require('node:url');
 const {chromium}=require(process.env.HUBA_PLAYWRIGHT_MODULE||'playwright');
 const root=path.resolve(__dirname,'..');
 test('HUD compartilhado nos quatro jogos, Bits alinhado e Wording com letras preservadas',{timeout:60000},async t=>{
+ // Preferências entre páginas devem usar a mesma origem HTTP, como no Pages.
+ // O isolamento de localStorage em file:// varia entre navegadores/plataformas.
+ const server=http.createServer(async(req,res)=>{try{
+   const name=new URL(req.url,'http://localhost').pathname;
+   const file=path.join(root,name);
+   res.setHeader('Content-Type',({'html':'text/html; charset=utf-8','js':'application/javascript; charset=utf-8','css':'text/css; charset=utf-8','json':'application/json'})[path.extname(file).slice(1)]||'application/octet-stream');
+   res.end(await fs.readFile(file));
+ }catch{res.statusCode=404;res.end()}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const base='http://127.0.0.1:'+server.address().port;
+ t.after(()=>{server.closeAllConnections();server.close()});
  const browser=await chromium.launch({headless:true,...(process.env.HUBA_CHROME?{executablePath:process.env.HUBA_CHROME}:{})});t.after(()=>browser.close());
  const context=await browser.newContext({viewport:{width:1280,height:1000}});t.after(()=>context.close());
  await context.addInitScript(()=>{
@@ -32,9 +43,9 @@ test('HUD compartilhado nos quatro jogos, Bits alinhado e Wording com letras pre
    const delta=await page.evaluate(()=>{const a=document.querySelector('#play>.panel').getBoundingClientRect(),b=document.querySelector('#gameCatalogCount').getBoundingClientRect();return Math.max(Math.abs(a.left-b.left),Math.abs(a.right-b.right))});
    assert.ok(delta<1,'contador acompanha as duas bordas do quadro');
  }
- await page.goto(pathToFileURL(path.join(root,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'focus','preserva seleção antiga do Bits');await select('panel');
+ await page.goto(base+'/index.html');assert.equal(await page.locator('html').getAttribute('data-hud'),'focus','preserva seleção antiga do Bits');await select('panel');
  for(const game of ['bits','musicle','streakal','wording']){
-   await page.goto(pathToFileURL(path.join(root,'jogos',game,'index.html')).href);assert.equal(await page.locator('html').getAttribute('data-hud'),'panel');
+   await page.goto(base+'/jogos/'+game+'/index.html');assert.equal(await page.locator('html').getAttribute('data-hud'),'panel');
    if(game==='musicle'||game==='streakal'){
      for(const width of [1280,320]){
        await page.setViewportSize({width,height:1000});
